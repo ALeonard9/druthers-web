@@ -1,0 +1,18 @@
+services:
+  web-dev:
+    container_name: ${LZ}_phoenix_web_${ENV}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - env/${ENV}.env
+    ports:
+      - '3000:3000'
+    networks:
+      - local_network
+
+networks:
+  local_network:
+    name: '${LZ}_network_${ENV}'
+    external: true

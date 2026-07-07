@@ -1,0 +1,56 @@
+version: '3'
+
+# Mirrors the aleonard.us-api task interface so every service is driven the same
+# way. LZ (landing zone: m3 = local Mac, gs = homelab server) and ENV template
+# the compose project, matching the portability seam used across the stack.
+tasks:
+  default:
+    desc: 'List all available tasks'
+    cmds:
+      - task -l
+
+  dev:
+    desc: 'Run the Next.js dev server'
+    cmds:
+      - npm run dev
+
+  build:
+    desc: 'Build the Docker image'
+    vars:
+      ENV: '{{default "dev" .CLI_ARGS}}'
+    cmds:
+      - docker compose -f dc-{{.ENV}}.yml --env-file env/{{.ENV}}.env build
+
+  du:
+    desc: 'Launch the web container (default: dev)'
+    vars:
+      ENV: '{{default "dev" .CLI_ARGS}}'
+    cmds:
+      - docker compose -f dc-{{.ENV}}.yml --env-file env/{{.ENV}}.env up -d
+
+  dd:
+    desc: 'Stop the web container'
+    vars:
+      ENV: '{{default "dev" .CLI_ARGS}}'
+    cmds:
+      - docker compose -f dc-{{.ENV}}.yml --env-file env/{{.ENV}}.env down
+
+  lint:
+    desc: 'Run eslint'
+    cmds:
+      - npm run lint
+
+  typecheck:
+    desc: 'Run the TypeScript compiler (no emit)'
+    cmds:
+      - npm run typecheck
+
+  test:
+    desc: 'Run unit tests (vitest)'
+    cmds:
+      - npm run test
+
+  e2e:
+    desc: 'Run Playwright smoke tests'
+    cmds:
+      - npm run test:e2e

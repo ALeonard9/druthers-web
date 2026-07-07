@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# aleonard.us-web
 
-## Getting Started
+The web frontend for [aleonard.us](https://www.aleonard.us) — a Next.js app that
+consumes the [`aleonard.us-api`](https://github.com/ALeonard9/aleonard.us-api)
+backend. First slice: **Movies** (list, watched/watchlist, notes, search & add).
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 16** (App Router) + **React 19** + **TypeScript**
+- **Tailwind CSS v4**
+- **Backend-for-Frontend (BFF)**: route handlers under `src/app/api/*` proxy the
+  API and keep the JWT in an **httpOnly cookie** — the token never reaches
+  client JavaScript.
+- **Vitest** (unit) + **Playwright** (smoke E2E)
+- Containerized (standalone output) and published to **GHCR** on release.
+
+## Architecture
+
+```
+Browser ──▶ Next.js (BFF route handlers) ──▶ aleonard.us-api /v1 ──▶ Postgres
+             stores JWT in httpOnly cookie
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Server components read `GET /v1/users/me/movies` directly; client components call
+same-origin BFF routes (`/api/movies/*`) which attach the bearer token.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Develop
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+cp .env.example .env.local     # API_BASE_URL=http://127.0.0.1:8000
+npm run dev                    # http://localhost:3000
+```
 
-## Learn More
+Requires the API running (see the api repo). Sign in with an API user; the
+Movies page renders that user's tracked movies.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts / tasks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` / `task dev` | Dev server |
+| `npm run build` | Production build (standalone) |
+| `npm run lint` / `task lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run test` / `task test` | Vitest unit tests |
+| `npm run test:e2e` / `task e2e` | Playwright smoke |
+| `task du -- prod` | Run the container via compose |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Environment
 
-## Deploy on Vercel
+| Var | Description |
+|-----|-------------|
+| `API_BASE_URL` | Base URL of `aleonard.us-api` (server-side only) |
+| `LZ` / `ENV` | Landing zone (`m3`/`gs`) and environment, for compose templating |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`Dockerfile` builds a standalone non-root image; `publish_docker.yaml` pushes to
+`ghcr.io/aleonard9/aleonard.us-web` on GitHub release. Runs on the homelab behind
+the Cloudflare tunnel alongside the API (see `www.aleonard.us-docker`).

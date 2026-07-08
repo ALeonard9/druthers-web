@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { UserMovie } from '@/lib/types';
 
@@ -22,7 +23,7 @@ export function WatchlistCard({ userMovie }: { userMovie: UserMovie }) {
 
   return (
     <li className="flex flex-col overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900">
-      <div className="aspect-[2/3] bg-neutral-800">
+      <Link href={`/movies/${movie.id}`} className="aspect-[2/3] block bg-neutral-800">
         {movie.poster_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -35,11 +36,15 @@ export function WatchlistCard({ userMovie }: { userMovie: UserMovie }) {
             {movie.title}
           </div>
         )}
-      </div>
+      </Link>
       <div className="flex flex-1 flex-col gap-2 p-3">
-        <p className="line-clamp-2 text-sm font-medium" title={movie.title}>
+        <Link
+          href={`/movies/${movie.id}`}
+          className="line-clamp-2 text-sm font-medium hover:text-indigo-300"
+          title={movie.title}
+        >
           {movie.title}
-        </p>
+        </Link>
         <div className="mt-auto flex items-center justify-between pt-1">
           <button
             onClick={() => track({ on_rankings: true })}

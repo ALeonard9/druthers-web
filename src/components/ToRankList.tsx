@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { UserMovie } from '@/lib/types';
 import { PlaceAtInput } from './PlaceAtInput';
@@ -47,7 +48,12 @@ export function ToRankList({
             ) : (
               <div className="h-12 w-8 rounded bg-neutral-800" />
             )}
-            <span className="flex-1 truncate text-sm">{item.movie.title}</span>
+            <Link
+              href={`/movies/${item.movie.id}`}
+              className="flex-1 truncate text-sm text-indigo-300 hover:text-indigo-200 hover:underline"
+            >
+              {item.movie.title}
+            </Link>
             <PlaceAtInput movieId={item.movie.id} max={placedCount + 1} />
             <button
               onClick={() => removeFromRankings(item.movie.id)}

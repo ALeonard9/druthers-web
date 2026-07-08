@@ -6,7 +6,24 @@ interface Ctx {
   params: Promise<{ id: string }>;
 }
 
-// Update the current user's tracker for a movie (watched flag, notes, rank).
+// Add a movie to a list (idempotent merge) — used when it isn't tracked yet.
+export async function POST(request: Request, { params }: Ctx) {
+  const { id } = await params;
+  const body = await request.json();
+  try {
+    const created = await apiFetch<UserMovie>(`/v1/users/me/movies/${id}`, {
+      method: 'POST',
+      body,
+    });
+    return NextResponse.json(created, { status: 201 });
+  } catch (err) {
+    const status = err instanceof ApiError ? err.status : 500;
+    const message = err instanceof ApiError ? err.message : 'Add failed';
+    return NextResponse.json({ error: message }, { status });
+  }
+}
+
+// Update the current user's tracker for a movie (list flags, notes, rank).
 export async function PUT(request: Request, { params }: Ctx) {
   const { id } = await params;
   const body = await request.json();

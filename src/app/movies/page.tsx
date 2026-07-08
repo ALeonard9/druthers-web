@@ -2,20 +2,29 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
-import { partitionMovies } from '@/lib/movies';
+import { partitionMovies, filterMovies, type MovieFilters } from '@/lib/movies';
 import type { UserMovie } from '@/lib/types';
 import { RankingsList } from '@/components/RankingsList';
 import { ToRankList } from '@/components/ToRankList';
 import { WatchlistCard } from '@/components/WatchlistCard';
+import { FilterBar, type FilterValues } from '@/components/FilterBar';
 
 export const dynamic = 'force-dynamic';
 
-// The drag list stays responsive by capping how many ranked rows render.
-const RANKINGS_LIMIT = 100;
+function num(v: string | undefined): number | undefined {
+  if (!v) return undefined;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : undefined;
+}
 
-export default async function MoviesPage() {
+export default async function MoviesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
+  const sp = await searchParams;
 
   let movies: UserMovie[] = [];
   try {
@@ -25,14 +34,28 @@ export default async function MoviesPage() {
     throw err;
   }
 
+  const filters: MovieFilters = {
+    q: sp.q,
+    genre: sp.genre,
+    yearMin: num(sp.yearMin),
+    yearMax: num(sp.yearMax),
+    ratingMin: num(sp.ratingMin),
+  };
+  const filterValues: FilterValues = {
+    q: sp.q ?? '',
+    genre: sp.genre ?? '',
+    yearMin: sp.yearMin ?? '',
+    yearMax: sp.yearMax ?? '',
+    ratingMin: sp.ratingMin ?? '',
+  };
+  const hasFilter = Object.values(filterValues).some(Boolean);
+
+  const filtered = filterMovies(movies, filters);
   const { watchlist, rankingsPlaced, rankingsUnplaced } =
-    partitionMovies(movies);
-  const shownRankings = rankingsPlaced.slice(0, RANKINGS_LIMIT);
-  // Remount RankingsList when the ranked set/order changes so drag state resets.
-  const rankingsKey = shownRankings.map((m) => m.movie.id).join(',');
+    partitionMovies(filtered);
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-semibold">My Movies</h1>
@@ -40,6 +63,7 @@ export default async function MoviesPage() {
             {watchlist.length} on watchlist · {rankingsPlaced.length} ranked
             {rankingsUnplaced.length > 0 &&
               ` · ${rankingsUnplaced.length} to rank`}
+            {hasFilter && ' (filtered)'}
           </p>
         </div>
         <Link
@@ -50,19 +74,25 @@ export default async function MoviesPage() {
         </Link>
       </div>
 
+      <FilterBar initial={filterValues} />
+
       <div className="grid gap-10 lg:grid-cols-2">
         <section>
           <h2 className="mb-1 text-lg font-medium text-neutral-200">Watchlist</h2>
-          <p className="mb-4 text-xs text-neutral-500">
-            Movies you want to watch.
-          </p>
+          <p className="mb-4 text-xs text-neutral-500">Movies you want to watch.</p>
           {watchlist.length === 0 ? (
             <p className="text-sm text-neutral-500">
-              Nothing queued —{' '}
-              <Link href="/movies/search" className="text-indigo-400">
-                add one
-              </Link>
-              .
+              {hasFilter ? (
+                'No watchlist movies match the filter.'
+              ) : (
+                <>
+                  Nothing queued —{' '}
+                  <Link href="/movies/search" className="text-indigo-400">
+                    add one
+                  </Link>
+                  .
+                </>
+              )}
             </p>
           ) : (
             <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -76,17 +106,14 @@ export default async function MoviesPage() {
         <section>
           <h2 className="mb-1 text-lg font-medium text-neutral-200">Rankings</h2>
           <p className="mb-4 text-xs text-neutral-500">
-            Type a position (e.g. 529) to place a movie, or drag to fine-tune.
-            {rankingsPlaced.length > RANKINGS_LIMIT &&
-              ` Showing top ${RANKINGS_LIMIT} of ${rankingsPlaced.length}.`}
+            Enter a position to jump the list, then place a movie there.
           </p>
           <ToRankList
             items={rankingsUnplaced}
             placedCount={rankingsPlaced.length}
           />
           <RankingsList
-            key={rankingsKey}
-            items={shownRankings}
+            items={rankingsPlaced}
             placedCount={rankingsPlaced.length}
           />
         </section>

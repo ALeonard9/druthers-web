@@ -10,6 +10,11 @@ export interface Movie {
   language: string | null;
   rated: string | null;
   poster_url: string | null;
+  year: number | null;
+  genre: string | null;
+  director: string | null;
+  actors: string | null;
+  plot: string | null;
 }
 
 export interface UserMovie {

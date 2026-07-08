@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { partitionMovies, byRank } from './movies';
+import { partitionMovies, byRank, filterMovies } from './movies';
 import type { UserMovie } from './types';
 
 function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
@@ -51,6 +51,55 @@ describe('partitionMovies', () => {
     ];
     const { rankingsPlaced } = partitionMovies(movies);
     expect(rankingsPlaced.map((m) => m.id)).toEqual(['c', 'b', 'a']);
+  });
+});
+
+describe('filterMovies', () => {
+  const movies = [
+    um({ id: '1', on_watchlist: true }),
+    um({ id: '2', on_watchlist: true }),
+    um({ id: '3', on_watchlist: true }),
+  ];
+  movies[0].movie = {
+    ...movies[0].movie,
+    title: 'Inception',
+    director: 'Christopher Nolan',
+    actors: 'Leonardo DiCaprio',
+    genre: 'Sci-Fi',
+    year: 2010,
+    rating_imdb: 8.8,
+  };
+  movies[1].movie = {
+    ...movies[1].movie,
+    title: 'The Notebook',
+    director: 'Nick Cassavetes',
+    genre: 'Romance',
+    year: 2004,
+    rating_imdb: 7.8,
+  };
+  movies[2].movie = {
+    ...movies[2].movie,
+    title: 'Dunkirk',
+    director: 'Christopher Nolan',
+    genre: 'War',
+    year: 2017,
+    rating_imdb: 7.8,
+  };
+
+  it('matches text across title, director, and cast', () => {
+    expect(filterMovies(movies, { q: 'nolan' }).map((m) => m.id).sort()).toEqual([
+      '1',
+      '3',
+    ]);
+    expect(filterMovies(movies, { q: 'dicaprio' }).map((m) => m.id)).toEqual(['1']);
+  });
+
+  it('filters by genre, year range, and min rating', () => {
+    expect(filterMovies(movies, { genre: 'sci' }).map((m) => m.id)).toEqual(['1']);
+    expect(
+      filterMovies(movies, { yearMin: 2005, yearMax: 2018 }).map((m) => m.id).sort(),
+    ).toEqual(['1', '3']);
+    expect(filterMovies(movies, { ratingMin: 8 }).map((m) => m.id)).toEqual(['1']);
   });
 });
 

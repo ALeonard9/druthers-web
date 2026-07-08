@@ -1,89 +1,50 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  arrayMove,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import type { UserMovie } from '@/lib/types';
 import { PlaceAtInput } from './PlaceAtInput';
 
-function trackApi(movieId: string, body: Record<string, unknown>) {
-  return fetch(`/api/movies/${movieId}/track`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-}
+const WINDOW = 25;
 
-function Row({
-  item,
-  position,
-  placedCount,
-}: {
-  item: UserMovie;
-  position: number;
-  placedCount: number;
-}) {
+function Row({ item, placedCount }: { item: UserMovie; placedCount: number }) {
   const router = useRouter();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: item.movie.id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.6 : 1,
-  };
+  const { movie } = item;
 
-  async function remove() {
-    await trackApi(item.movie.id, { on_rankings: false });
-    router.refresh();
+  function remove() {
+    if (
+      !window.confirm(
+        `Remove "${movie.title}" from your ranked list? The movies below it move up.`,
+      )
+    )
+      return;
+    fetch(`/api/movies/${movie.id}/track`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ on_rankings: false }),
+    }).then(() => router.refresh());
   }
 
   return (
-    <li
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 p-2"
-    >
-      <button
-        {...attributes}
-        {...listeners}
-        aria-label="Drag to reorder"
-        className="cursor-grab px-1 text-neutral-500 hover:text-neutral-300 active:cursor-grabbing"
-      >
-        ⠿
-      </button>
-      <span className="w-8 text-right font-mono text-sm text-neutral-400">
-        {position}
-      </span>
-      {item.movie.poster_url ? (
+    <li className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 p-2">
+      {movie.poster_url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={item.movie.poster_url}
-          alt=""
-          className="h-14 w-10 rounded object-cover"
-        />
+        <img src={movie.poster_url} alt="" className="h-12 w-8 rounded object-cover" />
       ) : (
-        <div className="h-14 w-10 rounded bg-neutral-800" />
+        <div className="h-12 w-8 rounded bg-neutral-800" />
       )}
-      <span className="flex-1 truncate text-sm">{item.movie.title}</span>
-      <PlaceAtInput
-        movieId={item.movie.id}
-        current={item.rank}
-        max={placedCount}
-      />
+      <span className="inline-flex h-7 min-w-[2.75rem] items-center justify-center rounded-full bg-neutral-700 px-2 text-sm font-semibold text-white">
+        {item.rank}
+      </span>
+      <Link
+        href={`/movies/${movie.id}`}
+        className="flex-1 truncate text-sm text-indigo-300 hover:text-indigo-200 hover:underline"
+      >
+        {movie.title}
+        {movie.year ? ` (${movie.year})` : ''}
+      </Link>
+      <PlaceAtInput movieId={movie.id} current={item.rank} max={placedCount} />
       <button
         onClick={remove}
         className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
@@ -101,55 +62,77 @@ export function RankingsList({
   items: UserMovie[];
   placedCount: number;
 }) {
-  const router = useRouter();
-  const [order, setOrder] = useState(items);
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-  );
+  // `start` is the rank the window begins at; "Go To" jumps here.
+  const [start, setStart] = useState(1);
+  const [goto, setGoto] = useState('');
 
-  // The parent remounts this component (via a key on the membership signature)
-  // when the set of ranked movies changes, so local order starts fresh.
-
-  async function onDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const oldIndex = order.findIndex((m) => m.movie.id === active.id);
-    const newIndex = order.findIndex((m) => m.movie.id === over.id);
-    const next = arrayMove(order, oldIndex, newIndex);
-    setOrder(next);
-    await fetch('/api/movies/rankings/order', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ movie_ids: next.map((m) => m.movie.id) }),
-    });
-    router.refresh();
+  function submitGoto(e: React.FormEvent) {
+    e.preventDefault();
+    const n = parseInt(goto, 10);
+    if (Number.isFinite(n) && n >= 1) {
+      setStart(Math.max(1, Math.min(n, placedCount)));
+    }
   }
 
-  if (order.length === 0) {
+  if (items.length === 0) {
     return <p className="text-sm text-neutral-500">No ranked movies yet.</p>;
   }
 
+  const windowItems = items
+    .filter((m) => (m.rank ?? 0) >= start)
+    .slice(0, WINDOW);
+  const shownFrom = windowItems[0]?.rank ?? start;
+  const shownTo = windowItems[windowItems.length - 1]?.rank ?? start;
+
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={onDragEnd}
-    >
-      <SortableContext
-        items={order.map((m) => m.movie.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        <ul className="flex flex-col gap-2">
-          {order.map((item, i) => (
-            <Row
-              key={item.movie.id}
-              item={item}
-              position={item.rank ?? i + 1}
-              placedCount={placedCount}
-            />
-          ))}
-        </ul>
-      </SortableContext>
-    </DndContext>
+    <div className="flex flex-col gap-3">
+      <form onSubmit={submitGoto} className="flex gap-2">
+        <input
+          type="number"
+          min={1}
+          max={placedCount}
+          value={goto}
+          onChange={(e) => setGoto(e.target.value)}
+          placeholder={`Go to position (1–${placedCount})`}
+          className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+        />
+        <button
+          type="submit"
+          className="rounded bg-neutral-700 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-600"
+        >
+          Go To…
+        </button>
+      </form>
+
+      <div className="flex items-center justify-between text-xs text-neutral-500">
+        <span>
+          Showing #{shownFrom}–#{shownTo} of {placedCount}
+        </span>
+        <span className="flex gap-2">
+          <button
+            onClick={() => setStart((s) => Math.max(1, s - WINDOW))}
+            disabled={start <= 1}
+            className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
+          >
+            ↑ up
+          </button>
+          <button
+            onClick={() =>
+              setStart((s) => Math.min(placedCount, s + WINDOW))
+            }
+            disabled={shownTo >= placedCount}
+            className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
+          >
+            ↓ down
+          </button>
+        </span>
+      </div>
+
+      <ul className="flex flex-col gap-2">
+        {windowItems.map((item) => (
+          <Row key={item.movie.id} item={item} placedCount={placedCount} />
+        ))}
+      </ul>
+    </div>
   );
 }

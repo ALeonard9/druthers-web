@@ -7,18 +7,24 @@ export function byRank(a: UserMovie, b: UserMovie): number {
 }
 
 /**
- * Split a user's tracked movies into two independent lists:
- *  - watchlist: movies flagged on_watchlist (order by title)
- *  - rankings:  movies flagged on_rankings, ordered by rank
- * A movie may appear in both. Pure — safe to unit test.
+ * Split a user's tracked movies into the lists the UI renders:
+ *  - watchlist:      on_watchlist, by title
+ *  - rankingsPlaced: on_rankings with a rank position, ordered by rank
+ *  - rankingsUnplaced: on_rankings but not yet positioned ("to rank" bucket)
+ * A movie may appear in the watchlist and the rankings. Pure — safe to test.
  */
 export function partitionMovies(movies: UserMovie[]): {
   watchlist: UserMovie[];
-  rankings: UserMovie[];
+  rankingsPlaced: UserMovie[];
+  rankingsUnplaced: UserMovie[];
 } {
   const watchlist = movies
     .filter((m) => m.on_watchlist)
     .sort((a, b) => a.movie.title.localeCompare(b.movie.title));
-  const rankings = movies.filter((m) => m.on_rankings).sort(byRank);
-  return { watchlist, rankings };
+  const ranked = movies.filter((m) => m.on_rankings);
+  const rankingsPlaced = ranked.filter((m) => m.rank != null).sort(byRank);
+  const rankingsUnplaced = ranked
+    .filter((m) => m.rank == null)
+    .sort((a, b) => a.movie.title.localeCompare(b.movie.title));
+  return { watchlist, rankingsPlaced, rankingsUnplaced };
 }

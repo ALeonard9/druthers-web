@@ -27,26 +27,30 @@ function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
 }
 
 describe('partitionMovies', () => {
-  it('splits into independent watchlist and rankings lists', () => {
+  it('splits watchlist, placed rankings, and the to-rank bucket', () => {
     const movies = [
       um({ id: '1', on_rankings: true, rank: 1 }),
       um({ id: '2', on_watchlist: true }),
       // on both lists at once
       um({ id: '3', on_watchlist: true, on_rankings: true, rank: 2 }),
+      // added to rankings but not yet positioned
+      um({ id: '4', on_rankings: true, rank: null }),
     ];
-    const { watchlist, rankings } = partitionMovies(movies);
+    const { watchlist, rankingsPlaced, rankingsUnplaced } =
+      partitionMovies(movies);
     expect(watchlist.map((m) => m.id).sort()).toEqual(['2', '3']);
-    expect(rankings.map((m) => m.id)).toEqual(['1', '3']);
+    expect(rankingsPlaced.map((m) => m.id)).toEqual(['1', '3']);
+    expect(rankingsUnplaced.map((m) => m.id)).toEqual(['4']);
   });
 
-  it('orders rankings by rank, unranked last', () => {
+  it('orders placed rankings by rank', () => {
     const movies = [
       um({ id: 'a', on_rankings: true, rank: 3 }),
-      um({ id: 'b', on_rankings: true, rank: null }),
       um({ id: 'c', on_rankings: true, rank: 1 }),
+      um({ id: 'b', on_rankings: true, rank: 2 }),
     ];
-    const { rankings } = partitionMovies(movies);
-    expect(rankings.map((m) => m.id)).toEqual(['c', 'a', 'b']);
+    const { rankingsPlaced } = partitionMovies(movies);
+    expect(rankingsPlaced.map((m) => m.id)).toEqual(['c', 'b', 'a']);
   });
 });
 

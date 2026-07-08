@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { UserMovie } from '@/lib/types';
+import { PlaceAtInput } from './PlaceAtInput';
 
 function trackApi(movieId: string, body: Record<string, unknown>) {
   return fetch(`/api/movies/${movieId}/track`, {
@@ -27,7 +28,15 @@ function trackApi(movieId: string, body: Record<string, unknown>) {
   });
 }
 
-function Row({ item, position }: { item: UserMovie; position: number }) {
+function Row({
+  item,
+  position,
+  placedCount,
+}: {
+  item: UserMovie;
+  position: number;
+  placedCount: number;
+}) {
   const router = useRouter();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.movie.id });
@@ -70,6 +79,11 @@ function Row({ item, position }: { item: UserMovie; position: number }) {
         <div className="h-14 w-10 rounded bg-neutral-800" />
       )}
       <span className="flex-1 truncate text-sm">{item.movie.title}</span>
+      <PlaceAtInput
+        movieId={item.movie.id}
+        current={item.rank}
+        max={placedCount}
+      />
       <button
         onClick={remove}
         className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
@@ -80,7 +94,13 @@ function Row({ item, position }: { item: UserMovie; position: number }) {
   );
 }
 
-export function RankingsList({ items }: { items: UserMovie[] }) {
+export function RankingsList({
+  items,
+  placedCount,
+}: {
+  items: UserMovie[];
+  placedCount: number;
+}) {
   const router = useRouter();
   const [order, setOrder] = useState(items);
   const sensors = useSensors(
@@ -121,7 +141,12 @@ export function RankingsList({ items }: { items: UserMovie[] }) {
       >
         <ul className="flex flex-col gap-2">
           {order.map((item, i) => (
-            <Row key={item.movie.id} item={item} position={i + 1} />
+            <Row
+              key={item.movie.id}
+              item={item}
+              position={item.rank ?? i + 1}
+              placedCount={placedCount}
+            />
           ))}
         </ul>
       </SortableContext>

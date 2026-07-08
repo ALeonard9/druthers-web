@@ -5,6 +5,7 @@ import { getSessionUser } from '@/lib/session';
 import { partitionMovies } from '@/lib/movies';
 import type { UserMovie } from '@/lib/types';
 import { RankingsList } from '@/components/RankingsList';
+import { ToRankList } from '@/components/ToRankList';
 import { WatchlistCard } from '@/components/WatchlistCard';
 
 export const dynamic = 'force-dynamic';
@@ -24,13 +25,11 @@ export default async function MoviesPage() {
     throw err;
   }
 
-  const { watchlist, rankings } = partitionMovies(movies);
-  const shownRankings = rankings.slice(0, RANKINGS_LIMIT);
-  // Remount RankingsList when the ranked set changes so its local drag state resets.
-  const rankingsKey = shownRankings
-    .map((m) => m.movie.id)
-    .sort()
-    .join(',');
+  const { watchlist, rankingsPlaced, rankingsUnplaced } =
+    partitionMovies(movies);
+  const shownRankings = rankingsPlaced.slice(0, RANKINGS_LIMIT);
+  // Remount RankingsList when the ranked set/order changes so drag state resets.
+  const rankingsKey = shownRankings.map((m) => m.movie.id).join(',');
 
   return (
     <div className="flex flex-col gap-10">
@@ -38,7 +37,9 @@ export default async function MoviesPage() {
         <div>
           <h1 className="text-2xl font-semibold">My Movies</h1>
           <p className="text-sm text-neutral-400">
-            {watchlist.length} on watchlist · {rankings.length} ranked
+            {watchlist.length} on watchlist · {rankingsPlaced.length} ranked
+            {rankingsUnplaced.length > 0 &&
+              ` · ${rankingsUnplaced.length} to rank`}
           </p>
         </div>
         <Link
@@ -75,11 +76,19 @@ export default async function MoviesPage() {
         <section>
           <h2 className="mb-1 text-lg font-medium text-neutral-200">Rankings</h2>
           <p className="mb-4 text-xs text-neutral-500">
-            Drag to reorder your favorites.
-            {rankings.length > RANKINGS_LIMIT &&
-              ` Showing top ${RANKINGS_LIMIT} of ${rankings.length}.`}
+            Type a position (e.g. 529) to place a movie, or drag to fine-tune.
+            {rankingsPlaced.length > RANKINGS_LIMIT &&
+              ` Showing top ${RANKINGS_LIMIT} of ${rankingsPlaced.length}.`}
           </p>
-          <RankingsList key={rankingsKey} items={shownRankings} />
+          <ToRankList
+            items={rankingsUnplaced}
+            placedCount={rankingsPlaced.length}
+          />
+          <RankingsList
+            key={rankingsKey}
+            items={shownRankings}
+            placedCount={rankingsPlaced.length}
+          />
         </section>
       </div>
     </div>

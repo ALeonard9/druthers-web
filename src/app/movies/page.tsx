@@ -4,9 +4,13 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { partitionMovies } from '@/lib/movies';
 import type { UserMovie } from '@/lib/types';
-import { MovieCard } from '@/components/MovieCard';
+import { RankingsList } from '@/components/RankingsList';
+import { WatchlistCard } from '@/components/WatchlistCard';
 
 export const dynamic = 'force-dynamic';
+
+// The drag list stays responsive by capping how many ranked rows render.
+const RANKINGS_LIMIT = 100;
 
 export default async function MoviesPage() {
   const user = await getSessionUser();
@@ -20,7 +24,13 @@ export default async function MoviesPage() {
     throw err;
   }
 
-  const { watched, watchlist } = partitionMovies(movies);
+  const { watchlist, rankings } = partitionMovies(movies);
+  const shownRankings = rankings.slice(0, RANKINGS_LIMIT);
+  // Remount RankingsList when the ranked set changes so its local drag state resets.
+  const rankingsKey = shownRankings
+    .map((m) => m.movie.id)
+    .sort()
+    .join(',');
 
   return (
     <div className="flex flex-col gap-10">
@@ -28,8 +38,7 @@ export default async function MoviesPage() {
         <div>
           <h1 className="text-2xl font-semibold">My Movies</h1>
           <p className="text-sm text-neutral-400">
-            {movies.length} tracked · {watched.length} watched ·{' '}
-            {watchlist.length} on watchlist
+            {watchlist.length} on watchlist · {rankings.length} ranked
           </p>
         </div>
         <Link
@@ -40,33 +49,39 @@ export default async function MoviesPage() {
         </Link>
       </div>
 
-      <Section title="Watchlist" empty="Nothing queued — add one." items={watchlist} />
-      <Section title="Watched" empty="No watched movies yet." items={watched} />
-    </div>
-  );
-}
+      <div className="grid gap-10 lg:grid-cols-2">
+        <section>
+          <h2 className="mb-1 text-lg font-medium text-neutral-200">Watchlist</h2>
+          <p className="mb-4 text-xs text-neutral-500">
+            Movies you want to watch.
+          </p>
+          {watchlist.length === 0 ? (
+            <p className="text-sm text-neutral-500">
+              Nothing queued —{' '}
+              <Link href="/movies/search" className="text-indigo-400">
+                add one
+              </Link>
+              .
+            </p>
+          ) : (
+            <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {watchlist.map((m) => (
+                <WatchlistCard key={m.id} userMovie={m} />
+              ))}
+            </ul>
+          )}
+        </section>
 
-function Section({
-  title,
-  items,
-  empty,
-}: {
-  title: string;
-  items: UserMovie[];
-  empty: string;
-}) {
-  return (
-    <section>
-      <h2 className="mb-4 text-lg font-medium text-neutral-200">{title}</h2>
-      {items.length === 0 ? (
-        <p className="text-sm text-neutral-500">{empty}</p>
-      ) : (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {items.map((m) => (
-            <MovieCard key={m.id} userMovie={m} />
-          ))}
-        </ul>
-      )}
-    </section>
+        <section>
+          <h2 className="mb-1 text-lg font-medium text-neutral-200">Rankings</h2>
+          <p className="mb-4 text-xs text-neutral-500">
+            Drag to reorder your favorites.
+            {rankings.length > RANKINGS_LIMIT &&
+              ` Showing top ${RANKINGS_LIMIT} of ${rankings.length}.`}
+          </p>
+          <RankingsList key={rankingsKey} items={shownRankings} />
+        </section>
+      </div>
+    </div>
   );
 }

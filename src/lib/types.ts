@@ -14,6 +14,8 @@ export interface Movie {
 
 export interface UserMovie {
   id: string;
+  on_watchlist: boolean;
+  on_rankings: boolean;
   rank: number | null;
   completed: number | null;
   notes: string | null;

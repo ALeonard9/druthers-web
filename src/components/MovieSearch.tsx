@@ -34,7 +34,7 @@ export function MovieSearch() {
     }
   }
 
-  async function add(m: MovieSearchResult) {
+  async function add(m: MovieSearchResult, list: 'watchlist' | 'rankings') {
     setAdded((s) => ({ ...s, [m.imdb]: 'adding' }));
     const res = await fetch('/api/movies/add', {
       method: 'POST',
@@ -43,6 +43,7 @@ export function MovieSearch() {
         imdb: m.imdb,
         title: m.title,
         poster_url: m.poster_url,
+        list,
       }),
     });
     setAdded((s) => ({ ...s, [m.imdb]: res.ok ? 'done' : 'error' }));
@@ -93,19 +94,30 @@ export function MovieSearch() {
               <div className="flex flex-1 flex-col gap-2 p-3">
                 <p className="line-clamp-2 text-sm font-medium">{m.title}</p>
                 <p className="text-xs text-neutral-500">{m.year}</p>
-                <button
-                  onClick={() => add(m)}
-                  disabled={state === 'adding' || state === 'done'}
-                  className="mt-auto rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
-                >
-                  {state === 'done'
-                    ? 'Added ✓'
-                    : state === 'adding'
-                      ? 'Adding…'
-                      : state === 'error'
-                        ? 'Retry'
-                        : 'Add to list'}
-                </button>
+                <div className="mt-auto flex flex-col gap-1">
+                  {state === 'done' ? (
+                    <span className="rounded bg-neutral-700 px-2 py-1 text-center text-xs text-neutral-200">
+                      Added ✓
+                    </span>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => add(m, 'watchlist')}
+                        disabled={state === 'adding'}
+                        className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
+                      >
+                        {state === 'adding' ? 'Adding…' : '+ Watchlist'}
+                      </button>
+                      <button
+                        onClick={() => add(m, 'rankings')}
+                        disabled={state === 'adding'}
+                        className="rounded bg-indigo-600 px-2 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-60"
+                      >
+                        + Rankings
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </li>
           );

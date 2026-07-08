@@ -4,6 +4,8 @@ import type { UserMovie } from './types';
 
 function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
   return {
+    on_watchlist: false,
+    on_rankings: false,
     rank: null,
     completed: 0,
     notes: null,
@@ -25,25 +27,26 @@ function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
 }
 
 describe('partitionMovies', () => {
-  it('splits watched vs watchlist by completed flag', () => {
+  it('splits into independent watchlist and rankings lists', () => {
     const movies = [
-      um({ id: '1', completed: 1 }),
-      um({ id: '2', completed: 0 }),
-      um({ id: '3', completed: null }),
+      um({ id: '1', on_rankings: true, rank: 1 }),
+      um({ id: '2', on_watchlist: true }),
+      // on both lists at once
+      um({ id: '3', on_watchlist: true, on_rankings: true, rank: 2 }),
     ];
-    const { watched, watchlist } = partitionMovies(movies);
-    expect(watched.map((m) => m.id)).toEqual(['1']);
+    const { watchlist, rankings } = partitionMovies(movies);
     expect(watchlist.map((m) => m.id).sort()).toEqual(['2', '3']);
+    expect(rankings.map((m) => m.id)).toEqual(['1', '3']);
   });
 
-  it('sorts each group by rank with unranked last', () => {
+  it('orders rankings by rank, unranked last', () => {
     const movies = [
-      um({ id: 'a', completed: 0, rank: 3 }),
-      um({ id: 'b', completed: 0, rank: null }),
-      um({ id: 'c', completed: 0, rank: 1 }),
+      um({ id: 'a', on_rankings: true, rank: 3 }),
+      um({ id: 'b', on_rankings: true, rank: null }),
+      um({ id: 'c', on_rankings: true, rank: 1 }),
     ];
-    const { watchlist } = partitionMovies(movies);
-    expect(watchlist.map((m) => m.id)).toEqual(['c', 'a', 'b']);
+    const { rankings } = partitionMovies(movies);
+    expect(rankings.map((m) => m.id)).toEqual(['c', 'a', 'b']);
   });
 });
 

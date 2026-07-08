@@ -3,7 +3,6 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Movie, UserMovie } from '@/lib/types';
-import { PlaceAtInput } from './PlaceAtInput';
 
 function Field({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
@@ -149,9 +148,10 @@ export function MovieDetail({
           {onRankings ? (
             <div className="flex items-center gap-2">
               <span className="text-sm text-neutral-300">
-                Ranked{tracker?.rank ? ` #${tracker.rank}` : ' (unplaced)'}
+                {tracker?.rank
+                  ? `Ranked #${tracker.rank}`
+                  : 'In “to rank” — drag it into place on the Rankings page'}
               </span>
-              <PlaceAtInput movieId={movie.id} current={tracker?.rank} />
               <button
                 onClick={removeFromRankings}
                 disabled={pending}

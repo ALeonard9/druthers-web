@@ -4,8 +4,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { partitionMovies, filterMovies, type MovieFilters } from '@/lib/movies';
 import type { UserMovie } from '@/lib/types';
-import { RankingsList } from '@/components/RankingsList';
-import { ToRankList } from '@/components/ToRankList';
+import { RankingsBoard } from '@/components/RankingsBoard';
 import { WatchlistCard } from '@/components/WatchlistCard';
 import { FilterBar, type FilterValues } from '@/components/FilterBar';
 
@@ -106,14 +105,11 @@ export default async function MoviesPage({
         <section>
           <h2 className="mb-1 text-lg font-medium text-neutral-200">Rankings</h2>
           <p className="mb-4 text-xs text-neutral-500">
-            Enter a position to jump the list, then place a movie there.
+            Drag a “to rank” movie into the list, or use Go To to jump to a spot.
           </p>
-          <ToRankList
-            items={rankingsUnplaced}
-            placedCount={rankingsPlaced.length}
-          />
-          <RankingsList
-            items={rankingsPlaced}
+          <RankingsBoard
+            placed={rankingsPlaced}
+            unplaced={rankingsUnplaced}
             placedCount={rankingsPlaced.length}
           />
         </section>

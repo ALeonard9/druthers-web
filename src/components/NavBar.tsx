@@ -1,16 +1,18 @@
 import Link from 'next/link';
 import { getSessionUser } from '@/lib/session';
 import { LogoutButton } from './LogoutButton';
+import { EnvBadge } from './EnvBadge';
 
 export async function NavBar() {
   const user = await getSessionUser();
   return (
     <header className="border-b border-neutral-800 bg-neutral-900">
       <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
           <Link href="/movies" className="text-lg font-semibold text-white">
             aleonard<span className="text-indigo-400">.us</span>
           </Link>
+          <EnvBadge />
           {user && (
             <div className="flex items-center gap-4 text-sm text-neutral-300">
               <Link href="/movies" className="hover:text-white">

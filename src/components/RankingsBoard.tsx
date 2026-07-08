@@ -30,8 +30,15 @@ function Poster({ url, className }: { url: string | null; className: string }) {
   return <img src={url} alt="" className={`${className} object-cover`} />;
 }
 
-// A movie in the "to rank" bucket — draggable into the ranked list.
-function ToRankChip({ item }: { item: UserMovie }) {
+// A movie in the "to rank" bucket — drag it (by the grip) into the ranked list,
+// or send it back to the watchlist.
+function ToRankChip({
+  item,
+  onMoveToWatchlist,
+}: {
+  item: UserMovie;
+  onMoveToWatchlist: (m: UserMovie) => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: item.movie.id, data: { type: 'torank' } });
   const style = {
@@ -42,14 +49,31 @@ function ToRankChip({ item }: { item: UserMovie }) {
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className="flex cursor-grab items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-900 p-2 active:cursor-grabbing"
-      title="Drag into the ranked list"
+      className="flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-900 p-2"
     >
-      <span className="text-neutral-500">⠿</span>
+      <button
+        {...attributes}
+        {...listeners}
+        aria-label="Drag into the ranked list"
+        title="Drag into the ranked list"
+        className="cursor-grab px-1 text-neutral-500 hover:text-neutral-300 active:cursor-grabbing"
+      >
+        ⠿
+      </button>
       <Poster url={item.movie.poster_url} className="h-10 w-7 rounded" />
-      <span className="truncate text-sm">{item.movie.title}</span>
+      <Link
+        href={`/movies/${item.movie.id}`}
+        className="flex-1 truncate text-sm text-indigo-300 hover:text-indigo-200 hover:underline"
+      >
+        {item.movie.title}
+      </Link>
+      <button
+        onClick={() => onMoveToWatchlist(item)}
+        title="Move back to Watchlist"
+        className="rounded px-2 py-1 text-xs text-neutral-400 hover:text-white"
+      >
+        → Watchlist
+      </button>
     </div>
   );
 }
@@ -157,6 +181,15 @@ export function RankingsBoard({
     router.refresh();
   }
 
+  async function moveToWatchlist(m: UserMovie) {
+    await fetch(`/api/movies/${m.movie.id}/track`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ on_rankings: false, on_watchlist: true }),
+    });
+    router.refresh();
+  }
+
   function onDragEnd(e: DragEndEvent) {
     setActiveId(null);
     const { active, over } = e;
@@ -185,7 +218,11 @@ export function RankingsBoard({
           </p>
           <div className="flex flex-col gap-2">
             {unplaced.map((m) => (
-              <ToRankChip key={m.movie.id} item={m} />
+              <ToRankChip
+                key={m.movie.id}
+                item={m}
+                onMoveToWatchlist={moveToWatchlist}
+              />
             ))}
           </div>
         </div>

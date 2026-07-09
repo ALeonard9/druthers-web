@@ -25,6 +25,7 @@ export function MovieDetail({
   const [pending, startTransition] = useTransition();
   const [notes, setNotes] = useState(tracker?.notes ?? '');
   const [savedNote, setSavedNote] = useState(tracker?.notes ?? '');
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const onWatchlist = tracker?.on_watchlist ?? false;
   const onRankings = tracker?.on_rankings ?? false;
@@ -52,12 +53,7 @@ export function MovieDetail({
   }
 
   function removeFromRankings() {
-    if (
-      !window.confirm(
-        `Remove "${movie.title}" from your ranked list? Its position will be freed and the movies below it move up.`,
-      )
-    )
-      return;
+    setConfirmRemove(false);
     track({ on_rankings: false });
   }
 
@@ -146,19 +142,38 @@ export function MovieDetail({
           </button>
 
           {onRankings ? (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm text-neutral-300">
                 {tracker?.rank
                   ? `Ranked #${tracker.rank}`
                   : 'In “to rank” — drag it into place on the Rankings page'}
               </span>
-              <button
-                onClick={removeFromRankings}
-                disabled={pending}
-                className="rounded px-2 py-1 text-sm text-neutral-500 hover:text-red-400"
-              >
-                Remove
-              </button>
+              {confirmRemove ? (
+                <span className="flex items-center gap-2 rounded bg-red-950/70 px-2 py-1 text-xs text-red-200 ring-1 ring-red-800">
+                  Remove from rankings? Movies below move up.
+                  <button
+                    onClick={() => setConfirmRemove(false)}
+                    className="rounded px-2 py-0.5 text-neutral-300 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={removeFromRankings}
+                    disabled={pending}
+                    className="rounded bg-red-600 px-2 py-0.5 font-medium text-white hover:bg-red-500 disabled:opacity-50"
+                  >
+                    Remove
+                  </button>
+                </span>
+              ) : (
+                <button
+                  onClick={() => setConfirmRemove(true)}
+                  disabled={pending}
+                  className="rounded px-2 py-1 text-sm text-neutral-500 hover:text-red-400"
+                >
+                  Remove
+                </button>
+              )}
             </div>
           ) : (
             <button

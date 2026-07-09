@@ -81,10 +81,16 @@ function ToRankChip({
 // A ranked row — sortable (drag to move) and a drop target for to-rank chips.
 function RankedRow({
   item,
-  onRemove,
+  confirming,
+  onAskRemove,
+  onCancelRemove,
+  onConfirmRemove,
 }: {
   item: UserMovie;
-  onRemove: (m: UserMovie) => void;
+  confirming: boolean;
+  onAskRemove: (m: UserMovie) => void;
+  onCancelRemove: () => void;
+  onConfirmRemove: (m: UserMovie) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.movie.id, data: { type: 'ranked', rank: item.rank } });
@@ -118,12 +124,32 @@ function RankedRow({
         {item.movie.title}
         {item.movie.year ? ` (${item.movie.year})` : ''}
       </Link>
-      <button
-        onClick={() => onRemove(item)}
-        className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
-      >
-        Remove
-      </button>
+      {confirming ? (
+        <span className="flex shrink-0 items-center gap-2 rounded bg-red-950/70 px-2 py-1 text-xs text-red-200 ring-1 ring-red-800">
+          <span className="hidden sm:inline">
+            Remove #{item.rank}? Movies below move up.
+          </span>
+          <button
+            onClick={onCancelRemove}
+            className="rounded px-2 py-0.5 text-neutral-300 hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onConfirmRemove(item)}
+            className="rounded bg-red-600 px-2 py-0.5 font-medium text-white hover:bg-red-500"
+          >
+            Remove
+          </button>
+        </span>
+      ) : (
+        <button
+          onClick={() => onAskRemove(item)}
+          className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
+        >
+          Remove
+        </button>
+      )}
     </li>
   );
 }
@@ -141,6 +167,7 @@ export function RankingsBoard({
   const [start, setStart] = useState(1);
   const [goto, setGoto] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
@@ -166,13 +193,9 @@ export function RankingsBoard({
     router.refresh();
   }
 
+  // Removal is confirmed inline in the row (see RankedRow), not via window.confirm.
   async function remove(m: UserMovie) {
-    if (
-      !window.confirm(
-        `Remove "${m.movie.title}" from your ranked list? The movies below it move up.`,
-      )
-    )
-      return;
+    setConfirmingId(null);
     await fetch(`/api/movies/${m.movie.id}/track`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -205,6 +228,9 @@ export function RankingsBoard({
 
   return (
     <DndContext
+      // Explicit id keeps dnd-kit's generated aria ids stable between the server
+      // and client render (otherwise hydration mismatches on DndDescribedBy-N).
+      id="rankings-board"
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={(e: DragStartEvent) => setActiveId(String(e.active.id))}
@@ -280,7 +306,14 @@ export function RankingsBoard({
           >
             <ul className="flex flex-col gap-2">
               {windowItems.map((m) => (
-                <RankedRow key={m.movie.id} item={m} onRemove={remove} />
+                <RankedRow
+                  key={m.movie.id}
+                  item={m}
+                  confirming={confirmingId === m.movie.id}
+                  onAskRemove={(x) => setConfirmingId(x.movie.id)}
+                  onCancelRemove={() => setConfirmingId(null)}
+                  onConfirmRemove={remove}
+                />
               ))}
             </ul>
           </SortableContext>

@@ -152,6 +152,43 @@ export interface UserCountry {
   updated_at: string;
 }
 
+export interface VideoGame {
+  id: string;
+  title: string;
+  igdb: number | null;
+  poster_url: string | null;
+  rating: number | null;
+  time_to_beat: number | null;
+  slug: string | null;
+  year: number | null;
+  genre: string | null;
+  platforms: string | null;
+  summary?: string | null;
+  release_date?: string | null;
+  igdb_last_update?: string | null;
+}
+
+export interface UserVideoGame {
+  id: string;
+  on_watchlist: boolean;
+  on_rankings: boolean;
+  rank: number | null;
+  completed: number | null;
+  notes: string | null;
+  is_100_percent: boolean | null;
+  game: VideoGame;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GameSearchResult {
+  igdb: number | null;
+  title: string;
+  year: string | null;
+  platforms: string | null;
+  poster_url: string | null;
+}
+
 export interface SessionUser {
   user_id: string;
   email: string;

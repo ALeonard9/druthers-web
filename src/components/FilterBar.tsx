@@ -17,11 +17,13 @@ export function FilterBar({
   basePath = '/movies',
   searchLabel = 'Search (title, director, cast)',
   searchPlaceholder = 'e.g. Nolan',
+  ratingMaxBound = 10,
 }: {
   initial: FilterValues;
   basePath?: string;
   searchLabel?: string;
   searchPlaceholder?: string;
+  ratingMaxBound?: number;
 }) {
   const router = useRouter();
   const [f, setF] = useState(initial);
@@ -101,7 +103,7 @@ export function FilterBar({
           type="number"
           step="0.1"
           min="0"
-          max="10"
+          max={ratingMaxBound}
           value={f.ratingMin}
           onChange={(e) => setF({ ...f, ratingMin: e.target.value })}
           className={`${input} w-20`}

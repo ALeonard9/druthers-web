@@ -24,6 +24,9 @@ export async function NavBar() {
               <Link href="/books" className="hover:text-white">
                 Books
               </Link>
+              <Link href="/games" className="hover:text-white">
+                Games
+              </Link>
               <Link href="/countries" className="hover:text-white">
                 Countries
               </Link>

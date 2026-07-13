@@ -1,9 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Standalone output produces a minimal self-contained server for the Docker
-  // image (see Dockerfile).
-  output: 'standalone',
+  // Standalone output is only for the Docker image (the Dockerfile sets
+  // DOCKER_BUILD=1). It breaks `next start`/`next dev` locally, so gate it.
+  output: process.env.DOCKER_BUILD ? 'standalone' : undefined,
 };
 
 export default nextConfig;

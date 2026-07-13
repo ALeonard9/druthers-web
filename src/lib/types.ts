@@ -10,10 +10,17 @@ export interface Movie {
   language: string | null;
   rated: string | null;
   poster_url: string | null;
+  year: number | null;
+  genre: string | null;
+  director: string | null;
+  actors: string | null;
+  plot: string | null;
 }
 
 export interface UserMovie {
   id: string;
+  on_watchlist: boolean;
+  on_rankings: boolean;
   rank: number | null;
   completed: number | null;
   notes: string | null;

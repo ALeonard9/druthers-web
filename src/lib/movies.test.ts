@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { partitionMovies, byRank } from './movies';
+import { partitionMovies, byRank, filterMovies } from './movies';
 import type { UserMovie } from './types';
 
 function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
   return {
+    on_watchlist: false,
+    on_rankings: false,
     rank: null,
     completed: 0,
     notes: null,
@@ -25,25 +27,79 @@ function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
 }
 
 describe('partitionMovies', () => {
-  it('splits watched vs watchlist by completed flag', () => {
+  it('splits watchlist, placed rankings, and the to-rank bucket', () => {
     const movies = [
-      um({ id: '1', completed: 1 }),
-      um({ id: '2', completed: 0 }),
-      um({ id: '3', completed: null }),
+      um({ id: '1', on_rankings: true, rank: 1 }),
+      um({ id: '2', on_watchlist: true }),
+      // on both lists at once
+      um({ id: '3', on_watchlist: true, on_rankings: true, rank: 2 }),
+      // added to rankings but not yet positioned
+      um({ id: '4', on_rankings: true, rank: null }),
     ];
-    const { watched, watchlist } = partitionMovies(movies);
-    expect(watched.map((m) => m.id)).toEqual(['1']);
+    const { watchlist, rankingsPlaced, rankingsUnplaced } =
+      partitionMovies(movies);
     expect(watchlist.map((m) => m.id).sort()).toEqual(['2', '3']);
+    expect(rankingsPlaced.map((m) => m.id)).toEqual(['1', '3']);
+    expect(rankingsUnplaced.map((m) => m.id)).toEqual(['4']);
   });
 
-  it('sorts each group by rank with unranked last', () => {
+  it('orders placed rankings by rank', () => {
     const movies = [
-      um({ id: 'a', completed: 0, rank: 3 }),
-      um({ id: 'b', completed: 0, rank: null }),
-      um({ id: 'c', completed: 0, rank: 1 }),
+      um({ id: 'a', on_rankings: true, rank: 3 }),
+      um({ id: 'c', on_rankings: true, rank: 1 }),
+      um({ id: 'b', on_rankings: true, rank: 2 }),
     ];
-    const { watchlist } = partitionMovies(movies);
-    expect(watchlist.map((m) => m.id)).toEqual(['c', 'a', 'b']);
+    const { rankingsPlaced } = partitionMovies(movies);
+    expect(rankingsPlaced.map((m) => m.id)).toEqual(['c', 'b', 'a']);
+  });
+});
+
+describe('filterMovies', () => {
+  const movies = [
+    um({ id: '1', on_watchlist: true }),
+    um({ id: '2', on_watchlist: true }),
+    um({ id: '3', on_watchlist: true }),
+  ];
+  movies[0].movie = {
+    ...movies[0].movie,
+    title: 'Inception',
+    director: 'Christopher Nolan',
+    actors: 'Leonardo DiCaprio',
+    genre: 'Sci-Fi',
+    year: 2010,
+    rating_imdb: 8.8,
+  };
+  movies[1].movie = {
+    ...movies[1].movie,
+    title: 'The Notebook',
+    director: 'Nick Cassavetes',
+    genre: 'Romance',
+    year: 2004,
+    rating_imdb: 7.8,
+  };
+  movies[2].movie = {
+    ...movies[2].movie,
+    title: 'Dunkirk',
+    director: 'Christopher Nolan',
+    genre: 'War',
+    year: 2017,
+    rating_imdb: 7.8,
+  };
+
+  it('matches text across title, director, and cast', () => {
+    expect(filterMovies(movies, { q: 'nolan' }).map((m) => m.id).sort()).toEqual([
+      '1',
+      '3',
+    ]);
+    expect(filterMovies(movies, { q: 'dicaprio' }).map((m) => m.id)).toEqual(['1']);
+  });
+
+  it('filters by genre, year range, and min rating', () => {
+    expect(filterMovies(movies, { genre: 'sci' }).map((m) => m.id)).toEqual(['1']);
+    expect(
+      filterMovies(movies, { yearMin: 2005, yearMax: 2018 }).map((m) => m.id).sort(),
+    ).toEqual(['1', '3']);
+    expect(filterMovies(movies, { ratingMin: 8 }).map((m) => m.id)).toEqual(['1']);
   });
 });
 

@@ -92,6 +92,66 @@ export interface TVShowSearchResult {
   poster_url: string | null;
 }
 
+export interface Book {
+  id: string;
+  title: string;
+  isbn: string | null;
+  googleid?: string | null;
+  poster_url: string | null;
+  authors: string | null;
+  year: number | null;
+  genre: string | null;
+  description?: string | null;
+  page_count: number | null;
+  rating: number | null;
+  language?: string | null;
+}
+
+export interface UserBook {
+  id: string;
+  on_watchlist: boolean;
+  on_rankings: boolean;
+  rank: number | null;
+  completed: number | null;
+  notes: string | null;
+  book: Book;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BookSearchResult {
+  isbn: string | null;
+  title: string;
+  authors: string | null;
+  year: string | null;
+  poster_url: string | null;
+}
+
+export interface Country {
+  id: string;
+  title: string;
+  country_code: string;
+  region: string | null;
+  subregion: string | null;
+  capital: string | null;
+  population: number | null;
+  flag_emoji: string | null;
+  flag_url: string | null;
+}
+
+export interface UserCountry {
+  id: string;
+  on_watchlist: boolean;
+  on_rankings: boolean;
+  rank: number | null;
+  completed: number | null;
+  notes: string | null;
+  first_visited: string | null;
+  country: Country;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SessionUser {
   user_id: string;
   email: string;

@@ -18,8 +18,8 @@ export async function NavBar() {
               <Link href="/movies" className="hover:text-white">
                 Movies
               </Link>
-              <Link href="/movies/search" className="hover:text-white">
-                Add
+              <Link href="/tv" className="hover:text-white">
+                TV
               </Link>
             </div>
           )}

@@ -12,7 +12,17 @@ export interface FilterValues {
 }
 
 // Filters the lists via URL search params (server re-renders the filtered set).
-export function FilterBar({ initial }: { initial: FilterValues }) {
+export function FilterBar({
+  initial,
+  basePath = '/movies',
+  searchLabel = 'Search (title, director, cast)',
+  searchPlaceholder = 'e.g. Nolan',
+}: {
+  initial: FilterValues;
+  basePath?: string;
+  searchLabel?: string;
+  searchPlaceholder?: string;
+}) {
   const router = useRouter();
   const [f, setF] = useState(initial);
 
@@ -24,7 +34,7 @@ export function FilterBar({ initial }: { initial: FilterValues }) {
     if (next.yearMax) params.set('yearMax', next.yearMax);
     if (next.ratingMin) params.set('ratingMin', next.ratingMin);
     const qs = params.toString();
-    router.push(qs ? `/movies?${qs}` : '/movies');
+    router.push(qs ? `${basePath}?${qs}` : basePath);
   }
 
   function submit(e: React.FormEvent) {
@@ -50,11 +60,11 @@ export function FilterBar({ initial }: { initial: FilterValues }) {
       className="flex flex-wrap items-end gap-2 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3"
     >
       <label className="flex flex-col gap-1 text-xs text-neutral-400">
-        Search (title, director, cast)
+        {searchLabel}
         <input
           value={f.q}
           onChange={(e) => setF({ ...f, q: e.target.value })}
-          placeholder="e.g. Nolan"
+          placeholder={searchPlaceholder}
           className={`${input} w-52`}
         />
       </label>

@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ScheduleFrozenShow } from '@/lib/types';
 
-// Shows the user has paused tracking on — schedule/catch-up ignore them
-// until unfrozen here.
+// Shows hidden from the schedule (the API field is still `freeze` — legacy
+// name). Unhiding here puts their episodes back on the schedule/catch-up.
 export function FrozenShowsList({ shows }: { shows: ScheduleFrozenShow[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
-  function unfreeze(showId: string) {
+  function unhide(showId: string) {
     startTransition(async () => {
       await fetch(`/api/tv/${showId}/track`, {
         method: 'PUT',
@@ -26,7 +26,13 @@ export function FrozenShowsList({ shows }: { shows: ScheduleFrozenShow[] }) {
 
   return (
     <section>
-      <h2 className="mb-2 text-lg font-medium text-neutral-200">Frozen Shows</h2>
+      <h2 className="mb-1 text-lg font-medium text-neutral-200">
+        Hidden from Schedule
+      </h2>
+      <p className="mb-2 text-xs text-neutral-500">
+        These shows&apos; episodes don&apos;t appear above until you unhide
+        them.
+      </p>
       <ul className="divide-y divide-line rounded-lg border border-line bg-panel">
         {shows.map((s) => (
           <li
@@ -40,11 +46,12 @@ export function FrozenShowsList({ shows }: { shows: ScheduleFrozenShow[] }) {
               {s.show_title}
             </Link>
             <button
-              onClick={() => unfreeze(s.show_id)}
+              onClick={() => unhide(s.show_id)}
               disabled={pending}
+              title="Put this show's episodes back on the Schedule"
               className="rounded bg-neutral-700 px-2 py-1 text-xs font-medium text-white hover:bg-neutral-600 disabled:opacity-50"
             >
-              Unfreeze
+              Unhide
             </button>
           </li>
         ))}

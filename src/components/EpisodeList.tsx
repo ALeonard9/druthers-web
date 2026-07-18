@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { playPop } from '@/lib/pop';
 import type { TVEpisode } from '@/lib/types';
 
 // Episode list grouped by season, with per-episode watched toggles. The
@@ -21,6 +22,7 @@ export function EpisodeList({
   const watched = useMemo(() => new Set(watchedIds), [watchedIds]);
 
   function markAllWatched(season?: number) {
+    playPop();
     startTransition(async () => {
       const qs = season != null ? `?season=${season}` : '';
       await fetch(`/api/tv/${showId}/watch-all${qs}`, { method: 'POST' });
@@ -45,6 +47,7 @@ export function EpisodeList({
   const [open, setOpen] = useState<number | null>(firstUnwatched ?? null);
 
   function toggle(ep: TVEpisode) {
+    if (!watched.has(ep.id)) playPop();
     startTransition(async () => {
       await fetch(`/api/tv/episodes/${ep.id}/watch`, {
         method: watched.has(ep.id) ? 'DELETE' : 'POST',
@@ -73,7 +76,7 @@ export function EpisodeList({
           <button
             onClick={() => markAllWatched()}
             disabled={pending}
-            className="rounded bg-neutral-700 px-3 py-1 text-xs font-medium text-white hover:bg-neutral-600 disabled:opacity-50"
+            className="rounded bg-moss px-3 py-1 text-xs font-medium text-ink hover:bg-moss-bright disabled:opacity-50"
           >
             Mark all watched
           </button>
@@ -99,7 +102,7 @@ export function EpisodeList({
                   <button
                     onClick={() => markAllWatched(season)}
                     disabled={pending}
-                    className="rounded bg-line px-2 py-1 font-medium text-neutral-300 hover:bg-neutral-700 hover:text-white disabled:opacity-50"
+                    className="rounded bg-moss-wash px-2 py-1 font-medium text-moss hover:bg-moss hover:text-ink disabled:opacity-50"
                   >
                     Mark season watched
                   </button>
@@ -129,8 +132,8 @@ export function EpisodeList({
                         }
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs disabled:opacity-50 ${
                           isWatched
-                            ? 'border-green-600 bg-green-600 text-white'
-                            : 'border-neutral-600 text-transparent hover:border-green-500'
+                            ? 'border-moss bg-moss text-ink'
+                            : 'border-neutral-600 text-transparent hover:border-moss'
                         }`}
                       >
                         ✓

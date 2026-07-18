@@ -3,6 +3,7 @@
 import { useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { playPop } from '@/lib/pop';
 import type { ScheduleEpisodeItem } from '@/lib/types';
 
 // One episode line on the Schedule page — links to its show and marks
@@ -19,6 +20,7 @@ export function ScheduleEpisodeRow({
   const [pending, startTransition] = useTransition();
 
   function markWatched() {
+    playPop();
     startTransition(async () => {
       await fetch(`/api/tv/episodes/${item.episode_id}/watch`, { method: 'POST' });
       router.refresh();
@@ -45,7 +47,7 @@ export function ScheduleEpisodeRow({
       <button
         onClick={markWatched}
         disabled={pending}
-        className="shrink-0 rounded bg-neutral-700 px-2 py-1 text-xs font-medium text-white hover:bg-neutral-600 disabled:opacity-50"
+        className="shrink-0 rounded bg-moss-wash px-2 py-1 text-xs font-medium text-moss hover:bg-moss hover:text-ink disabled:opacity-50"
       >
         Watched
       </button>

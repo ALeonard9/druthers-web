@@ -48,6 +48,16 @@ export async function TopBar() {
         </span>
         <EnvBadge />
       </div>
+      {user && (
+        <form action="/search" className="mx-2 hidden flex-1 justify-center sm:flex">
+          <input
+            type="search"
+            name="q"
+            placeholder="Search everything…"
+            className="w-full max-w-sm rounded border border-neutral-700 bg-panel px-3 py-1.5 text-sm outline-none placeholder:text-neutral-600 focus:border-brass"
+          />
+        </form>
+      )}
       {user ? (
         <div className="flex items-center gap-3 text-sm">
           <Link

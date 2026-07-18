@@ -70,14 +70,20 @@ export default async function SchedulePage() {
             ) : (
               <div className="flex flex-col gap-3">
                 {upcomingByDay.map(({ day, items }) => (
-                  <div
+                  <details
                     key={day}
-                    className="rounded-lg border border-line bg-panel"
+                    className="group rounded-lg border border-line bg-panel"
                   >
-                    <div className="border-b border-line px-3 py-2 text-sm font-medium">
+                    <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-sm font-medium [&::-webkit-details-marker]:hidden">
                       {dayLabel(day)}
-                    </div>
-                    <ul>
+                      <span className="text-xs font-normal text-neutral-500">
+                        {items.length} episode{items.length === 1 ? '' : 's'}{' '}
+                        <span className="inline-block transition-transform group-open:rotate-90">
+                          ▸
+                        </span>
+                      </span>
+                    </summary>
+                    <ul className="border-t border-line">
                       {items.map((item) => (
                         <ScheduleEpisodeRow
                           key={item.episode_id}
@@ -86,7 +92,7 @@ export default async function SchedulePage() {
                         />
                       ))}
                     </ul>
-                  </div>
+                  </details>
                 ))}
               </div>
             )}
@@ -105,24 +111,27 @@ export default async function SchedulePage() {
             ) : (
               <div className="flex flex-col gap-3">
                 {catchUpByShow.map(({ showId, showTitle, items }) => (
-                  <div
+                  <details
                     key={showId}
-                    className="rounded-lg border border-line bg-panel"
+                    className="group rounded-lg border border-line bg-panel"
                   >
-                    <div className="border-b border-line px-3 py-2 text-sm font-medium">
+                    <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-sm font-medium [&::-webkit-details-marker]:hidden">
                       <Link href={`/tv/${showId}`} className="hover:underline">
                         {showTitle}
-                      </Link>{' '}
+                      </Link>
                       <span className="text-xs font-normal text-neutral-500">
-                        {items.length} behind
+                        {items.length} behind{' '}
+                        <span className="inline-block transition-transform group-open:rotate-90">
+                          ▸
+                        </span>
                       </span>
-                    </div>
-                    <ul>
+                    </summary>
+                    <ul className="border-t border-line">
                       {items.map((item) => (
                         <ScheduleEpisodeRow key={item.episode_id} item={item} />
                       ))}
                     </ul>
-                  </div>
+                  </details>
                 ))}
               </div>
             )}

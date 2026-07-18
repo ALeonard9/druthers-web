@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ShowStatusBadge } from './ShowStatusBadge';
 import {
   DndContext,
   DragOverlay,
@@ -68,6 +69,7 @@ function ToRankChip({
       >
         {item.tv_show.title}
       </Link>
+      <ShowStatusBadge show={item} />
       <button
         onClick={() => onMoveToWatchlist(item)}
         title="Move back to Watchlist"
@@ -144,6 +146,7 @@ function RankedRow({
         {item.tv_show.title}
         {item.tv_show.year ? ` (${item.tv_show.year})` : ''}
       </Link>
+      <ShowStatusBadge show={item} />
       {confirming ? (
         <span className="flex shrink-0 items-center gap-2 rounded bg-red-950/70 px-2 py-1 text-xs text-red-200 ring-1 ring-red-800">
           <span className="hidden sm:inline">

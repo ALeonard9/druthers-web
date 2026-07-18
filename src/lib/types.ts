@@ -54,6 +54,8 @@ export interface TVShow {
   summary?: string | null;
 }
 
+export type WatchStatus = 'not_started' | 'behind' | 'up_to_date' | 'complete';
+
 export interface UserTVShow {
   id: string;
   on_watchlist: boolean;
@@ -65,6 +67,10 @@ export interface UserTVShow {
   tv_show: TVShow;
   created_at: string;
   updated_at: string;
+  // Present on the list endpoint: per-user progress for the status badge.
+  watch_status?: WatchStatus;
+  aired_count?: number;
+  watched_count?: number;
 }
 
 export interface TVEpisode {
@@ -232,6 +238,15 @@ export interface BoredItem {
 export interface BoredResponse {
   pick: BoredItem;
   pool_size: number;
+}
+
+export interface GlobalSearch {
+  query: string;
+  corrected: string | null;
+  movies: MovieSearchResult[];
+  tv_shows: TVShowSearchResult[];
+  games: GameSearchResult[];
+  books: BookSearchResult[];
 }
 
 export interface Notification {

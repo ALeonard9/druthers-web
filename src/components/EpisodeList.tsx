@@ -124,22 +124,8 @@ export function EpisodeList({
                       key={ep.id}
                       className="flex items-center gap-3 border-b border-line/60 px-3 py-1.5 text-sm last:border-b-0"
                     >
-                      <button
-                        onClick={() => toggle(ep)}
-                        disabled={pending}
-                        aria-label={
-                          isWatched ? 'Mark unwatched' : 'Mark watched'
-                        }
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs disabled:opacity-50 ${
-                          isWatched
-                            ? 'border-moss bg-moss text-ink'
-                            : 'border-neutral-600 text-transparent hover:border-moss'
-                        }`}
-                      >
-                        ✓
-                      </button>
                       <span className="w-10 shrink-0 text-xs text-neutral-500">
-                        E{ep.season_number ?? '?'}
+                        {season}.{ep.season_number ?? '?'}
                       </span>
                       <span
                         className={`flex-1 truncate ${
@@ -153,6 +139,18 @@ export function EpisodeList({
                           {ep.airdate.slice(0, 10)}
                         </span>
                       )}
+                      <button
+                        onClick={() => toggle(ep)}
+                        disabled={pending}
+                        title={isWatched ? 'Mark unwatched' : 'Mark watched'}
+                        className={`shrink-0 rounded px-2 py-1 text-xs font-medium disabled:opacity-50 ${
+                          isWatched
+                            ? 'bg-moss text-ink hover:bg-moss-bright'
+                            : 'bg-moss-wash text-moss hover:bg-moss hover:text-ink'
+                        }`}
+                      >
+                        {isWatched ? '✓ Watched' : 'Watched'}
+                      </button>
                     </li>
                   );
                 })}

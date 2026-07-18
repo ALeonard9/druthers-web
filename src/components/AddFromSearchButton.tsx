@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
+
+const DOMAIN_PAGE = {
+  movies: '/movies',
+  tv: '/tv',
+  games: '/games',
+  books: '/books',
+} as const;
 
 // One-click "add to my list" for a global-search result row. Adds to the
 // domain's watchlist via its existing add route.
@@ -12,6 +20,7 @@ export function AddFromSearchButton({
   domain: 'movies' | 'tv' | 'games' | 'books';
   payload: Record<string, unknown>;
 }) {
+  const router = useRouter();
   const [state, setState] = useState<'idle' | 'added' | 'error'>('idle');
   const [pending, startTransition] = useTransition();
 
@@ -25,6 +34,7 @@ export function AddFromSearchButton({
       if (res.ok) {
         playPop();
         setState('added');
+        router.push(DOMAIN_PAGE[domain]);
       } else {
         setState('error');
       }

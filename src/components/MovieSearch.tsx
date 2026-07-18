@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { MovieSearchResult } from '@/lib/types';
 
 export function MovieSearch() {
+  const router = useRouter();
   const [q, setQ] = useState('');
   const [results, setResults] = useState<MovieSearchResult[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +49,7 @@ export function MovieSearch() {
       }),
     });
     setAdded((s) => ({ ...s, [m.imdb]: res.ok ? 'done' : 'error' }));
+    if (res.ok) router.push('/movies');
   }
 
   return (

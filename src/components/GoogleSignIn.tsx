@@ -39,7 +39,7 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
         body: JSON.stringify({ credential: resp.credential }),
       });
       if (res.ok) {
-        router.push('/movies');
+        router.push('/');
         router.refresh();
         return;
       }

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#101014"/>
+  <!-- Apostrophe: the mark of what's left out. Drawn as a comma-form quote. -->
+  <path fill="#c9a86a" d="M40.5 14c-6.2 0-11.3 4.9-11.3 11.4 0 5.9 4.3 10.3 10 10.3.9 0 1.7-.1 2.4-.35C40.3 41.5 36 45.6 30.4 47.7c-.9.34-1.4 1.3-1.1 2.2l.9 2.6c.33.95 1.4 1.45 2.35 1.1C42.5 50 49.6 41.6 49.6 29.8c0-9.3-3.8-15.8-9.1-15.8z"/>
+</svg>

@@ -5,14 +5,16 @@ import { LoginForm } from '@/components/LoginForm';
 
 export default async function LoginPage() {
   const user = await getSessionUser();
-  if (user) redirect('/movies');
+  if (user) redirect('/');
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
 
   return (
     <div className="mx-auto mt-12 max-w-sm">
-      <h1 className="mb-1 font-display text-3xl font-medium tracking-tight text-paper">Sign in</h1>
+      <h1 className="mb-1 font-display text-3xl font-medium tracking-tight text-paper">
+        <span className="mr-0.5 not-italic text-brass">’</span>druthers
+      </h1>
       <p className="mb-6 text-sm text-neutral-400">
-        Your personal Sandbox trackers.
+        Your favorites — watched, read, played, and ranked.
       </p>
 
       <div className="rounded-lg border border-line bg-panel p-6">

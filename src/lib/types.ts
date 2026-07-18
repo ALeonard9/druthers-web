@@ -283,3 +283,31 @@ export interface ApiKeyCreated extends ApiKey {
   /** Plaintext secret — present only in the creation response, never again. */
   key: string;
 }
+
+export interface Visibility {
+  handle: string | null;
+  public_movies: boolean | null;
+  public_tv: boolean | null;
+  public_books: boolean | null;
+  public_games: boolean | null;
+}
+
+export interface PublicShelfItem {
+  rank: number;
+  title: string;
+  year: number | null;
+  poster_url: string | null;
+}
+
+export interface PublicShelf {
+  category: string;
+  ranked_count: number;
+  items: PublicShelfItem[];
+}
+
+export interface PublicProfile {
+  handle: string;
+  display_name: string | null;
+  shelves: PublicShelf[];
+  total_ranked: number;
+}

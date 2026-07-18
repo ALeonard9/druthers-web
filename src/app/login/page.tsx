@@ -36,16 +36,19 @@ export default async function LoginPage() {
         <GoogleSignIn clientId={clientId} />
       </div>
 
-      {/* Local/dev fallback — production is Google-only. Requires that this
-          origin is an Authorized JavaScript origin on the OAuth client. */}
-      <details className="mt-6 text-sm text-neutral-500">
-        <summary className="cursor-pointer hover:text-neutral-300">
-          Developer sign-in (local)
-        </summary>
-        <div className="mt-4">
-          <LoginForm />
-        </div>
-      </details>
+      {/* Local/dev fallback — hidden in prod builds, where the API's
+          DISABLE_PASSWORD_LOGIN rejects password auth anyway (belt and
+          suspenders). NEXT_PUBLIC_APP_ENV is baked at build time. */}
+      {process.env.NEXT_PUBLIC_APP_ENV !== 'prod' && (
+        <details className="mt-6 text-sm text-neutral-500">
+          <summary className="cursor-pointer hover:text-neutral-300">
+            Developer sign-in (local)
+          </summary>
+          <div className="mt-4">
+            <LoginForm />
+          </div>
+        </details>
+      )}
     </div>
   );
 }

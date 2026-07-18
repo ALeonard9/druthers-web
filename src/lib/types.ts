@@ -270,3 +270,16 @@ export interface SessionUser {
   email: string;
   user_group: string;
 }
+
+export interface ApiKey {
+  id: string;
+  name: string;
+  prefix: string;
+  created_at: string;
+  last_used_at: string | null;
+}
+
+export interface ApiKeyCreated extends ApiKey {
+  /** Plaintext secret — present only in the creation response, never again. */
+  key: string;
+}

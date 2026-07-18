@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { describeActivity, categoryLabel, activityHref } from '@/lib/activity';
+import { buildShareData } from '@/lib/shareCards';
+import { ShareTop5Button } from '@/components/ShareTop5Button';
 import type {
   ActivityItem,
   Schedule,
@@ -60,6 +62,13 @@ export default async function HomePage() {
 
   const airing = airingSoon(schedule);
   const behind = schedule.catch_up.length;
+  const shareData = buildShareData({
+    email: user.email,
+    movies,
+    shows,
+    books,
+    games,
+  });
   // Countries was cut from the product — keep old entries out of the feed.
   const feed = activity.filter((a) => a.category !== 'country').slice(0, 8);
 
@@ -139,23 +148,29 @@ export default async function HomePage() {
         </Link>
       </div>
 
-      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {shelf.map((s) => (
-          <Link
-            key={s.href}
-            href={s.href}
-            className="rounded-lg border border-line bg-panel p-4 hover:border-brass"
-          >
-            <div className="text-sm text-neutral-400">{s.label}</div>
-            <div className="mt-1 font-display text-2xl text-paper">
-              {s.ranked}
-              <span className="text-sm text-neutral-500"> ranked</span>
-            </div>
-            <div className="text-xs text-neutral-500">
-              {s.queued} on your list
-            </div>
-          </Link>
-        ))}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg text-paper">Your shelves</h2>
+          <ShareTop5Button data={shareData} />
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {shelf.map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              className="rounded-lg border border-line bg-panel p-4 hover:border-brass"
+            >
+              <div className="text-sm text-neutral-400">{s.label}</div>
+              <div className="mt-1 font-display text-2xl text-paper">
+                {s.ranked}
+                <span className="text-sm text-neutral-500"> ranked</span>
+              </div>
+              <div className="text-xs text-neutral-500">
+                {s.queued} on your list
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="rounded-lg border border-line bg-panel">

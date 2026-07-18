@@ -43,6 +43,14 @@ export async function TopBar() {
             druthers
           </span>
         </Link>
+        {/* Mobile route to the name explainer (sidebar link is hidden here). */}
+        <Link
+          href="/about"
+          aria-label="Why “druthers”?"
+          className="grid h-4 w-4 place-items-center rounded-full border border-line text-[10px] leading-none text-neutral-500 transition-colors hover:text-paper md:hidden"
+        >
+          ?
+        </Link>
         <span className="hidden font-display text-lg text-paper md:inline">
           {greeting()}.
         </span>

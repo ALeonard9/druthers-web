@@ -211,6 +211,7 @@ export interface UserVideoGame {
 export interface GameSearchResult {
   igdb: number | null;
   title: string;
+  slug: string | null;
   year: string | null;
   platforms: string | null;
   poster_url: string | null;

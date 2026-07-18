@@ -13,6 +13,12 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=1
+# NEXT_PUBLIC_* values are baked into the client bundle at build time, so
+# prod builds must pass them as build args (see druthers-infra launch runbook).
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ARG NEXT_PUBLIC_APP_ENV
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
 RUN npm run build
 
 # --- runner: minimal image running the standalone server as non-root ---

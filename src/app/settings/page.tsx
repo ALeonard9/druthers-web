@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
 import { ApiKeysManager } from '@/components/ApiKeysManager';
+import { PrivacySettings } from '@/components/PrivacySettings';
 import { SoundPicker } from '@/components/SoundPicker';
 
 export const dynamic = 'force-dynamic';
@@ -46,6 +47,17 @@ export default async function SettingsPage() {
           </p>
         </div>
         <ApiKeysManager />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="font-display text-lg text-paper">Privacy</h2>
+          <p className="text-sm text-neutral-400">
+            Everything starts private. Share a shelf by picking a handle and
+            switching that category on — only your ranked list goes public.
+          </p>
+        </div>
+        <PrivacySettings />
       </section>
 
       <section className="flex flex-col gap-3">

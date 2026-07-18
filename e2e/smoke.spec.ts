@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('login page renders the sign-in options', async ({ page }) => {
   await page.goto('/login');
-  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /druthers/ })).toBeVisible();
   // The Google button is an external iframe that doesn't render without the
   // GIS script + client id, so smoke-test the always-present dev fallback:
   // it lives collapsed inside a <details>, expand it to reach the button.

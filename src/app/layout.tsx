@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { Fraunces, Instrument_Sans } from 'next/font/google';
 import './globals.css';
-import { NavBar } from '@/components/NavBar';
+import { Sidebar, BottomTabs } from '@/components/Sidebar';
+import { TopBar } from '@/components/TopBar';
 
 // Display face: bookish, characterful — wordmark, page titles, rank numerals.
 const fraunces = Fraunces({
@@ -16,8 +17,8 @@ const instrumentSans = Instrument_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'aleonard.us — Sandbox',
-  description: 'Personal media trackers, rebuilt.',
+  title: 'Druthers',
+  description: 'Your favorites — watched, read, played, and ranked.',
 };
 
 export default function RootLayout({
@@ -30,11 +31,17 @@ export default function RootLayout({
       lang="en"
       className={`h-full antialiased ${fraunces.variable} ${instrumentSans.variable}`}
     >
-      <body className="min-h-full flex flex-col bg-night text-neutral-100">
-        <NavBar />
-        <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-8">
-          {children}
-        </main>
+      <body className="min-h-full bg-night text-neutral-100">
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <TopBar />
+            <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 pb-24 md:px-8 md:pb-8">
+              {children}
+            </main>
+          </div>
+        </div>
+        <BottomTabs />
       </body>
     </html>
   );

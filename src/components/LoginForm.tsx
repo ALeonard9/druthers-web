@@ -25,7 +25,7 @@ export function LoginForm() {
         setError(data.error ?? 'Sign in failed');
         return;
       }
-      router.push('/movies');
+      router.push('/');
       router.refresh();
     } finally {
       setLoading(false);

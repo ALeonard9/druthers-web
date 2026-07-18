@@ -30,7 +30,6 @@ const CATEGORIES: { value: string; label: string }[] = [
   { value: 'tv_episode', label: 'Episodes' },
   { value: 'game', label: 'Games' },
   { value: 'book', label: 'Books' },
-  { value: 'country', label: 'Countries' },
 ];
 
 export default async function ActivityPage({

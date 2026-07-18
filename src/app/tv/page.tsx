@@ -7,6 +7,7 @@ import type { UserTVShow } from '@/lib/types';
 import { TVRankingsBoard } from '@/components/TVRankingsBoard';
 import { TVWatchlistCard } from '@/components/TVWatchlistCard';
 import { FilterBar, type FilterValues } from '@/components/FilterBar';
+import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,12 @@ export default async function TVPage({
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionTabs
+        tabs={[
+          { href: '/tv', label: 'Shows' },
+          { href: '/tv/schedule', label: 'Schedule' },
+        ]}
+      />
       <div className="flex items-end justify-between">
         <div>
           <h1 className="font-display text-3xl font-medium tracking-tight text-paper">My TV Shows</h1>

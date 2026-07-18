@@ -8,15 +8,25 @@ import type { TVEpisode } from '@/lib/types';
 // watched set comes from the server (user's marks); toggles hit the BFF and
 // refresh so the server stays the source of truth.
 export function EpisodeList({
+  showId,
   episodes,
   watchedIds,
 }: {
+  showId: string;
   episodes: TVEpisode[];
   watchedIds: string[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const watched = useMemo(() => new Set(watchedIds), [watchedIds]);
+
+  function markAllWatched(season?: number) {
+    startTransition(async () => {
+      const qs = season != null ? `?season=${season}` : '';
+      await fetch(`/api/tv/${showId}/watch-all${qs}`, { method: 'POST' });
+      router.refresh();
+    });
+  }
 
   const seasons = useMemo(() => {
     const bySeason = new Map<number, TVEpisode[]>();
@@ -55,34 +65,61 @@ export function EpisodeList({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-neutral-500">
-        {totalWatched}/{episodes.length} episodes watched
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-neutral-500">
+          {totalWatched}/{episodes.length} episodes watched
+        </p>
+        {totalWatched < episodes.length && (
+          <button
+            onClick={() => markAllWatched()}
+            disabled={pending}
+            className="rounded bg-neutral-700 px-3 py-1 text-xs font-medium text-white hover:bg-neutral-600 disabled:opacity-50"
+          >
+            Mark all watched
+          </button>
+        )}
+      </div>
       {seasons.map(([season, eps]) => {
         const seasonWatched = eps.filter((e) => watched.has(e.id)).length;
         const isOpen = open === season;
         return (
           <div
             key={season}
-            className="rounded-lg border border-neutral-800 bg-neutral-900"
+            className="rounded-lg border border-line bg-panel"
           >
-            <button
-              onClick={() => setOpen(isOpen ? null : season)}
-              className="flex w-full items-center justify-between px-3 py-2 text-sm"
-            >
-              <span className="font-medium">Season {season}</span>
-              <span className="text-xs text-neutral-500">
-                {seasonWatched}/{eps.length} watched {isOpen ? '▾' : '▸'}
+            <div className="flex w-full items-center justify-between px-3 py-2 text-sm">
+              <button
+                onClick={() => setOpen(isOpen ? null : season)}
+                className="flex-1 text-left font-medium"
+              >
+                Season {season}
+              </button>
+              <span className="flex items-center gap-2 text-xs text-neutral-500">
+                {seasonWatched < eps.length && (
+                  <button
+                    onClick={() => markAllWatched(season)}
+                    disabled={pending}
+                    className="rounded bg-line px-2 py-1 font-medium text-neutral-300 hover:bg-neutral-700 hover:text-white disabled:opacity-50"
+                  >
+                    Mark season watched
+                  </button>
+                )}
+                <button
+                  onClick={() => setOpen(isOpen ? null : season)}
+                  className="px-1"
+                >
+                  {seasonWatched}/{eps.length} watched {isOpen ? '▾' : '▸'}
+                </button>
               </span>
-            </button>
+            </div>
             {isOpen && (
-              <ul className="border-t border-neutral-800">
+              <ul className="border-t border-line">
                 {eps.map((ep) => {
                   const isWatched = watched.has(ep.id);
                   return (
                     <li
                       key={ep.id}
-                      className="flex items-center gap-3 border-b border-neutral-800/60 px-3 py-1.5 text-sm last:border-b-0"
+                      className="flex items-center gap-3 border-b border-line/60 px-3 py-1.5 text-sm last:border-b-0"
                     >
                       <button
                         onClick={() => toggle(ep)}

@@ -9,6 +9,7 @@ import {
   PointerSensor,
   closestCenter,
   useDraggable,
+  useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -25,7 +26,7 @@ import type { UserTVShow } from '@/lib/types';
 const WINDOW = 25;
 
 function Poster({ url, className }: { url: string | null; className: string }) {
-  if (!url) return <div className={`${className} bg-neutral-800`} />;
+  if (!url) return <div className={`${className} bg-line`} />;
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={url} alt="" className={`${className} object-cover`} />;
 }
@@ -49,7 +50,7 @@ function ToRankChip({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-900 p-2"
+      className="flex items-center gap-2 rounded-lg border border-neutral-700 bg-panel p-2"
     >
       <button
         {...attributes}
@@ -63,7 +64,7 @@ function ToRankChip({
       <Poster url={item.tv_show.poster_url} className="h-10 w-7 rounded" />
       <Link
         href={`/tv/${item.tv_show.id}`}
-        className="flex-1 truncate text-sm text-indigo-300 hover:text-indigo-200 hover:underline"
+        className="flex-1 truncate text-sm text-neutral-200 hover:text-brass-bright hover:underline"
       >
         {item.tv_show.title}
       </Link>
@@ -74,6 +75,25 @@ function ToRankChip({
       >
         → Watchlist
       </button>
+    </div>
+  );
+}
+
+// Always-present drop target for "#1" — the only way to place a show when
+// the ranked list is empty (with no ranked rows, there's nothing else to
+// drop onto), and a quick way to jump one to the top otherwise.
+function DropToTop({ label }: { label: string }) {
+  const { setNodeRef, isOver } = useDroppable({ id: '__rank_top__' });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`mb-2 rounded-lg border-2 border-dashed p-3 text-center text-xs font-medium transition-colors ${
+        isOver
+          ? 'border-brass bg-brass-wash/40 text-paper'
+          : 'border-neutral-700 text-neutral-500'
+      }`}
+    >
+      {label}
     </div>
   );
 }
@@ -103,7 +123,7 @@ function RankedRow({
     <li
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 p-2"
+      className="flex items-center gap-3 rounded-lg border border-line bg-panel p-2"
     >
       <button
         {...attributes}
@@ -113,13 +133,13 @@ function RankedRow({
       >
         ⠿
       </button>
-      <span className="inline-flex h-7 min-w-[2.75rem] items-center justify-center rounded-full bg-neutral-700 px-2 text-sm font-semibold text-white">
+      <span className="inline-flex h-7 min-w-[2.75rem] items-center justify-center rounded bg-brass-wash px-2 font-display text-base font-medium text-brass">
         {item.rank}
       </span>
       <Poster url={item.tv_show.poster_url} className="h-12 w-8 rounded" />
       <Link
         href={`/tv/${item.tv_show.id}`}
-        className="flex-1 truncate text-sm text-indigo-300 hover:text-indigo-200 hover:underline"
+        className="flex-1 truncate text-sm text-neutral-200 hover:text-brass-bright hover:underline"
       >
         {item.tv_show.title}
         {item.tv_show.year ? ` (${item.tv_show.year})` : ''}
@@ -216,7 +236,12 @@ export function TVRankingsBoard({
   function onDragEnd(e: DragEndEvent) {
     setActiveId(null);
     const { active, over } = e;
-    if (!over || active.id === over.id) return;
+    if (!over) return;
+    if (over.id === '__rank_top__') {
+      placeAt(String(active.id), 1);
+      return;
+    }
+    if (active.id === over.id) return;
     const overItem = byId(String(over.id));
     // Dropping onto a ranked row places the dragged show at that row's spot.
     if (overItem && overItem.rank != null) {
@@ -238,7 +263,7 @@ export function TVRankingsBoard({
       onDragCancel={() => setActiveId(null)}
     >
       {unplaced.length > 0 && (
-        <div className="mb-4 rounded-lg border border-dashed border-neutral-700 bg-neutral-900/50 p-3">
+        <div className="mb-4 rounded-lg border border-dashed border-neutral-700 bg-panel/50 p-3">
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
             To rank ({unplaced.length}) — drag into the list below
           </p>
@@ -262,7 +287,7 @@ export function TVRankingsBoard({
           value={goto}
           onChange={(e) => setGoto(e.target.value)}
           placeholder={`Go to position (1–${placedCount})`}
-          className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+          className="flex-1 rounded border border-neutral-700 bg-panel px-3 py-2 text-sm outline-none focus:border-brass"
         />
         <button
           type="submit"
@@ -271,6 +296,16 @@ export function TVRankingsBoard({
           Go To…
         </button>
       </form>
+
+      {unplaced.length > 0 && (
+        <DropToTop
+          label={
+            placed.length === 0
+              ? 'Drop here to start your rankings'
+              : 'Drop here to make #1'
+          }
+        />
+      )}
 
       {placed.length === 0 ? (
         <p className="text-sm text-neutral-500">No ranked shows yet.</p>
@@ -322,7 +357,7 @@ export function TVRankingsBoard({
 
       <DragOverlay>
         {activeItem ? (
-          <div className="flex items-center gap-2 rounded-lg border border-indigo-500 bg-neutral-800 p-2 shadow-lg">
+          <div className="flex items-center gap-2 rounded-lg border border-brass bg-line p-2 shadow-lg">
             <Poster url={activeItem.tv_show.poster_url} className="h-10 w-7 rounded" />
             <span className="text-sm">{activeItem.tv_show.title}</span>
           </div>

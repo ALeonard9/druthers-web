@@ -57,7 +57,7 @@ export default async function BooksPage({
     <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">My Books</h1>
+          <h1 className="font-display text-3xl font-medium tracking-tight text-paper">My Books</h1>
           <p className="text-sm text-neutral-400">
             {watchlist.length} to read · {rankingsPlaced.length} ranked
             {rankingsUnplaced.length > 0 &&
@@ -67,7 +67,7 @@ export default async function BooksPage({
         </div>
         <Link
           href="/books/search"
-          className="rounded bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+          className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
         >
           + Add a book
         </Link>
@@ -91,7 +91,7 @@ export default async function BooksPage({
               ) : (
                 <>
                   Nothing queued —{' '}
-                  <Link href="/books/search" className="text-indigo-400">
+                  <Link href="/books/search" className="text-brass">
                     add one
                   </Link>
                   .

@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * "After-hours archive" tokens. The dark room is warm-shifted (night/panel/
+ * line), the collection's artifacts provide the color, and two materials
+ * carry the identity: paper (ticket stock — wordmark, badges, highlights)
+ * and brass (shelf-plate numerals, primary actions).
+ */
+@theme {
+  --color-night: #101014;
+  --color-panel: #17171d;
+  --color-line: #26262e;
+  --color-paper: #f2ead8;
+  --color-ink: #1c1917;
+  --color-brass: #c9a86a;
+  --color-brass-bright: #dcc088;
+  --color-brass-wash: #292217;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas,
+    monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Deal-in settle for a freshly drawn ticket (Bored page). The resting tilt
+   lives on the wrapper, so this only animates the drop. */
+@keyframes deal-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(3deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+.deal-in {
+  animation: deal-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deal-in {
+    animation: none;
+  }
 }

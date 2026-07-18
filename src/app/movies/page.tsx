@@ -57,7 +57,7 @@ export default async function MoviesPage({
     <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">My Movies</h1>
+          <h1 className="font-display text-3xl font-medium tracking-tight text-paper">My Movies</h1>
           <p className="text-sm text-neutral-400">
             {watchlist.length} on watchlist · {rankingsPlaced.length} ranked
             {rankingsUnplaced.length > 0 &&
@@ -67,7 +67,7 @@ export default async function MoviesPage({
         </div>
         <Link
           href="/movies/search"
-          className="rounded bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+          className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
         >
           + Add a movie
         </Link>
@@ -86,7 +86,7 @@ export default async function MoviesPage({
               ) : (
                 <>
                   Nothing queued —{' '}
-                  <Link href="/movies/search" className="text-indigo-400">
+                  <Link href="/movies/search" className="text-brass">
                     add one
                   </Link>
                   .

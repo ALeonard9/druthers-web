@@ -8,7 +8,7 @@ export default async function TVSearchPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">Add a TV show</h1>
+        <h1 className="font-display text-3xl font-medium tracking-tight text-paper">Add a TV show</h1>
         <p className="text-sm text-neutral-400">
           Search TVMaze and add a show to your list.
         </p>

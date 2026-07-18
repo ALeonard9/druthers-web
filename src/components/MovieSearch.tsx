@@ -56,12 +56,12 @@ export function MovieSearch() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="e.g. The Matrix"
-          className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-3 py-2 outline-none focus:border-indigo-500"
+          className="flex-1 rounded border border-neutral-700 bg-panel px-3 py-2 outline-none focus:border-brass"
         />
         <button
           type="submit"
           disabled={loading}
-          className="rounded bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+          className="rounded bg-brass px-4 py-2 font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
         >
           {loading ? 'Searching…' : 'Search'}
         </button>
@@ -75,9 +75,9 @@ export function MovieSearch() {
           return (
             <li
               key={m.imdb}
-              className="flex flex-col overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900"
+              className="flex flex-col overflow-hidden rounded-lg border border-line bg-panel"
             >
-              <div className="aspect-[2/3] bg-neutral-800">
+              <div className="aspect-[2/3] bg-line">
                 {m.poster_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -111,7 +111,7 @@ export function MovieSearch() {
                       <button
                         onClick={() => add(m, 'rankings')}
                         disabled={state === 'adding'}
-                        className="rounded bg-indigo-600 px-2 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-60"
+                        className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-60"
                       >
                         + Rankings
                       </button>

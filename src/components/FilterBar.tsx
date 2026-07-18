@@ -54,12 +54,12 @@ export function FilterBar({
     f.q || f.genre || f.yearMin || f.yearMax || f.ratingMin ? true : false;
 
   const input =
-    'rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm outline-none focus:border-indigo-500';
+    'rounded border border-neutral-700 bg-panel px-2 py-1.5 text-sm outline-none focus:border-brass';
 
   return (
     <form
       onSubmit={submit}
-      className="flex flex-wrap items-end gap-2 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3"
+      className="flex flex-wrap items-end gap-2 rounded-lg border border-line bg-panel/50 p-3"
     >
       <label className="flex flex-col gap-1 text-xs text-neutral-400">
         {searchLabel}
@@ -111,7 +111,7 @@ export function FilterBar({
       </label>
       <button
         type="submit"
-        className="rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500"
+        className="rounded bg-brass px-3 py-1.5 text-sm font-medium text-ink hover:bg-brass-bright"
       >
         Filter
       </button>

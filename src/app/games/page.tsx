@@ -57,7 +57,7 @@ export default async function GamesPage({
     <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">My Games</h1>
+          <h1 className="font-display text-3xl font-medium tracking-tight text-paper">My Games</h1>
           <p className="text-sm text-neutral-400">
             {watchlist.length} on backlog · {rankingsPlaced.length} ranked
             {rankingsUnplaced.length > 0 &&
@@ -67,7 +67,7 @@ export default async function GamesPage({
         </div>
         <Link
           href="/games/search"
-          className="rounded bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+          className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
         >
           + Add a game
         </Link>
@@ -92,7 +92,7 @@ export default async function GamesPage({
               ) : (
                 <>
                   Nothing queued —{' '}
-                  <Link href="/games/search" className="text-indigo-400">
+                  <Link href="/games/search" className="text-brass">
                     add one
                   </Link>
                   .

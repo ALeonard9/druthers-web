@@ -39,7 +39,7 @@ export default async function BookDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/books" className="text-sm text-indigo-400 hover:text-indigo-300">
+      <Link href="/books" className="text-sm text-brass hover:text-brass-bright">
         ← Back to My Books
       </Link>
       <BookDetail book={book} tracker={tracker} />

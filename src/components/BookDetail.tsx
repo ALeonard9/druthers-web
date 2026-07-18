@@ -71,10 +71,10 @@ export function BookDetail({
           <img
             src={book.poster_url}
             alt={book.title}
-            className="w-full rounded-lg border border-neutral-800"
+            className="w-full rounded-lg border border-line"
           />
         ) : (
-          <div className="flex aspect-[2/3] items-center justify-center rounded-lg border border-neutral-800 bg-neutral-900 text-neutral-500">
+          <div className="flex aspect-[2/3] items-center justify-center rounded-lg border border-line bg-panel text-neutral-500">
             No cover
           </div>
         )}
@@ -110,7 +110,7 @@ export function BookDetail({
         </dl>
 
         {/* Lists */}
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 p-3">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel p-3">
           <button
             onClick={() =>
               onWatchlist
@@ -165,7 +165,7 @@ export function BookDetail({
             <button
               onClick={() => mark({ on_rankings: true })}
               disabled={pending}
-              className="rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+              className="rounded bg-brass px-3 py-1.5 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
             >
               + Rankings
             </button>
@@ -188,12 +188,12 @@ export function BookDetail({
                 : 'Add this book to a list to save notes.'
             }
             disabled={!tracker || pending}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-indigo-500 disabled:opacity-50"
+            className="w-full rounded border border-neutral-700 bg-night px-3 py-2 text-sm outline-none focus:border-brass disabled:opacity-50"
           />
           {notes !== savedNote && (
             <button
               onClick={saveNotes}
-              className="mt-2 rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500"
+              className="mt-2 rounded bg-brass px-3 py-1.5 text-sm font-medium text-ink hover:bg-brass-bright"
             >
               Save notes
             </button>

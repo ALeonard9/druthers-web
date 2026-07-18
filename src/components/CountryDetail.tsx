@@ -74,10 +74,10 @@ export function CountryDetail({
           <img
             src={country.flag_url}
             alt={`Flag of ${country.title}`}
-            className="w-full rounded-lg border border-neutral-800"
+            className="w-full rounded-lg border border-line"
           />
         ) : (
-          <div className="flex aspect-[3/2] items-center justify-center rounded-lg border border-neutral-800 bg-neutral-900 text-6xl">
+          <div className="flex aspect-[3/2] items-center justify-center rounded-lg border border-line bg-panel text-6xl">
             {country.flag_emoji ?? '🏳️'}
           </div>
         )}
@@ -109,7 +109,7 @@ export function CountryDetail({
         </dl>
 
         {/* Lists */}
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 p-3">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel p-3">
           <button
             onClick={() =>
               onBucket
@@ -120,7 +120,7 @@ export function CountryDetail({
             className={`rounded px-3 py-1.5 text-sm font-medium disabled:opacity-50 ${
               onBucket
                 ? 'bg-neutral-700 text-neutral-200'
-                : 'bg-indigo-600 text-white hover:bg-indigo-500'
+                : 'bg-brass text-ink hover:bg-brass-bright'
             }`}
           >
             {onBucket ? 'On bucket list ✓' : '+ Bucket list'}
@@ -150,7 +150,7 @@ export function CountryDetail({
                 value={firstVisited}
                 onChange={(e) => saveFirstVisited(e.target.value)}
                 disabled={pending}
-                className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-sm text-neutral-200 outline-none focus:border-indigo-500 disabled:opacity-50"
+                className="rounded border border-neutral-700 bg-night px-2 py-1 text-sm text-neutral-200 outline-none focus:border-brass disabled:opacity-50"
               />
             </label>
           )}
@@ -172,12 +172,12 @@ export function CountryDetail({
                 : 'Add this country to a list to save notes.'
             }
             disabled={!tracker || pending}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-indigo-500 disabled:opacity-50"
+            className="w-full rounded border border-neutral-700 bg-night px-3 py-2 text-sm outline-none focus:border-brass disabled:opacity-50"
           />
           {notes !== savedNote && (
             <button
               onClick={saveNotes}
-              className="mt-2 rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500"
+              className="mt-2 rounded bg-brass px-3 py-1.5 text-sm font-medium text-ink hover:bg-brass-bright"
             >
               Save notes
             </button>

@@ -29,6 +29,7 @@ export function TVShowDetail({
 
   const onWatchlist = tracker?.on_watchlist ?? false;
   const onRankings = tracker?.on_rankings ?? false;
+  const frozen = (tracker?.freeze ?? 0) !== 0;
 
   function track(body: Record<string, unknown>) {
     startTransition(async () => {
@@ -71,10 +72,10 @@ export function TVShowDetail({
           <img
             src={show.poster_url}
             alt={show.title}
-            className="w-full rounded-lg border border-neutral-800"
+            className="w-full rounded-lg border border-line"
           />
         ) : (
-          <div className="flex aspect-[2/3] items-center justify-center rounded-lg border border-neutral-800 bg-neutral-900 text-neutral-500">
+          <div className="flex aspect-[2/3] items-center justify-center rounded-lg border border-line bg-panel text-neutral-500">
             No poster
           </div>
         )}
@@ -113,7 +114,7 @@ export function TVShowDetail({
                   href={`https://www.imdb.com/title/${show.imdb}/`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-indigo-400 hover:text-indigo-300"
+                  className="text-brass hover:text-brass-bright"
                 >
                   {show.imdb}
                 </a>
@@ -123,7 +124,7 @@ export function TVShowDetail({
         </dl>
 
         {/* Lists */}
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 p-3">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel p-3">
           <button
             onClick={() =>
               onWatchlist
@@ -178,9 +179,24 @@ export function TVShowDetail({
             <button
               onClick={() => mark({ on_rankings: true })}
               disabled={pending}
-              className="rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+              className="rounded bg-brass px-3 py-1.5 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
             >
               + Rankings
+            </button>
+          )}
+
+          {(onWatchlist || onRankings) && (
+            <button
+              onClick={() => track({ freeze: frozen ? 0 : 1 })}
+              disabled={pending}
+              title="Frozen shows are skipped by the Schedule page"
+              className={`rounded px-3 py-1.5 text-sm font-medium disabled:opacity-50 ${
+                frozen
+                  ? 'bg-sky-900 text-sky-200 hover:bg-sky-800'
+                  : 'bg-line text-neutral-400 hover:text-neutral-200'
+              }`}
+            >
+              {frozen ? '❄ Frozen' : 'Freeze tracking'}
             </button>
           )}
         </div>
@@ -201,12 +217,12 @@ export function TVShowDetail({
                 : 'Add this show to a list to save notes.'
             }
             disabled={!tracker || pending}
-            className="w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm outline-none focus:border-indigo-500 disabled:opacity-50"
+            className="w-full rounded border border-neutral-700 bg-night px-3 py-2 text-sm outline-none focus:border-brass disabled:opacity-50"
           />
           {notes !== savedNote && (
             <button
               onClick={saveNotes}
-              className="mt-2 rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500"
+              className="mt-2 rounded bg-brass px-3 py-1.5 text-sm font-medium text-ink hover:bg-brass-bright"
             >
               Save notes
             </button>

@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
+import { buildShareData } from '@/lib/shareCards';
+import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionGames, filterGames, type GameFilters } from '@/lib/games';
 import type { UserVideoGame } from '@/lib/types';
 import { GameRankingsBoard } from '@/components/GameRankingsBoard';
@@ -65,12 +67,18 @@ export default async function GamesPage({
             {hasFilter && ' (filtered)'}
           </p>
         </div>
-        <Link
-          href="/games/search"
-          className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
-        >
-          + Add a game
-        </Link>
+        <div className="flex items-center gap-2">
+          <ShareTop5Button
+            data={buildShareData({ email: user.email, games })}
+            initialCategory="games"
+          />
+          <Link
+            href="/games/search"
+            className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
+          >
+            + Add a game
+          </Link>
+        </div>
       </div>
 
       <FilterBar

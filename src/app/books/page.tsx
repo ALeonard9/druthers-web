@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
+import { buildShareData } from '@/lib/shareCards';
+import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionBooks, filterBooks, type BookFilters } from '@/lib/books';
 import type { UserBook } from '@/lib/types';
 import { BookRankingsBoard } from '@/components/BookRankingsBoard';
@@ -65,12 +67,18 @@ export default async function BooksPage({
             {hasFilter && ' (filtered)'}
           </p>
         </div>
-        <Link
-          href="/books/search"
-          className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
-        >
-          + Add a book
-        </Link>
+        <div className="flex items-center gap-2">
+          <ShareTop5Button
+            data={buildShareData({ email: user.email, books })}
+            initialCategory="books"
+          />
+          <Link
+            href="/books/search"
+            className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
+          >
+            + Add a book
+          </Link>
+        </div>
       </div>
 
       <FilterBar

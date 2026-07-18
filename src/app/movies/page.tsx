@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
+import { buildShareData } from '@/lib/shareCards';
+import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionMovies, filterMovies, type MovieFilters } from '@/lib/movies';
 import type { UserMovie } from '@/lib/types';
 import { RankingsBoard } from '@/components/RankingsBoard';
@@ -65,12 +67,18 @@ export default async function MoviesPage({
             {hasFilter && ' (filtered)'}
           </p>
         </div>
-        <Link
-          href="/movies/search"
-          className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
-        >
-          + Add a movie
-        </Link>
+        <div className="flex items-center gap-2">
+          <ShareTop5Button
+            data={buildShareData({ email: user.email, movies })}
+            initialCategory="movies"
+          />
+          <Link
+            href="/movies/search"
+            className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
+          >
+            + Add a movie
+          </Link>
+        </div>
       </div>
 
       <FilterBar initial={filterValues} />

@@ -37,9 +37,11 @@ function Poster({ url, className }: { url: string | null; className: string }) {
 function ToRankChip({
   item,
   onMoveToWatchlist,
+  onPlaceTop,
 }: {
   item: UserTVShow;
   onMoveToWatchlist: (s: UserTVShow) => void;
+  onPlaceTop: (s: UserTVShow) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: item.tv_show.id, data: { type: 'torank' } });
@@ -70,6 +72,13 @@ function ToRankChip({
         {item.tv_show.title}
       </Link>
       <ShowStatusBadge show={item} />
+      <button
+        onClick={() => onPlaceTop(item)}
+        title="Place at #1 without dragging"
+        className="rounded bg-brass-wash px-2 py-1 font-display text-xs font-medium text-brass hover:bg-brass hover:text-ink"
+      >
+        → #1
+      </button>
       <button
         onClick={() => onMoveToWatchlist(item)}
         title="Move back to Watchlist"
@@ -276,6 +285,7 @@ export function TVRankingsBoard({
                 key={s.tv_show.id}
                 item={s}
                 onMoveToWatchlist={moveToWatchlist}
+                onPlaceTop={(m) => placeAt(m.tv_show.id, 1)}
               />
             ))}
           </div>

@@ -36,9 +36,11 @@ function Cover({ url, className }: { url: string | null; className: string }) {
 function ToRankChip({
   item,
   onMoveToBacklog,
+  onPlaceTop,
 }: {
   item: UserVideoGame;
   onMoveToBacklog: (g: UserVideoGame) => void;
+  onPlaceTop: (g: UserVideoGame) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: item.game.id, data: { type: 'torank' } });
@@ -68,6 +70,13 @@ function ToRankChip({
       >
         {item.game.title}
       </Link>
+      <button
+        onClick={() => onPlaceTop(item)}
+        title="Place at #1 without dragging"
+        className="rounded bg-brass-wash px-2 py-1 font-display text-xs font-medium text-brass hover:bg-brass hover:text-ink"
+      >
+        → #1
+      </button>
       <button
         onClick={() => onMoveToBacklog(item)}
         title="Move back to the backlog"
@@ -281,6 +290,7 @@ export function GameRankingsBoard({
                 key={g.game.id}
                 item={g}
                 onMoveToBacklog={moveToBacklog}
+                onPlaceTop={(m) => placeAt(m.game.id, 1)}
               />
             ))}
           </div>

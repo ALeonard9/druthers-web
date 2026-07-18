@@ -151,8 +151,8 @@ export default async function SearchPage({
               count: ranked.movies.length,
               node: (
                 <Section title="Movies" count={ranked.movies.length}>
-                  {ranked.movies.map((m) => (
-                    <li key={m.imdb} className={ROW}>
+                  {ranked.movies.map((m, i) => (
+                    <li key={`${m.imdb}-${i}`} className={ROW}>
                       <Thumb url={m.poster_url} title={m.title} />
                       <span className="flex-1 truncate">
                         <SourceLink
@@ -183,8 +183,8 @@ export default async function SearchPage({
               count: ranked.tv_shows.length,
               node: (
                 <Section title="TV Shows" count={ranked.tv_shows.length}>
-                  {ranked.tv_shows.map((s) => (
-                    <li key={`${s.tvmaze}-${s.title}`} className={ROW}>
+                  {ranked.tv_shows.map((s, i) => (
+                    <li key={`${s.tvmaze}-${i}`} className={ROW}>
                       <Thumb url={s.poster_url} title={s.title} />
                       <span className="flex-1 truncate">
                         <SourceLink
@@ -225,8 +225,8 @@ export default async function SearchPage({
               count: ranked.games.length,
               node: (
                 <Section title="Games" count={ranked.games.length}>
-                  {ranked.games.map((g) => (
-                    <li key={`${g.igdb}-${g.title}`} className={ROW}>
+                  {ranked.games.map((g, i) => (
+                    <li key={`${g.igdb}-${i}`} className={ROW}>
                       <Thumb url={g.poster_url} title={g.title} />
                       <span className="flex-1 truncate">
                         <SourceLink
@@ -261,8 +261,8 @@ export default async function SearchPage({
               count: ranked.books.length,
               node: (
                 <Section title="Books" count={ranked.books.length}>
-                  {ranked.books.map((b) => (
-                    <li key={`${b.isbn}-${b.title}`} className={ROW}>
+                  {ranked.books.map((b, i) => (
+                    <li key={`${b.isbn}-${i}`} className={ROW}>
                       <Thumb url={b.poster_url} title={b.title} />
                       <span className="flex-1 truncate">
                         <SourceLink

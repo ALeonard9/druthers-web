@@ -72,6 +72,7 @@ export default async function SchedulePage() {
                 {upcomingByDay.map(({ day, items }) => (
                   <details
                     key={day}
+                    open
                     className="group rounded-lg border border-line bg-panel"
                   >
                     <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-sm font-medium [&::-webkit-details-marker]:hidden">

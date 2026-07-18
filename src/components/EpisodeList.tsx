@@ -76,7 +76,7 @@ export function EpisodeList({
           <button
             onClick={() => markAllWatched()}
             disabled={pending}
-            className="rounded bg-moss px-3 py-1 text-xs font-medium text-ink hover:bg-moss-bright disabled:opacity-50"
+            className="rounded bg-neutral-700 px-3 py-1 text-xs font-medium text-white hover:bg-neutral-600 disabled:opacity-50"
           >
             Mark all watched
           </button>
@@ -102,7 +102,7 @@ export function EpisodeList({
                   <button
                     onClick={() => markAllWatched(season)}
                     disabled={pending}
-                    className="rounded bg-moss-wash px-2 py-1 font-medium text-moss hover:bg-moss hover:text-ink disabled:opacity-50"
+                    className="rounded bg-line px-2 py-1 font-medium text-neutral-300 hover:bg-neutral-700 hover:text-white disabled:opacity-50"
                   >
                     Mark season watched
                   </button>

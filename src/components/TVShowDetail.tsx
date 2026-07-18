@@ -189,14 +189,14 @@ export function TVShowDetail({
             <button
               onClick={() => track({ freeze: frozen ? 0 : 1 })}
               disabled={pending}
-              title="Frozen shows are skipped by the Schedule page"
+              title="Hides this show's episodes from the Schedule and catch-up lists"
               className={`rounded px-3 py-1.5 text-sm font-medium disabled:opacity-50 ${
                 frozen
-                  ? 'bg-sky-900 text-sky-200 hover:bg-sky-800'
+                  ? 'bg-plum-wash text-plum hover:bg-plum hover:text-ink'
                   : 'bg-line text-neutral-400 hover:text-neutral-200'
               }`}
             >
-              {frozen ? '❄ Frozen' : 'Freeze tracking'}
+              {frozen ? 'Hidden from Schedule' : 'Hide from Schedule'}
             </button>
           )}
         </div>

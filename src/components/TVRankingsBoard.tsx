@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ShowStatusBadge } from './ShowStatusBadge';
 import {
   DndContext,
   DragOverlay,
@@ -36,9 +37,11 @@ function Poster({ url, className }: { url: string | null; className: string }) {
 function ToRankChip({
   item,
   onMoveToWatchlist,
+  onPlaceTop,
 }: {
   item: UserTVShow;
   onMoveToWatchlist: (s: UserTVShow) => void;
+  onPlaceTop: (s: UserTVShow) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: item.tv_show.id, data: { type: 'torank' } });
@@ -68,6 +71,14 @@ function ToRankChip({
       >
         {item.tv_show.title}
       </Link>
+      <ShowStatusBadge show={item} />
+      <button
+        onClick={() => onPlaceTop(item)}
+        title="Place at #1 without dragging"
+        className="rounded bg-brass-wash px-2 py-1 font-display text-xs font-medium text-brass hover:bg-brass hover:text-ink"
+      >
+        → #1
+      </button>
       <button
         onClick={() => onMoveToWatchlist(item)}
         title="Move back to Watchlist"
@@ -144,6 +155,7 @@ function RankedRow({
         {item.tv_show.title}
         {item.tv_show.year ? ` (${item.tv_show.year})` : ''}
       </Link>
+      <ShowStatusBadge show={item} />
       {confirming ? (
         <span className="flex shrink-0 items-center gap-2 rounded bg-red-950/70 px-2 py-1 text-xs text-red-200 ring-1 ring-red-800">
           <span className="hidden sm:inline">
@@ -273,6 +285,7 @@ export function TVRankingsBoard({
                 key={s.tv_show.id}
                 item={s}
                 onMoveToWatchlist={moveToWatchlist}
+                onPlaceTop={(m) => placeAt(m.tv_show.id, 1)}
               />
             ))}
           </div>

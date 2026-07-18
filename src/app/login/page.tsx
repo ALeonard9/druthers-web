@@ -1,11 +1,26 @@
 import { redirect } from 'next/navigation';
+import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
+import type { UnreadCount } from '@/lib/types';
 import { GoogleSignIn } from '@/components/GoogleSignIn';
 import { LoginForm } from '@/components/LoginForm';
 
+async function sessionIsValid(): Promise<boolean> {
+  // The user cookie alone isn't proof — an expired/stale JWT with a
+  // lingering cookie caused a /login ↔ / redirect loop. Only bounce away
+  // from the login page when the token actually works.
+  try {
+    await apiFetch<UnreadCount>('/v1/users/me/notifications/unread-count');
+    return true;
+  } catch (err) {
+    if (err instanceof ApiError) return false;
+    throw err;
+  }
+}
+
 export default async function LoginPage() {
   const user = await getSessionUser();
-  if (user) redirect('/');
+  if (user && (await sessionIsValid())) redirect('/');
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
 
   return (

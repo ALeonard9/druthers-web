@@ -15,6 +15,12 @@
   --color-brass: #c9a86a;
   --color-brass-bright: #dcc088;
   --color-brass-wash: #292217;
+  /* Done/watched is always green; plum marks "behind". */
+  --color-moss: #8db778;
+  --color-moss-bright: #a7d192;
+  --color-moss-wash: #1c2618;
+  --color-plum: #b389b5;
+  --color-plum-wash: #271f28;
 
   --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;

@@ -36,9 +36,11 @@ function Cover({ url, className }: { url: string | null; className: string }) {
 function ToRankChip({
   item,
   onMoveToWatchlist,
+  onPlaceTop,
 }: {
   item: UserBook;
   onMoveToWatchlist: (b: UserBook) => void;
+  onPlaceTop: (b: UserBook) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: item.book.id, data: { type: 'torank' } });
@@ -68,6 +70,13 @@ function ToRankChip({
       >
         {item.book.title}
       </Link>
+      <button
+        onClick={() => onPlaceTop(item)}
+        title="Place at #1 without dragging"
+        className="rounded bg-brass-wash px-2 py-1 font-display text-xs font-medium text-brass hover:bg-brass hover:text-ink"
+      >
+        → #1
+      </button>
       <button
         onClick={() => onMoveToWatchlist(item)}
         title="Move back to the to-read list"
@@ -273,6 +282,7 @@ export function BookRankingsBoard({
                 key={b.book.id}
                 item={b}
                 onMoveToWatchlist={moveToWatchlist}
+                onPlaceTop={(m) => placeAt(m.book.id, 1)}
               />
             ))}
           </div>

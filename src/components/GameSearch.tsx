@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { GameSearchResult } from '@/lib/types';
 
 export function GameSearch() {
+  const router = useRouter();
   const [q, setQ] = useState('');
   const [results, setResults] = useState<GameSearchResult[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export function GameSearch() {
       }),
     });
     setAdded((s) => ({ ...s, [g.igdb!]: res.ok ? 'done' : 'error' }));
+    if (res.ok) router.push('/games');
   }
 
   return (

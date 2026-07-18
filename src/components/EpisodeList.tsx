@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { playPop } from '@/lib/pop';
 import type { TVEpisode } from '@/lib/types';
 
 // Episode list grouped by season, with per-episode watched toggles. The
@@ -21,6 +22,7 @@ export function EpisodeList({
   const watched = useMemo(() => new Set(watchedIds), [watchedIds]);
 
   function markAllWatched(season?: number) {
+    playPop();
     startTransition(async () => {
       const qs = season != null ? `?season=${season}` : '';
       await fetch(`/api/tv/${showId}/watch-all${qs}`, { method: 'POST' });
@@ -45,6 +47,7 @@ export function EpisodeList({
   const [open, setOpen] = useState<number | null>(firstUnwatched ?? null);
 
   function toggle(ep: TVEpisode) {
+    if (!watched.has(ep.id)) playPop();
     startTransition(async () => {
       await fetch(`/api/tv/episodes/${ep.id}/watch`, {
         method: watched.has(ep.id) ? 'DELETE' : 'POST',
@@ -121,22 +124,8 @@ export function EpisodeList({
                       key={ep.id}
                       className="flex items-center gap-3 border-b border-line/60 px-3 py-1.5 text-sm last:border-b-0"
                     >
-                      <button
-                        onClick={() => toggle(ep)}
-                        disabled={pending}
-                        aria-label={
-                          isWatched ? 'Mark unwatched' : 'Mark watched'
-                        }
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs disabled:opacity-50 ${
-                          isWatched
-                            ? 'border-green-600 bg-green-600 text-white'
-                            : 'border-neutral-600 text-transparent hover:border-green-500'
-                        }`}
-                      >
-                        ✓
-                      </button>
                       <span className="w-10 shrink-0 text-xs text-neutral-500">
-                        E{ep.season_number ?? '?'}
+                        {season}.{ep.season_number ?? '?'}
                       </span>
                       <span
                         className={`flex-1 truncate ${
@@ -150,6 +139,18 @@ export function EpisodeList({
                           {ep.airdate.slice(0, 10)}
                         </span>
                       )}
+                      <button
+                        onClick={() => toggle(ep)}
+                        disabled={pending}
+                        title={isWatched ? 'Mark unwatched' : 'Mark watched'}
+                        className={`shrink-0 rounded px-2 py-1 text-xs font-medium disabled:opacity-50 ${
+                          isWatched
+                            ? 'bg-moss text-ink hover:bg-moss-bright'
+                            : 'bg-moss-wash text-moss hover:bg-moss hover:text-ink'
+                        }`}
+                      >
+                        {isWatched ? '✓ Watched' : 'Watched'}
+                      </button>
                     </li>
                   );
                 })}

@@ -28,6 +28,8 @@ export const cookieOptions = {
   sameSite: 'lax' as const,
   secure: process.env.NODE_ENV === 'production',
   path: '/',
-  // 30 minutes, matching the API token lifetime.
-  maxAge: 60 * 30,
+  // Matches the API token lifetime (ACCESS_TOKEN_EXPIRE_MINUTES, 12h in
+  // dev). If the cookie outlives the token, /login re-verifies before
+  // redirecting, so a stale cookie can't cause a loop.
+  maxAge: 60 * 60 * 12,
 };

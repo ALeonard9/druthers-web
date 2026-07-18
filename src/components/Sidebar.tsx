@@ -115,7 +115,11 @@ export function Sidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-line bg-night px-3 py-4 md:flex">
-      <Link href="/" className="mb-6 flex items-center gap-1 px-3">
+      <Link
+        href="/"
+        title="druthers — as in “if I had my druthers”"
+        className="mb-6 flex items-center gap-1 px-3"
+      >
         <span className="font-display text-3xl font-semibold leading-none text-brass">
           ’
         </span>
@@ -132,6 +136,16 @@ export function Sidebar() {
           <NavLink key={item.href} item={item} active={active === item.href} />
         ))}
       </nav>
+      <Link
+        href="/about"
+        className={`mt-auto px-3 py-2 text-xs transition-colors ${
+          pathname === '/about'
+            ? 'text-paper'
+            : 'text-neutral-500 hover:text-paper'
+        }`}
+      >
+        Why “druthers”?
+      </Link>
     </aside>
   );
 }

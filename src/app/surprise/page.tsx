@@ -21,7 +21,7 @@ export default async function BoredPage() {
   return (
     <div className="flex flex-col items-center gap-8 py-10 text-center">
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-paper">I&apos;m Bored</h1>
+        <h1 className="font-display text-3xl font-medium tracking-tight text-paper">Surprise me</h1>
         <p className="mt-1 text-sm text-neutral-400">
           One thing off your lists, drawn at random.
         </p>

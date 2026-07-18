@@ -71,7 +71,7 @@ const COLLECTIONS: NavItem[] = [
 
 const VIEWS: NavItem[] = [
   { href: '/activity', label: 'Activity', icon: ICON.clock },
-  { href: '/bored', label: 'Draw', icon: ICON.ticket },
+  { href: '/surprise', label: 'Surprise me', icon: ICON.ticket },
 ];
 
 function useActive(pathname: string): string | undefined {

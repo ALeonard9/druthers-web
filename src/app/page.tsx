@@ -126,13 +126,13 @@ export default async function HomePage() {
         </section>
 
         <Link
-          href="/bored"
+          href="/surprise"
           className="group flex flex-col items-center justify-center gap-2 rounded-lg border border-line bg-panel p-6 hover:border-brass"
         >
           <span className="font-display text-6xl leading-none text-brass transition-transform group-hover:-rotate-12">
             ’
           </span>
-          <span className="font-display text-lg text-paper">Draw a ticket</span>
+          <span className="font-display text-lg text-paper">Surprise me</span>
           <span className="text-center text-xs text-neutral-500">
             One thing off your lists, picked at random.
           </span>

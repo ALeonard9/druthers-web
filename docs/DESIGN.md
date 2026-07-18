@@ -19,15 +19,15 @@ are unlisted.)
 ## Layout ("Monarch bones")
 
 - **Left sidebar** (desktop): brand, then Home / Movies / TV / Books / Games,
-  a divider, then Activity / Draw. Active item: panel background + brass icon.
+  a divider, then Activity / Surprise me. Active item: panel background + brass icon.
 - **Top bar**: time-of-day greeting, env badge, notification bell (brass
   badge), account. On mobile the greeting yields to the wordmark.
 - **Bottom tab bar** (mobile, `md:hidden`): the same items, icon + tiny label.
 - **Sections own their views**: Schedule is a tab inside TV; Flags belonged to
-  Countries. Views that cross sections (Activity, Draw) live below the
+  Countries. Views that cross sections (Activity, Surprise me) live below the
   sidebar divider.
-- **Home** is a dashboard: Tonight (airing soon + catch-up count), Draw a
-  ticket, per-category ranked/queued counts, recent activity.
+- **Home** is a dashboard: Tonight (airing soon + catch-up count), Surprise
+  me, per-category ranked/queued counts, recent activity.
 
 ## Visual identity — "after-hours archive"
 
@@ -47,7 +47,7 @@ Type: **Fraunces** (display — wordmark, titles, rank numerals, used with
 restraint) + **Instrument Sans** (body) + system mono (ticket labels, dates).
 
 Signature elements: brass Fraunces **rank numerals** on shelf-plate chips;
-the **paper ticket stub** (Draw page) with perforation and notches.
+the **paper ticket stub** (Surprise page) with perforation and notches.
 
 A warm-paper **light theme + toggle** is planned once the layout settles:
 tokens must become semantic CSS variables first (including replacing raw

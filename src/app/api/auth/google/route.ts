@@ -19,7 +19,10 @@ export async function POST(request: Request) {
   });
 
   if (!res.ok) {
-    return NextResponse.json({ error: 'Google sign-in failed' }, { status: 401 });
+    const body = await res.json().catch(() => null);
+    const detail =
+      body?.detail ?? body?.message ?? 'Google sign-in failed';
+    return NextResponse.json({ error: detail }, { status: 401 });
   }
 
   const data = await res.json();

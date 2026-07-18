@@ -47,13 +47,13 @@ export default async function TVShowDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/tv" className="text-sm text-indigo-400 hover:text-indigo-300">
+      <Link href="/tv" className="text-sm text-brass hover:text-brass-bright">
         ← Back to My TV Shows
       </Link>
       <TVShowDetail show={show} tracker={tracker} />
       <section>
         <h2 className="mb-3 text-lg font-medium text-neutral-200">Episodes</h2>
-        <EpisodeList episodes={episodes} watchedIds={watchedIds} />
+        <EpisodeList showId={id} episodes={episodes} watchedIds={watchedIds} />
       </section>
     </div>
   );

@@ -34,14 +34,14 @@ export function CountryBucketList({ items }: { items: UserCountry[] }) {
       {items.map((c) => (
         <li
           key={c.id}
-          className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 p-2"
+          className="flex items-center gap-3 rounded-lg border border-line bg-panel p-2"
         >
           <span className="w-8 text-center text-2xl leading-none">
             {c.country.flag_emoji ?? '🏳️'}
           </span>
           <Link
             href={`/countries/${c.country.id}`}
-            className="flex-1 truncate text-sm text-indigo-300 hover:text-indigo-200 hover:underline"
+            className="flex-1 truncate text-sm text-neutral-200 hover:text-brass-bright hover:underline"
           >
             {c.country.title}
           </Link>

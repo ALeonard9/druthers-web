@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 // Minimal typing for the Google Identity Services global.
@@ -26,11 +26,13 @@ declare global {
 export function GoogleSignIn({ clientId }: { clientId: string }) {
   const router = useRouter();
   const btnRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!clientId) return;
 
     async function onCredential(resp: GoogleCredentialResponse) {
+      setError(null);
       const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -39,7 +41,10 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
       if (res.ok) {
         router.push('/movies');
         router.refresh();
+        return;
       }
+      const data = await res.json().catch(() => null);
+      setError(data?.error ?? 'Google sign-in failed. Try again.');
     }
 
     function init() {
@@ -76,5 +81,10 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
       </p>
     );
   }
-  return <div ref={btnRef} className="flex justify-center" />;
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <div ref={btnRef} className="flex justify-center" />
+      {error && <p className="text-sm text-red-400">{error}</p>}
+    </div>
+  );
 }

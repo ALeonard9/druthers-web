@@ -82,6 +82,27 @@ export interface UserTVEpisode {
   episode: TVEpisode;
 }
 
+export interface ScheduleEpisodeItem {
+  show_id: string;
+  show_title: string;
+  episode_id: string;
+  episode_title: string;
+  season: number | null;
+  season_number: number | null;
+  airdate: string | null;
+}
+
+export interface ScheduleFrozenShow {
+  show_id: string;
+  show_title: string;
+}
+
+export interface Schedule {
+  upcoming: ScheduleEpisodeItem[];
+  catch_up: ScheduleEpisodeItem[];
+  frozen_shows: ScheduleFrozenShow[];
+}
+
 export interface TVShowSearchResult {
   tvmaze: number | null;
   imdb: string | null;
@@ -187,6 +208,45 @@ export interface GameSearchResult {
   year: string | null;
   platforms: string | null;
   poster_url: string | null;
+}
+
+export interface ActivityItem {
+  category: 'movie' | 'tv_show' | 'tv_episode' | 'game' | 'book' | 'country';
+  action: 'watchlist_added' | 'ranked' | 'marked_done' | 'watched_episode';
+  title: string;
+  subtitle: string | null;
+  entity_id: string;
+  poster_url: string | null;
+  rank: number | null;
+  occurred_at: string;
+}
+
+export interface BoredItem {
+  category: 'movie' | 'tv_show' | 'game' | 'book' | 'country';
+  title: string;
+  subtitle: string | null;
+  entity_id: string;
+  poster_url: string | null;
+}
+
+export interface BoredResponse {
+  pick: BoredItem;
+  pool_size: number;
+}
+
+export interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  category: 'movie' | 'tv_show' | 'game' | 'book' | 'country' | null;
+  entity_id: string | null;
+  read: boolean;
+  created_at: string;
+}
+
+export interface UnreadCount {
+  unread: number;
 }
 
 export interface SessionUser {

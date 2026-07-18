@@ -41,7 +41,7 @@ export default async function CountryDetailPage({
     <div className="flex flex-col gap-6">
       <Link
         href="/countries"
-        className="text-sm text-indigo-400 hover:text-indigo-300"
+        className="text-sm text-brass hover:text-brass-bright"
       >
         ← Back to My Countries
       </Link>

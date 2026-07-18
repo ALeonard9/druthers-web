@@ -34,7 +34,7 @@ export default async function MovieDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/movies" className="text-sm text-indigo-400 hover:text-indigo-300">
+      <Link href="/movies" className="text-sm text-brass hover:text-brass-bright">
         ← Back to My Movies
       </Link>
       <MovieDetail movie={movie} tracker={tracker} />

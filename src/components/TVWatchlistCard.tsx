@@ -22,8 +22,8 @@ export function TVWatchlistCard({ userShow }: { userShow: UserTVShow }) {
   }
 
   return (
-    <li className="flex flex-col overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900">
-      <Link href={`/tv/${show.id}`} className="aspect-[2/3] block bg-neutral-800">
+    <li className="flex flex-col overflow-hidden rounded-lg border border-line bg-panel">
+      <Link href={`/tv/${show.id}`} className="aspect-[2/3] block bg-line">
         {show.poster_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -40,7 +40,7 @@ export function TVWatchlistCard({ userShow }: { userShow: UserTVShow }) {
       <div className="flex flex-1 flex-col gap-2 p-3">
         <Link
           href={`/tv/${show.id}`}
-          className="line-clamp-2 text-sm font-medium hover:text-indigo-300"
+          className="line-clamp-2 text-sm font-medium hover:text-brass-bright"
           title={show.title}
         >
           {show.title}
@@ -52,7 +52,7 @@ export function TVWatchlistCard({ userShow }: { userShow: UserTVShow }) {
           <button
             onClick={() => track({ on_rankings: true })}
             disabled={pending || userShow.on_rankings}
-            className="rounded bg-indigo-600 px-2 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+            className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
             title="Add to your ranked list"
           >
             {userShow.on_rankings ? 'In Rankings' : '→ Rankings'}

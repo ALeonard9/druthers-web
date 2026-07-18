@@ -37,7 +37,7 @@ export function CountryPicker({ untracked }: { untracked: Country[] }) {
   }
 
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-3">
+    <div className="rounded-lg border border-line bg-panel/50 p-3">
       <button
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between text-sm font-medium text-neutral-200"
@@ -51,13 +51,13 @@ export function CountryPicker({ untracked }: { untracked: Country[] }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Filter by name or region…"
-            className="rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+            className="rounded border border-neutral-700 bg-panel px-3 py-2 text-sm outline-none focus:border-brass"
           />
           <ul className="flex flex-col gap-1">
             {matches.map((c) => (
               <li
                 key={c.id}
-                className="flex items-center gap-3 rounded px-2 py-1.5 hover:bg-neutral-800/60"
+                className="flex items-center gap-3 rounded px-2 py-1.5 hover:bg-line/60"
               >
                 <span className="w-7 text-center text-xl leading-none">
                   {c.flag_emoji ?? '🏳️'}
@@ -69,7 +69,7 @@ export function CountryPicker({ untracked }: { untracked: Country[] }) {
                 <button
                   onClick={() => add(c, { on_watchlist: true })}
                   disabled={pending}
-                  className="rounded bg-indigo-600 px-2 py-1 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+                  className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
                 >
                   + Bucket list
                 </button>

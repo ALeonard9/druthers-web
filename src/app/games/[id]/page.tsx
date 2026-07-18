@@ -39,7 +39,7 @@ export default async function GameDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/games" className="text-sm text-indigo-400 hover:text-indigo-300">
+      <Link href="/games" className="text-sm text-brass hover:text-brass-bright">
         ← Back to My Games
       </Link>
       <GameDetail game={game} tracker={tracker} />

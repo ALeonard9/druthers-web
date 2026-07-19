@@ -89,7 +89,7 @@ export default async function PublicProfilePage({ params }: Props) {
       </div>
 
       <p className="text-center font-mono text-[11px] uppercase tracking-[0.18em] text-neutral-600">
-        druthers.io — your favorites, ranked
+        www.druthers.io — your favorites, ranked
       </p>
     </div>
   );

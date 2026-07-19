@@ -238,7 +238,7 @@ function drawSquare(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   mono(ctx, f, 22, 4);
   ctx.fillStyle = C.brass;
   ctx.textAlign = 'left';
-  ctx.fillText('DRUTHERS.IO', pad, h - pad + 30);
+  ctx.fillText('WWW.DRUTHERS.IO', pad, h - pad + 30);
   ctx.fillStyle = C.grey;
   ctx.textAlign = 'right';
   ctx.fillText(`${data.totalRanked} RANKED`, w - pad, h - pad + 30);
@@ -329,7 +329,7 @@ function drawStory(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   mono(ctx, f, 27, 5);
   ctx.fillStyle = C.paperGold;
   ctx.textAlign = 'left';
-  const link = `DRUTHERS.IO/${data.handle.toUpperCase()}`;
+  const link = `WWW.DRUTHERS.IO/${data.handle.toUpperCase()}`;
   ctx.fillText(link, px, footY);
   line(ctx, px, footY + 12, px + ctx.measureText(link).width, footY + 12, C.paperDash, 2);
   mono(ctx, f, 27);
@@ -366,7 +366,7 @@ function drawWide(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   );
   mono(ctx, f, 20, 4);
   ctx.fillStyle = C.brass;
-  ctx.fillText('DRUTHERS.IO', pad, h - pad + 10);
+  ctx.fillText('WWW.DRUTHERS.IO', pad, h - pad + 10);
 
   const rx = colW + 56;
   const rw = w - rx - pad;
@@ -445,7 +445,7 @@ function drawGrid(ctx: Ctx, f: Fonts, data: ShareData) {
   mono(ctx, f, 20, 4);
   ctx.fillStyle = C.brass;
   ctx.textAlign = 'left';
-  const link = `DRUTHERS.IO/${data.handle.toUpperCase()}`;
+  const link = `WWW.DRUTHERS.IO/${data.handle.toUpperCase()}`;
   ctx.fillText(link, pad, h - pad + 20);
   line(ctx, pad, h - pad + 32, pad + ctx.measureText(link).width, h - pad + 32, C.brassWash, 2);
   mono(ctx, f, 20);

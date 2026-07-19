@@ -14,6 +14,7 @@ function movie(title: string, rank: number | null, opts?: Partial<UserMovie>): U
     rank,
     completed: null,
     notes: null,
+    completed_at: null,
     created_at: '',
     updated_at: '',
     movie: {
@@ -43,6 +44,7 @@ function show(title: string, rank: number | null): UserTVShow {
     on_rankings: rank != null,
     rank,
     notes: null,
+    completed_at: null,
     status: null,
     freeze: null,
     created_at: '',

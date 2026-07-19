@@ -9,6 +9,7 @@ function show(partial: Partial<UserTVShow>): UserTVShow {
     on_rankings: false,
     rank: null,
     notes: null,
+    completed_at: null,
     status: null,
     freeze: 0,
     tv_show: {

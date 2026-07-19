@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { CompletedDateField } from './CompletedDateField';
 import type { TVShow, UserTVShow } from '@/lib/types';
 
 function Field({ label, value }: { label: string; value: string | null }) {
@@ -200,6 +201,14 @@ export function TVShowDetail({
             </button>
           )}
         </div>
+
+        {onRankings && (
+          <CompletedDateField
+            value={tracker?.completed_at ?? null}
+            disabled={!tracker || pending}
+            onSave={(d) => track({ completed_at: d })}
+          />
+        )}
 
         {/* Notes */}
         <div>

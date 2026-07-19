@@ -24,6 +24,7 @@ export interface UserMovie {
   rank: number | null;
   completed: number | null;
   notes: string | null;
+  completed_at: string | null;
   movie: Movie;
   created_at: string;
   updated_at: string;
@@ -62,6 +63,7 @@ export interface UserTVShow {
   on_rankings: boolean;
   rank: number | null;
   notes: string | null;
+  completed_at: string | null;
   status: string | null;
   freeze: number | null;
   tv_show: TVShow;
@@ -141,6 +143,7 @@ export interface UserBook {
   rank: number | null;
   completed: number | null;
   notes: string | null;
+  completed_at: string | null;
   book: Book;
   created_at: string;
   updated_at: string;
@@ -202,6 +205,7 @@ export interface UserVideoGame {
   rank: number | null;
   completed: number | null;
   notes: string | null;
+  completed_at: string | null;
   is_100_percent: boolean | null;
   game: VideoGame;
   created_at: string;

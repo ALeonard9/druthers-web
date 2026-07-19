@@ -12,7 +12,7 @@ const CATEGORIES: { flag: keyof Visibility; label: string }[] = [
 
 // Handle + per-category public toggles (#143). Everything is private by
 // default; opening a category requires a handle, which becomes the public
-// profile URL druthers.io/u/<handle>.
+// profile URL www.druthers.io/u/<handle>.
 export function PrivacySettings() {
   const [settings, setSettings] = useState<Visibility | null>(null);
   const [handle, setHandle] = useState('');
@@ -78,7 +78,7 @@ export function PrivacySettings() {
       >
         <div className="flex flex-1 items-center rounded border border-neutral-700 bg-panel focus-within:border-brass">
           <span className="pl-3 font-mono text-xs text-neutral-500">
-            druthers.io/u/
+            www.druthers.io/u/
           </span>
           <input
             value={handle}
@@ -139,7 +139,7 @@ export function PrivacySettings() {
             href={`/u/${settings.handle}`}
             className="text-brass hover:text-brass-bright"
           >
-            druthers.io/u/{settings.handle}
+            www.druthers.io/u/{settings.handle}
           </a>{' '}
           — ranked lists only; notes, watchlists, and activity stay private.
         </p>

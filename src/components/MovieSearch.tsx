@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { MovieSearchResult } from '@/lib/types';
+import { TrackedBadge } from './TrackedBadge';
 
 export function MovieSearch() {
   const router = useRouter();
@@ -102,21 +103,28 @@ export function MovieSearch() {
                     <span className="rounded bg-neutral-700 px-2 py-1 text-center text-xs text-neutral-200">
                       Added ✓
                     </span>
+                  ) : m.on_rankings ? (
+                    <TrackedBadge onRankings rank={m.rank} />
                   ) : (
                     <>
+                      {m.on_watchlist && <TrackedBadge onRankings={false} rank={null} />}
                       <button
                         onClick={() => add(m, 'watchlist')}
-                        disabled={state === 'adding'}
+                        disabled={state === 'adding' || m.on_watchlist}
                         className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
                       >
-                        {state === 'adding' ? 'Adding…' : '+ Watchlist'}
+                        {state === 'adding'
+                          ? 'Adding…'
+                          : m.on_watchlist
+                            ? 'On Watchlist'
+                            : '+ Watchlist'}
                       </button>
                       <button
                         onClick={() => add(m, 'rankings')}
                         disabled={state === 'adding'}
                         className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-60"
                       >
-                        + Rankings
+                        {m.on_watchlist ? '→ Move to Rankings' : '+ Rankings'}
                       </button>
                     </>
                   )}

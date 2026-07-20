@@ -19,13 +19,19 @@ export function EpisodeList({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const watched = useMemo(() => new Set(watchedIds), [watchedIds]);
 
   function markAllWatched(season?: number) {
     playPop();
+    setError(null);
     startTransition(async () => {
       const qs = season != null ? `?season=${season}` : '';
-      await fetch(`/api/tv/${showId}/watch-all${qs}`, { method: 'POST' });
+      const res = await fetch(`/api/tv/${showId}/watch-all${qs}`, { method: 'POST' });
+      if (!res.ok) {
+        setError('Could not mark episodes watched — try again.');
+        return;
+      }
       router.refresh();
     });
   }
@@ -48,10 +54,15 @@ export function EpisodeList({
 
   function toggle(ep: TVEpisode) {
     if (!watched.has(ep.id)) playPop();
+    setError(null);
     startTransition(async () => {
-      await fetch(`/api/tv/episodes/${ep.id}/watch`, {
+      const res = await fetch(`/api/tv/episodes/${ep.id}/watch`, {
         method: watched.has(ep.id) ? 'DELETE' : 'POST',
       });
+      if (!res.ok) {
+        setError('Could not update watched state — try again.');
+        return;
+      }
       router.refresh();
     });
   }
@@ -82,6 +93,7 @@ export function EpisodeList({
           </button>
         )}
       </div>
+      {error && <p className="text-xs text-red-400">{error}</p>}
       {seasons.map(([season, eps]) => {
         const seasonWatched = eps.filter((e) => watched.has(e.id)).length;
         const isOpen = open === season;
@@ -146,10 +158,10 @@ export function EpisodeList({
                         className={`shrink-0 rounded px-2 py-1 text-xs font-medium disabled:opacity-50 ${
                           isWatched
                             ? 'bg-moss text-ink hover:bg-moss-bright'
-                            : 'bg-moss-wash text-moss hover:bg-moss hover:text-ink'
+                            : 'bg-line text-neutral-300 hover:bg-neutral-700 hover:text-white'
                         }`}
                       >
-                        {isWatched ? '✓ Watched' : 'Watched'}
+                        {isWatched ? '✓ Watched' : 'Unwatched'}
                       </button>
                     </li>
                   );

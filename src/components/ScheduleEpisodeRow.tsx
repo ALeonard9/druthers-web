@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
@@ -18,11 +18,17 @@ export function ScheduleEpisodeRow({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState(false);
 
   function markWatched() {
     playPop();
+    setError(false);
     startTransition(async () => {
-      await fetch(`/api/tv/episodes/${item.episode_id}/watch`, { method: 'POST' });
+      const res = await fetch(`/api/tv/episodes/${item.episode_id}/watch`, { method: 'POST' });
+      if (!res.ok) {
+        setError(true);
+        return;
+      }
       router.refresh();
     });
   }
@@ -44,6 +50,7 @@ export function ScheduleEpisodeRow({
         </span>{' '}
         {item.episode_title}
       </span>
+      {error && <span className="shrink-0 text-xs text-red-400">Failed — retry</span>}
       <button
         onClick={markWatched}
         disabled={pending}

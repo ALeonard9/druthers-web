@@ -158,10 +158,10 @@ export function EpisodeList({
                         className={`shrink-0 rounded px-2 py-1 text-xs font-medium disabled:opacity-50 ${
                           isWatched
                             ? 'bg-moss text-ink hover:bg-moss-bright'
-                            : 'bg-moss-wash text-moss hover:bg-moss hover:text-ink'
+                            : 'bg-line text-neutral-300 hover:bg-neutral-700 hover:text-white'
                         }`}
                       >
-                        {isWatched ? '✓ Watched' : 'Watched'}
+                        {isWatched ? '✓ Watched' : 'Unwatched'}
                       </button>
                     </li>
                   );

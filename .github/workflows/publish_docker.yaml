@@ -16,7 +16,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
@@ -43,6 +43,16 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # NEXT_PUBLIC_* values bake into the client bundle at build time
+          # (see Dockerfile), so this GHCR image — the one QA on Proxmox pulls
+          # — must carry the NON-prod OAuth client and APP_ENV=qa. Without
+          # these, QA sign-in silently breaks (no client id in the bundle).
+          # Prod is unaffected: prod runs the Artifact Registry image built by
+          # deploy_cloud_run.yaml with the prod client. Set the repo variable
+          # GOOGLE_CLIENT_ID_NONPROD to the non-prod client id.
+          build-args: |
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID_NONPROD }}
+            NEXT_PUBLIC_APP_ENV=qa
           # No artifact-attestation step: actions/attest-build-provenance
           # requires a public repo or GitHub Enterprise (fails with "Feature
           # not available for user-owned private repositories" otherwise) —

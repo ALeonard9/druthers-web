@@ -36,6 +36,9 @@ export interface MovieSearchResult {
   year: string | null;
   poster_url: string | null;
   type: string | null;
+  on_watchlist: boolean;
+  on_rankings: boolean;
+  rank: number | null;
 }
 
 export interface TVShow {
@@ -119,6 +122,9 @@ export interface TVShowSearchResult {
   status: string | null;
   network: string | null;
   poster_url: string | null;
+  on_watchlist: boolean;
+  on_rankings: boolean;
+  rank: number | null;
 }
 
 export interface Book {
@@ -155,6 +161,9 @@ export interface BookSearchResult {
   authors: string | null;
   year: string | null;
   poster_url: string | null;
+  on_watchlist: boolean;
+  on_rankings: boolean;
+  rank: number | null;
 }
 
 export interface Country {
@@ -219,6 +228,9 @@ export interface GameSearchResult {
   year: string | null;
   platforms: string | null;
   poster_url: string | null;
+  on_watchlist: boolean;
+  on_rankings: boolean;
+  rank: number | null;
 }
 
 export interface ActivityItem {

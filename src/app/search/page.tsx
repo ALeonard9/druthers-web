@@ -171,6 +171,9 @@ export default async function SearchPage({
                           title: m.title,
                           poster_url: m.poster_url,
                         }}
+                        onWatchlist={m.on_watchlist}
+                        onRankings={m.on_rankings}
+                        rank={m.rank}
                       />
                     </li>
                   ))}
@@ -213,6 +216,9 @@ export default async function SearchPage({
                           title: s.title,
                           poster_url: s.poster_url,
                         }}
+                        onWatchlist={s.on_watchlist}
+                        onRankings={s.on_rankings}
+                        rank={s.rank}
                       />
                     </li>
                   ))}
@@ -249,6 +255,9 @@ export default async function SearchPage({
                           title: g.title,
                           poster_url: g.poster_url,
                         }}
+                        onWatchlist={g.on_watchlist}
+                        onRankings={g.on_rankings}
+                        rank={g.rank}
                       />
                     </li>
                   ))}
@@ -285,6 +294,9 @@ export default async function SearchPage({
                           title: b.title,
                           poster_url: b.poster_url,
                         }}
+                        onWatchlist={b.on_watchlist}
+                        onRankings={b.on_rankings}
+                        rank={b.rank}
                       />
                     </li>
                   ))}

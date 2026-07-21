@@ -1,0 +1,63 @@
+# TEMPLATE — copy to aleonard.us-web/.github/workflows/deploy_qa.yaml
+name: Deploy to QA
+
+# QA deploys are main-driven (see druthers-infra/docs/PROMOTION.md): every
+# push to main builds the image (dedicated QA OAuth client + APP_ENV=qa baked
+# into the client bundle) into the QA project's Artifact Registry and rolls
+# the druthers-web service in the QA project. Prod is untouched — it
+# deploys only on releases via deploy_cloud_run.yaml.
+# No-ops until the GCP_*_QA repo variables exist (docs/QA-ENVIRONMENT.md).
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-qa
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: vars.GCP_WIF_PROVIDER_QA != ''
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID_QA }}/druthers/aleonard.us-web:main-${{ github.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # An empty client id bakes into the bundle and breaks sign-in
+      # SILENTLY (PROMOTION.md) — fail loudly instead.
+      - name: Fail if QA OAuth client id is missing
+        if: vars.GOOGLE_CLIENT_ID_QA == ''
+        run: |
+          echo "Set repo variable GOOGLE_CLIENT_ID_QA to the dedicated QA Google OAuth client id."
+          exit 1
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER_QA }}
+          service_account: ${{ vars.GCP_DEPLOY_SA_QA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Build and push image
+        run: |
+          gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+          docker build \
+            --build-arg "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID_QA }}" \
+            --build-arg "NEXT_PUBLIC_APP_ENV=qa" \
+            -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy druthers-web \
+            --image "$IMAGE" \
+            --region ${{ vars.GCP_REGION }} \
+            --project ${{ vars.GCP_PROJECT_ID_QA }}

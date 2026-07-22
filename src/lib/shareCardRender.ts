@@ -68,6 +68,29 @@ function monthYear(): string {
     .toUpperCase();
 }
 
+/**
+ * The URL printed on the card, sans protocol. Always taken from
+ * `data.url` — the card used to compose `druthers.io/<handle>` itself, which
+ * 404'd: profiles live at `/u/<handle>`, and an unclaimed or private profile
+ * has no page at all.
+ */
+function linkText(data: ShareData): string {
+  return data.url.replace(/^https?:\/\//, '').toUpperCase();
+}
+
+/** `@HANDLE · 2026`, or just the year before a handle is claimed. */
+function byline(data: ShareData): string {
+  const year = new Date().getFullYear();
+  return data.handle ? `@${data.handle.toUpperCase()} · ${year}` : `${year}`;
+}
+
+/** `@HANDLE’S TOP 5` where there's a handle to name, else `MY TOP 5`. */
+function possessive(data: ShareData, noun: string): string {
+  return data.handle
+    ? `@${data.handle.toUpperCase()}’S ${noun}`
+    : `MY ${noun}`;
+}
+
 type Ctx = CanvasRenderingContext2D;
 
 function setSpacing(ctx: Ctx, px: number) {
@@ -200,7 +223,7 @@ function drawSquare(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   ctx.fillStyle = C.grey;
   ctx.textAlign = 'right';
   ctx.fillText(
-    `@${data.handle.toUpperCase()} · ${new Date().getFullYear()}`,
+    byline(data),
     w - pad,
     pad + 34,
   );
@@ -282,7 +305,7 @@ function drawStory(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   mono(ctx, f, 27, 6);
   ctx.fillStyle = C.paperGold;
   ctx.textAlign = 'left';
-  ctx.fillText(`@${data.handle.toUpperCase()}’S TOP 5`, px, ty + 232);
+  ctx.fillText(possessive(data, 'TOP 5'), px, ty + 232);
   display(ctx, f, 78, 500);
   ctx.fillStyle = C.ink;
   ctx.fillText('All-Time', px, ty + 330);
@@ -329,7 +352,7 @@ function drawStory(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   mono(ctx, f, 27, 5);
   ctx.fillStyle = C.paperGold;
   ctx.textAlign = 'left';
-  const link = `WWW.DRUTHERS.IO/${data.handle.toUpperCase()}`;
+  const link = linkText(data);
   ctx.fillText(link, px, footY);
   line(ctx, px, footY + 12, px + ctx.measureText(link).width, footY + 12, C.paperDash, 2);
   mono(ctx, f, 27);
@@ -360,13 +383,13 @@ function drawWide(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   mono(ctx, f, 20);
   ctx.fillStyle = C.grey;
   ctx.fillText(
-    `@${data.handle.toUpperCase()} · ${new Date().getFullYear()}`,
+    byline(data),
     pad,
     h / 2 + 84,
   );
   mono(ctx, f, 20, 4);
   ctx.fillStyle = C.brass;
-  ctx.fillText('WWW.DRUTHERS.IO', pad, h - pad + 10);
+  ctx.fillText(linkText(data), pad, h - pad + 10);
 
   const rx = colW + 56;
   const rw = w - rx - pad;
@@ -408,7 +431,7 @@ function drawGrid(ctx: Ctx, f: Fonts, data: ShareData) {
   mono(ctx, f, 18, 5);
   ctx.fillStyle = C.brass;
   ctx.textAlign = 'left';
-  ctx.fillText(`@${data.handle.toUpperCase()}’S ALL-TIMERS`, pad, pad + 92);
+  ctx.fillText(possessive(data, 'ALL-TIMERS'), pad, pad + 92);
   display(ctx, f, 52, 500);
   ctx.fillStyle = C.paper;
   ctx.fillText('Top 5, Every Shelf', pad, pad + 156);
@@ -445,7 +468,7 @@ function drawGrid(ctx: Ctx, f: Fonts, data: ShareData) {
   mono(ctx, f, 20, 4);
   ctx.fillStyle = C.brass;
   ctx.textAlign = 'left';
-  const link = `WWW.DRUTHERS.IO/${data.handle.toUpperCase()}`;
+  const link = linkText(data);
   ctx.fillText(link, pad, h - pad + 20);
   line(ctx, pad, h - pad + 32, pad + ctx.measureText(link).width, h - pad + 32, C.brassWash, 2);
   mono(ctx, f, 20);

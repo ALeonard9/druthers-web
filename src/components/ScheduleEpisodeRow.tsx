@@ -51,12 +51,16 @@ export function ScheduleEpisodeRow({
         {item.episode_title}
       </span>
       {error && <span className="shrink-0 text-xs text-red-400">Failed — retry</span>}
+      {/* Every row on this page is unwatched, so it wears the "behind" plum
+          and the same label EpisodeList uses. Green is reserved for done
+          (globals.css) — a green "Watched" here read as state, not action. */}
       <button
         onClick={markWatched}
         disabled={pending}
-        className="shrink-0 rounded bg-moss-wash px-2 py-1 text-xs font-medium text-moss hover:bg-moss hover:text-ink disabled:opacity-50"
+        title="Mark watched"
+        className="shrink-0 rounded bg-plum-wash px-2 py-1 text-xs font-medium text-plum hover:bg-plum hover:text-ink disabled:opacity-50"
       >
-        Watched
+        Unwatched
       </button>
     </li>
   );

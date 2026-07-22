@@ -155,10 +155,10 @@ function ShareModal({
   }, [filename]);
 
   const copyLink = useCallback(async () => {
-    await navigator.clipboard.writeText('https://www.druthers.io');
+    await navigator.clipboard.writeText(data.url);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
-  }, []);
+  }, [data.url]);
 
   return (
     <div

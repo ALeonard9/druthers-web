@@ -5,7 +5,7 @@ import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionMovies, filterMovies, type MovieFilters } from '@/lib/movies';
-import type { UserMovie } from '@/lib/types';
+import type { UserMovie, Summary } from '@/lib/types';
 import { RankingsBoard } from '@/components/RankingsBoard';
 import { WatchlistCard } from '@/components/WatchlistCard';
 import { FilterBar, type FilterValues } from '@/components/FilterBar';
@@ -28,8 +28,12 @@ export default async function MoviesPage({
   const sp = await searchParams;
 
   let movies: UserMovie[] = [];
+  let summary: Summary;
   try {
-    movies = await apiFetch<UserMovie[]>('/v1/users/me/movies');
+    [movies, summary] = await Promise.all([
+      apiFetch<UserMovie[]>('/v1/users/me/movies'),
+      apiFetch<Summary>('/v1/users/me/summary'),
+    ]);
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect('/login');
     throw err;
@@ -69,7 +73,7 @@ export default async function MoviesPage({
         </div>
         <div className="flex items-center gap-2">
           <ShareTop5Button
-            data={buildShareData({ email: user.email, movies })}
+            data={buildShareData(summary)}
             initialCategory="movies"
           />
           <Link

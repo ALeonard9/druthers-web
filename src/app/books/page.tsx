@@ -5,7 +5,7 @@ import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionBooks, filterBooks, type BookFilters } from '@/lib/books';
-import type { UserBook } from '@/lib/types';
+import type { UserBook, Summary } from '@/lib/types';
 import { BookRankingsBoard } from '@/components/BookRankingsBoard';
 import { BookWatchlistCard } from '@/components/BookWatchlistCard';
 import { FilterBar, type FilterValues } from '@/components/FilterBar';
@@ -28,8 +28,12 @@ export default async function BooksPage({
   const sp = await searchParams;
 
   let books: UserBook[] = [];
+  let summary: Summary;
   try {
-    books = await apiFetch<UserBook[]>('/v1/users/me/books');
+    [books, summary] = await Promise.all([
+      apiFetch<UserBook[]>('/v1/users/me/books'),
+      apiFetch<Summary>('/v1/users/me/summary'),
+    ]);
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect('/login');
     throw err;
@@ -69,7 +73,7 @@ export default async function BooksPage({
         </div>
         <div className="flex items-center gap-2">
           <ShareTop5Button
-            data={buildShareData({ email: user.email, books })}
+            data={buildShareData(summary)}
             initialCategory="books"
           />
           <Link

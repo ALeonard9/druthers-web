@@ -1,4 +1,4 @@
-import type { UserBook, UserMovie, UserTVShow, UserVideoGame } from './types';
+import type { Summary } from './types';
 
 /**
  * Data plumbing for the shareable Top 5 cards (see the "Top 5 Share Cards"
@@ -23,8 +23,17 @@ export interface ShareShelf {
 }
 
 export interface ShareData {
-  /** Social handle rendered on cards, without the @. */
-  handle: string;
+  /** Social handle rendered on cards, without the @. Null until claimed. */
+  handle: string | null;
+  /**
+   * Absolute URL printed on the card and offered by "Copy link". Only a
+   * profile that actually resolves gets a path — otherwise this is the bare
+   * site, because a card advertising a 404 is worse than one advertising the
+   * front door.
+   */
+  url: string;
+  /** Whether `url` points at the owner's profile rather than the site root. */
+  profilePublic: boolean;
   shelves: ShareShelf[];
   totalRanked: number;
 }
@@ -36,77 +45,30 @@ export const CATEGORY_LABELS: Record<ShareCategory, string> = {
   games: 'Video Games',
 };
 
-interface RankedTracker {
-  on_rankings: boolean;
-  rank: number | null;
+export const SITE_URL = 'https://www.druthers.io';
+
+/**
+ * Public profile URL for a handle. The path is `/u/<handle>` — the canonical
+ * form the API documents on DbUser.handle and the only one the web serves.
+ */
+export function profileUrl(handle: string): string {
+  return `${SITE_URL}/u/${handle}`;
 }
 
-function rankedOnly<T extends RankedTracker>(list: T[]): T[] {
-  return list
-    .filter((t) => t.on_rankings && t.rank != null)
-    .sort((a, b) => (a.rank as number) - (b.rank as number));
-}
+export function buildShareData(summary: Summary): ShareData {
+  const shelves: ShareShelf[] = summary.shelves.map((s) => ({
+    category: s.category,
+    label: CATEGORY_LABELS[s.category] ?? s.label,
+    top: s.top.map((e) => ({ title: e.title, year: e.year })),
+    rankedCount: s.ranked_count,
+  }));
 
-function shelf<T extends RankedTracker>(
-  category: ShareCategory,
-  list: T[],
-  entry: (t: T) => ShareEntry,
-): ShareShelf {
-  const ranked = rankedOnly(list);
-  return {
-    category,
-    label: CATEGORY_LABELS[category],
-    top: ranked.slice(0, 5).map(entry),
-    rankedCount: ranked.length,
-  };
-}
-
-/** The bit before the @, lowercased — a placeholder handle until public
- *  profiles exist. */
-export function handleFromEmail(email: string): string {
-  const local = email.split('@')[0] ?? '';
-  return local.toLowerCase() || 'me';
-}
-
-export function buildShareData(input: {
-  email: string;
-  movies?: UserMovie[];
-  shows?: UserTVShow[];
-  books?: UserBook[];
-  games?: UserVideoGame[];
-}): ShareData {
-  const shelves: ShareShelf[] = [];
-  if (input.movies)
-    shelves.push(
-      shelf('movies', input.movies, (t) => ({
-        title: t.movie.title,
-        year: t.movie.year,
-      })),
-    );
-  if (input.shows)
-    shelves.push(
-      shelf('tv', input.shows, (t) => ({
-        title: t.tv_show.title,
-        year: t.tv_show.year,
-      })),
-    );
-  if (input.books)
-    shelves.push(
-      shelf('books', input.books, (t) => ({
-        title: t.book.title,
-        year: t.book.year,
-      })),
-    );
-  if (input.games)
-    shelves.push(
-      shelf('games', input.games, (t) => ({
-        title: t.game.title,
-        year: t.game.year,
-      })),
-    );
+  const profilePublic = summary.profile_public && !!summary.handle;
 
   return {
-    handle: handleFromEmail(input.email),
+    handle: summary.handle,
+    url: profilePublic ? profileUrl(summary.handle as string) : SITE_URL,
+    profilePublic,
     // A shelf with nothing ranked has nothing to share.
     shelves: shelves.filter((s) => s.top.length > 0),
     totalRanked: shelves.reduce((n, s) => n + s.rankedCount, 0),

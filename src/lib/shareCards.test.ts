@@ -1,130 +1,105 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildShareData,
-  handleFromEmail,
+  profileUrl,
+  SITE_URL,
   type ShareCategory,
 } from './shareCards';
-import type { UserMovie, UserTVShow } from './types';
+import type { Summary, SummaryShelf } from './types';
 
-function movie(title: string, rank: number | null, opts?: Partial<UserMovie>): UserMovie {
+function shelf(
+  category: SummaryShelf['category'],
+  titles: string[],
+  extra: Partial<SummaryShelf> = {},
+): SummaryShelf {
   return {
-    id: title,
-    on_watchlist: false,
-    on_rankings: rank != null,
-    rank,
-    completed: null,
-    notes: null,
-    completed_at: null,
-    created_at: '',
-    updated_at: '',
-    movie: {
+    category,
+    label: category,
+    ranked_count: titles.length,
+    queued_count: 0,
+    public: false,
+    top: titles.map((title, i) => ({
+      rank: i + 1,
       id: title,
       title,
-      imdb: '',
-      release_date: null,
-      rating_imdb: null,
-      runtime: null,
-      language: null,
-      rated: null,
+      year: 2000 + i,
       poster_url: null,
-      year: 2000,
-      genre: null,
-      director: null,
-      actors: null,
-      plot: null,
-    },
-    ...opts,
+    })),
+    ...extra,
   };
 }
 
-function show(title: string, rank: number | null): UserTVShow {
+function summary(over: Partial<Summary> = {}): Summary {
   return {
-    id: title,
-    on_watchlist: false,
-    on_rankings: rank != null,
-    rank,
-    notes: null,
-    completed_at: null,
-    status: null,
-    freeze: null,
-    created_at: '',
-    updated_at: '',
-    tv_show: {
-      id: title,
-      title,
-      imdb: null,
-      tvmaze: null,
-      status: null,
-      poster_url: null,
-      year: 2010,
-      genre: null,
-      network: null,
-      runtime: null,
-      rating: null,
-    },
+    handle: null,
+    display_name: 'Adam',
+    profile_public: false,
+    shelves: [shelf('movies', ['First', 'Second'])],
+    total_ranked: 2,
+    ...over,
   };
 }
 
-describe('handleFromEmail', () => {
-  it('uses the lowercased local part', () => {
-    expect(handleFromEmail('AdamLeonard9@gmail.com')).toBe('adamleonard9');
-  });
-  it('falls back when empty', () => {
-    expect(handleFromEmail('@x.com')).toBe('me');
+describe('profileUrl', () => {
+  it('uses the /u/ path the web actually serves', () => {
+    expect(profileUrl('avery')).toBe('https://www.druthers.io/u/avery');
   });
 });
 
 describe('buildShareData', () => {
-  it('takes the top five by rank, best first', () => {
-    const movies = [
-      movie('Seventh', 7),
-      movie('First', 1),
-      movie('Third', 3),
-      movie('Second', 2),
-      movie('Fifth', 5),
-      movie('Fourth', 4),
-      movie('Sixth', 6),
-    ];
-    const data = buildShareData({ email: 'a@b.c', movies });
+  it('carries the entries through in rank order', () => {
+    const data = buildShareData(summary());
     expect(data.shelves).toHaveLength(1);
     expect(data.shelves[0].top.map((e) => e.title)).toEqual([
       'First',
       'Second',
-      'Third',
-      'Fourth',
-      'Fifth',
     ]);
-    expect(data.shelves[0].rankedCount).toBe(7);
+    expect(data.shelves[0].rankedCount).toBe(2);
   });
 
-  it('ignores unranked and watchlist-only trackers', () => {
-    const movies = [
-      movie('Ranked', 1),
-      movie('ToRank', null, { on_rankings: true }),
-      movie('Queued', null, { on_watchlist: true }),
-    ];
-    const data = buildShareData({ email: 'a@b.c', movies });
-    expect(data.shelves[0].top.map((e) => e.title)).toEqual(['Ranked']);
+  it('labels games as Video Games', () => {
+    const data = buildShareData(
+      summary({ shelves: [shelf('games', ['G'])], total_ranked: 1 }),
+    );
+    expect(data.shelves.map((s) => s.label)).toEqual(['Video Games']);
   });
 
-  it('drops shelves with nothing ranked but keeps their count at zero', () => {
-    const data = buildShareData({
-      email: 'a@b.c',
-      movies: [movie('Only', 1)],
-      shows: [show('Unranked', null)],
-    });
+  it('drops shelves with nothing ranked but still totals them', () => {
+    const data = buildShareData(
+      summary({
+        shelves: [shelf('movies', ['Only']), shelf('tv', [])],
+        total_ranked: 1,
+      }),
+    );
     expect(data.shelves.map((s) => s.category)).toEqual<ShareCategory[]>([
       'movies',
     ]);
     expect(data.totalRanked).toBe(1);
   });
 
-  it('labels games as Video Games and totals ranked across shelves', () => {
-    const data = buildShareData({
-      email: 'a@b.c',
-      movies: [movie('M', 1), movie('M2', 2)],
-      shows: [show('S', 1)],
-    });
-    expect(data.totalRanked).toBe(3);
+  // The share-card 404: cards used to print druthers.io/<email-local-part>,
+  // which is neither the real handle nor a route that exists.
+  it('links to the profile only when it actually resolves', () => {
+    const data = buildShareData(
+      summary({ handle: 'avery', profile_public: true }),
+    );
+    expect(data.url).toBe('https://www.druthers.io/u/avery');
+    expect(data.profilePublic).toBe(true);
+    expect(data.handle).toBe('avery');
+  });
+
+  it('falls back to the site when no handle is claimed', () => {
+    const data = buildShareData(summary({ handle: null }));
+    expect(data.url).toBe(SITE_URL);
+    expect(data.profilePublic).toBe(false);
+  });
+
+  it('falls back to the site when the profile is private', () => {
+    // A handle exists, but no shelf is opted in — /v1/public/<handle> 404s.
+    const data = buildShareData(
+      summary({ handle: 'avery', profile_public: false }),
+    );
+    expect(data.url).toBe(SITE_URL);
+    expect(data.profilePublic).toBe(false);
   });
 });

@@ -5,7 +5,7 @@ import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionShows, filterShows, type TVFilters } from '@/lib/tv';
-import type { UserTVShow } from '@/lib/types';
+import type { UserTVShow, Summary } from '@/lib/types';
 import { TVRankingsBoard } from '@/components/TVRankingsBoard';
 import { TVWatchlistCard } from '@/components/TVWatchlistCard';
 import { FilterBar, type FilterValues } from '@/components/FilterBar';
@@ -29,8 +29,12 @@ export default async function TVPage({
   const sp = await searchParams;
 
   let shows: UserTVShow[] = [];
+  let summary: Summary;
   try {
-    shows = await apiFetch<UserTVShow[]>('/v1/users/me/tv-shows');
+    [shows, summary] = await Promise.all([
+      apiFetch<UserTVShow[]>('/v1/users/me/tv-shows'),
+      apiFetch<Summary>('/v1/users/me/summary'),
+    ]);
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect('/login');
     throw err;
@@ -76,7 +80,7 @@ export default async function TVPage({
         </div>
         <div className="flex items-center gap-2">
           <ShareTop5Button
-            data={buildShareData({ email: user.email, shows })}
+            data={buildShareData(summary)}
             initialCategory="tv"
           />
           <Link

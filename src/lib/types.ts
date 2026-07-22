@@ -327,3 +327,34 @@ export interface PublicProfile {
   shelves: PublicShelf[];
   total_ranked: number;
 }
+
+/** One entry on a shelf's Top 5 (`/v1/users/me/summary`). */
+export interface SummaryEntry {
+  rank: number;
+  id: string;
+  title: string;
+  year: number | null;
+  poster_url: string | null;
+}
+
+export interface SummaryShelf {
+  category: 'movies' | 'tv' | 'books' | 'games';
+  label: string;
+  ranked_count: number;
+  queued_count: number;
+  public: boolean;
+  top: SummaryEntry[];
+}
+
+/**
+ * Everything the home page renders, in one request. Replaced four
+ * full-collection fetches — see the API's app/services/summary.py.
+ */
+export interface Summary {
+  handle: string | null;
+  display_name: string | null;
+  /** True only when a handle exists AND a shelf is opted public. */
+  profile_public: boolean;
+  shelves: SummaryShelf[];
+  total_ranked: number;
+}

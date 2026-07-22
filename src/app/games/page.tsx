@@ -5,7 +5,7 @@ import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionGames, filterGames, type GameFilters } from '@/lib/games';
-import type { UserVideoGame } from '@/lib/types';
+import type { UserVideoGame, Summary } from '@/lib/types';
 import { GameRankingsBoard } from '@/components/GameRankingsBoard';
 import { GameWatchlistCard } from '@/components/GameWatchlistCard';
 import { FilterBar, type FilterValues } from '@/components/FilterBar';
@@ -28,8 +28,12 @@ export default async function GamesPage({
   const sp = await searchParams;
 
   let games: UserVideoGame[] = [];
+  let summary: Summary;
   try {
-    games = await apiFetch<UserVideoGame[]>('/v1/users/me/games');
+    [games, summary] = await Promise.all([
+      apiFetch<UserVideoGame[]>('/v1/users/me/games'),
+      apiFetch<Summary>('/v1/users/me/summary'),
+    ]);
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect('/login');
     throw err;
@@ -69,7 +73,7 @@ export default async function GamesPage({
         </div>
         <div className="flex items-center gap-2">
           <ShareTop5Button
-            data={buildShareData({ email: user.email, games })}
+            data={buildShareData(summary)}
             initialCategory="games"
           />
           <Link

@@ -35,7 +35,7 @@ export default async function SettingsPage() {
           <p className="text-sm text-neutral-400">
             Personal credentials for the{' '}
             <a
-              href="https://github.com/ALeonard9/aleonard.us-mcp"
+              href="https://github.com/ALeonard9/druthers-mcp"
               className="text-brass hover:text-brass-bright"
               rel="noreferrer"
               target="_blank"

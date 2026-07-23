@@ -27,24 +27,30 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
   const router = useRouter();
   const btnRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!clientId) return;
 
     async function onCredential(resp: GoogleCredentialResponse) {
       setError(null);
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: resp.credential }),
-      });
-      if (res.ok) {
-        router.push('/');
-        router.refresh();
-        return;
+      setLoading(true);
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: resp.credential }),
+        });
+        if (res.ok) {
+          router.push('/');
+          router.refresh();
+          return;
+        }
+        const data = await res.json().catch(() => null);
+        setError(data?.error ?? 'Google sign-in failed. Try again.');
+      } finally {
+        setLoading(false);
       }
-      const data = await res.json().catch(() => null);
-      setError(data?.error ?? 'Google sign-in failed. Try again.');
     }
 
     function init() {
@@ -77,13 +83,22 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
   if (!clientId) {
     return (
       <p className="text-sm text-amber-400">
-        Google sign-in isn’t configured (set NEXT_PUBLIC_GOOGLE_CLIENT_ID).
+        Google sign-in isn&apos;t configured (set NEXT_PUBLIC_GOOGLE_CLIENT_ID).
       </p>
     );
   }
+
   return (
     <div className="flex flex-col items-center gap-3">
-      <div ref={btnRef} className="flex justify-center" />
+      <div
+        ref={btnRef}
+        className="flex justify-center"
+        style={{
+          pointerEvents: loading ? 'none' : 'auto',
+          opacity: loading ? 0.5 : 1,
+        }}
+      />
+      {loading && <p className="text-sm text-neutral-400">Signing in...</p>}
       {error && <p className="text-sm text-red-400">{error}</p>}
     </div>
   );

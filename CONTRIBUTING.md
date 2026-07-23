@@ -1,6 +1,6 @@
 # Contributing
 
-This repo follows the shared aleonard.us SDLC — see
+This repo follows the shared druthers.io SDLC — see
 [`SDLC.md`](https://github.com/ALeonard9/druthers-api/blob/main/SDLC.md) in the
 API repo (canonical).
 
@@ -16,8 +16,9 @@ API repo (canonical).
 
 ```bash
 npm install
-cp .env.example .env.local
 npm run dev
 ```
 
-Point `API_BASE_URL` at a running `druthers-api`.
+Defaults to a `druthers-api` on `http://127.0.0.1:8000`. To point elsewhere, set
+`API_BASE_URL` in a root-level `.env.local` (Next.js loads it automatically; not
+committed).

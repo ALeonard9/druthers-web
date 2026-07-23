@@ -1,4 +1,5 @@
 fail_fast: true
+default_stages: [pre-commit]   # existing hooks run per-commit; tests run pre-push (below)
 
 repos:
   - repo: https://github.com/gitleaks/gitleaks
@@ -30,9 +31,12 @@ repos:
         language: system
         pass_filenames: false
         types: [ts, tsx]
-      - id: vitest
-        name: vitest
-        entry: npm run test
+      # Tests run at PRE-PUSH (not per-commit) and only for what changed
+      # (vitest `related` runs the tests that import the changed files).
+      # CI runs the full suite.
+      - id: vitest-changed
+        name: vitest (changed only, pre-push)
+        entry: npx vitest related --run
         language: system
-        pass_filenames: false
-        always_run: true
+        stages: [pre-push]
+        types_or: [ts, tsx]

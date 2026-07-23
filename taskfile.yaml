@@ -1,6 +1,6 @@
 version: '3'
 
-# Mirrors the aleonard.us-api task interface so every service is driven the same
+# Mirrors the druthers-api task interface so every service is driven the same
 # way. LZ (landing zone: m3 = local Mac, gs = homelab server) and ENV template
 # the compose project, matching the portability seam used across the stack.
 tasks:

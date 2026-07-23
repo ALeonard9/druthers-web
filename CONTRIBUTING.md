@@ -1,7 +1,7 @@
 # Contributing
 
 This repo follows the shared aleonard.us SDLC — see
-[`SDLC.md`](https://github.com/ALeonard9/aleonard.us-api/blob/main/SDLC.md) in the
+[`SDLC.md`](https://github.com/ALeonard9/druthers-api/blob/main/SDLC.md) in the
 API repo (canonical).
 
 ## TL;DR
@@ -20,4 +20,4 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Point `API_BASE_URL` at a running `aleonard.us-api`.
+Point `API_BASE_URL` at a running `druthers-api`.

@@ -2,7 +2,7 @@
 
 What each provider requires, what we display, and where. The user-facing
 notices live on **`/about`** ("The data on the shelves"). Verified against
-each provider's site 2026-07-18 (aleonard.us-web#14).
+each provider's site 2026-07-18 (druthers-web#14).
 
 | Provider | Used for | License / requirement (verified) | How we satisfy it |
 |---|---|---|---|

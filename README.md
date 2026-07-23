@@ -1,7 +1,7 @@
-# aleonard.us-web
+# druthers-web
 
 The web frontend for [aleonard.us](https://www.aleonard.us) — a Next.js app that
-consumes the [`aleonard.us-api`](https://github.com/ALeonard9/aleonard.us-api)
+consumes the [`druthers-api`](https://github.com/ALeonard9/druthers-api)
 backend. First slice: **Movies** (list, watched/watchlist, notes, search & add).
 
 ## Stack
@@ -17,7 +17,7 @@ backend. First slice: **Movies** (list, watched/watchlist, notes, search & add).
 ## Architecture
 
 ```
-Browser ──▶ Next.js (BFF route handlers) ──▶ aleonard.us-api /v1 ──▶ Postgres
+Browser ──▶ Next.js (BFF route handlers) ──▶ druthers-api /v1 ──▶ Postgres
              stores JWT in httpOnly cookie
 ```
 
@@ -51,11 +51,11 @@ Movies page renders that user's tracked movies.
 
 | Var | Description |
 |-----|-------------|
-| `API_BASE_URL` | Base URL of `aleonard.us-api` (server-side only) |
+| `API_BASE_URL` | Base URL of `druthers-api` (server-side only) |
 | `LZ` / `ENV` | Landing zone (`m3`/`gs`) and environment, for compose templating |
 
 ## Deploy
 
 `Dockerfile` builds a standalone non-root image; `publish_docker.yaml` pushes to
-`ghcr.io/aleonard9/aleonard.us-web` on GitHub release. Runs on the homelab behind
+`ghcr.io/aleonard9/druthers-web` on GitHub release. Runs on the homelab behind
 the Cloudflare tunnel alongside the API (see `www.aleonard.us-docker`).

@@ -1,4 +1,4 @@
-// Shared types mirroring the aleonard.us-api /v1 responses.
+// Shared types mirroring the druthers-api /v1 responses.
 
 export interface Movie {
   id: string;

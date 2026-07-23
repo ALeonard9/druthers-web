@@ -27,7 +27,7 @@ jobs:
       IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID_QA }}/druthers/druthers-web:main-${{ github.sha }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       # An empty client id bakes into the bundle and breaks sign-in
       # SILENTLY (PROMOTION.md) — fail loudly instead.

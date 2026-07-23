@@ -1,61 +1,63 @@
-# druthers-web
+# Druthers Web
 
-The web frontend for [aleonard.us](https://www.aleonard.us) — a Next.js app that
-consumes the [`druthers-api`](https://github.com/ALeonard9/druthers-api)
-backend. First slice: **Movies** (list, watched/watchlist, notes, search & add).
+> **[Druthers](https://druthers.io)** is social taste-sharing for the things you love —
+> **Movies, TV, Books, and Games**. Track what you've watched, played, and read;
+> share a formatted top-5; and find the overlap with a friend.
 
-## Stack
+This is the **web app** — a fast, modern Next.js frontend with a
+backend-for-frontend layer that keeps your session token off the client entirely.
+It talks to [`druthers-api`](https://github.com/ALeonard9/druthers-api) and runs
+serverless on **Google Cloud Run**.
 
-- **Next.js 16** (App Router) + **React 19** + **TypeScript**
-- **Tailwind CSS v4**
-- **Backend-for-Frontend (BFF)**: route handlers under `src/app/api/*` proxy the
-  API and keep the JWT in an **httpOnly cookie** — the token never reaches
-  client JavaScript.
-- **Vitest** (unit) + **Playwright** (smoke E2E)
-- Containerized (standalone output) and published to **GHCR** on release.
+## Highlights
+
+- **Next.js 16** (App Router) · **React 19** · **TypeScript** · **Tailwind CSS v4**
+- **Sign in with Google**, then track and rate across all four domains
+- **Secure by design** — a BFF layer (`src/app/api/*`) proxies the API and keeps the
+  JWT in an **httpOnly cookie**, so the token never reaches client JavaScript
+- **Tested** — Vitest (unit) + Playwright (E2E), run in CI on every PR
 
 ## Architecture
 
 ```
-Browser ──▶ Next.js (BFF route handlers) ──▶ druthers-api /v1 ──▶ Postgres
-             stores JWT in httpOnly cookie
+Browser ──▶ Next.js BFF (httpOnly cookie) ──▶ druthers-api /v1 ──▶ Neon Postgres
 ```
 
-Server components read `GET /v1/users/me/movies` directly; client components call
-same-origin BFF routes (`/api/movies/*`) which attach the bearer token.
+Server components read your library directly; client components call same-origin
+BFF routes (`/api/*`) that attach the bearer token server-side.
 
 ## Develop
 
 ```bash
 npm install
-cp .env.example .env.local     # API_BASE_URL=http://127.0.0.1:8000
-npm run dev                    # http://localhost:3000
+cp .env.example .env.local        # API_BASE_URL=http://127.0.0.1:8000
+npm run dev                       # http://localhost:3000
 ```
 
-Requires the API running (see the api repo). Sign in with an API user; the
-Movies page renders that user's tracked movies.
-
-## Scripts / tasks
+Requires [`druthers-api`](https://github.com/ALeonard9/druthers-api) running locally.
 
 | Command | Purpose |
-|---------|---------|
-| `npm run dev` / `task dev` | Dev server |
+|---|---|
+| `npm run dev` | Dev server |
 | `npm run build` | Production build (standalone) |
-| `npm run lint` / `task lint` | ESLint |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run test` / `task test` | Vitest unit tests |
-| `npm run test:e2e` / `task e2e` | Playwright smoke |
-| `task du -- prod` | Run the container via compose |
+| `npm run lint` / `npm run typecheck` | ESLint · `tsc --noEmit` |
+| `npm run test` / `npm run test:e2e` | Vitest · Playwright |
 
-## Environment
-
-| Var | Description |
-|-----|-------------|
-| `API_BASE_URL` | Base URL of `druthers-api` (server-side only) |
-| `LZ` / `ENV` | Landing zone (`m3`/`gs`) and environment, for compose templating |
+**Pre-commit** runs Gitleaks + ESLint + typecheck on every commit; **tests run at
+_pre-push_** on only the files that changed (`vitest related`). CI runs the full
+suite as the merge gate.
 
 ## Deploy
 
-`Dockerfile` builds a standalone non-root image; `publish_docker.yaml` pushes to
-`ghcr.io/aleonard9/druthers-web` on GitHub release. Runs on the homelab behind
-the Cloudflare tunnel alongside the API (see `www.aleonard.us-docker`).
+`Dockerfile` builds a hardened, non-root **standalone** image; on GitHub release it
+publishes to GHCR and deploys to **Cloud Run** (see
+[`druthers-infra`](https://github.com/ALeonard9/druthers-infra)).
+
+## Security
+
+OSS scanning on every PR — Gitleaks, Semgrep, Trivy, and Dependabot — with GitHub
+push protection. See [`SECURITY.md`](https://github.com/ALeonard9/.github/blob/main/SECURITY.md).
+
+## License
+
+GNU General Public License v3.0 — see [LICENSE](LICENSE).

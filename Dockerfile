@@ -29,6 +29,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
+# Harden the runtime image: patch OS crypto libs and drop npm/npx. The Next.js
+# standalone server runs via `node server.js` and never invokes npm, so npm's
+# bundled (and vulnerable) deps — tar, minimatch, sigstore, glob, cross-spawn —
+# should not ship in the runtime image.
+RUN apk -U upgrade --no-cache libcrypto3 libssl3 \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static

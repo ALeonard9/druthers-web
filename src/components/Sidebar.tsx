@@ -136,16 +136,28 @@ export function Sidebar() {
           <NavLink key={item.href} item={item} active={active === item.href} />
         ))}
       </nav>
-      <Link
-        href="/about"
-        className={`mt-auto px-3 py-2 text-xs transition-colors ${
-          pathname === '/about'
-            ? 'text-paper'
-            : 'text-neutral-500 hover:text-paper'
-        }`}
-      >
-        Why “druthers”?
-      </Link>
+      <div className="mt-auto flex flex-col gap-0.5">
+        <Link
+          href="/developers"
+          className={`px-3 py-1 text-xs transition-colors ${
+            pathname === '/developers'
+              ? 'text-paper'
+              : 'text-neutral-500 hover:text-paper'
+          }`}
+        >
+          For developers
+        </Link>
+        <Link
+          href="/about"
+          className={`px-3 py-1 text-xs transition-colors ${
+            pathname === '/about'
+              ? 'text-paper'
+              : 'text-neutral-500 hover:text-paper'
+          }`}
+        >
+          Why “druthers”?
+        </Link>
+      </div>
     </aside>
   );
 }

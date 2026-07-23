@@ -5,8 +5,18 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      all-dependencies:
+      # Group only minor+patch so one unshippable major can't block safe updates.
+      # Majors arrive as individual PRs to be evaluated one at a time.
+      minor-and-patch:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # TypeScript 7 (Go-based compiler) is not yet supported by typescript-eslint.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # ESLint 10 breaks eslint-config-next's bundled eslint-plugin-react.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

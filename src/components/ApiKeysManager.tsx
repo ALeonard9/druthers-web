@@ -77,6 +77,12 @@ export function ApiKeysManager() {
 
   return (
     <div className="flex flex-col gap-3">
+      <div className="rounded-lg border border-line bg-panel px-4 py-3">
+        <p className="text-sm text-neutral-300">
+          This key is for your personal use only — do not share it or use it to build public-facing integrations.
+        </p>
+      </div>
+
       {minted && (
         <div className="rounded-lg border border-brass bg-brass-wash p-4">
           <p className="text-sm font-medium text-brass">

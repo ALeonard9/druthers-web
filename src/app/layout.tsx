@@ -16,8 +16,18 @@ const instrumentSans = Instrument_Sans({
   variable: '--font-instrument',
 });
 
+// Add environment marker to title when in QA environment
+const getTitle = () => {
+  const env = (process.env.NEXT_PUBLIC_APP_ENV ?? '').toLowerCase();
+  const baseTitle = 'Druthers';
+  if (env === 'qa') {
+    return `[QA] ${baseTitle}`;
+  }
+  return baseTitle;
+};
+
 export const metadata: Metadata = {
-  title: 'Druthers',
+  title: getTitle(),
   description: 'Your favorites — watched, read, played, and ranked.',
 };
 

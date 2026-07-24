@@ -1,6 +1,6 @@
 services:
   web-prod:
-    container_name: ${LZ}_phoenix_web_${ENV}
+    container_name: ${LZ}_druthers_web_${ENV}
     image: ghcr.io/aleonard9/druthers-web:prod
     restart: unless-stopped
     env_file:

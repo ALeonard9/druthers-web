@@ -16,12 +16,15 @@ const instrumentSans = Instrument_Sans({
   variable: '--font-instrument',
 });
 
-// Add environment marker to title when in QA environment
+// Add environment marker to title outside prod (mirrors EnvBadge).
 const getTitle = () => {
-  const env = (process.env.NEXT_PUBLIC_APP_ENV ?? '').toLowerCase();
+  const env = (process.env.NEXT_PUBLIC_APP_ENV ?? 'dev').toLowerCase();
   const baseTitle = 'Druthers';
   if (env === 'qa') {
     return `[QA] ${baseTitle}`;
+  }
+  if (env !== 'prod' && env !== 'production') {
+    return `[DEV] ${baseTitle}`;
   }
   return baseTitle;
 };

@@ -1,6 +1,6 @@
 services:
   web-dev:
-    container_name: ${LZ}_phoenix_web_${ENV}
+    container_name: ${LZ}_druthers_web_${ENV}
     build:
       context: .
       dockerfile: Dockerfile

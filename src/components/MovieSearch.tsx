@@ -38,18 +38,18 @@ export function MovieSearch() {
   }
 
   async function add(m: MovieSearchResult, list: 'watchlist' | 'rankings') {
-    setAdded((s) => ({ ...s, [m.imdb]: 'adding' }));
+    setAdded((s) => ({ ...s, [m.tmdb]: 'adding' }));
     const res = await fetch('/api/movies/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        imdb: m.imdb,
+        tmdb: m.tmdb,
         title: m.title,
         poster_url: m.poster_url,
         list,
       }),
     });
-    setAdded((s) => ({ ...s, [m.imdb]: res.ok ? 'done' : 'error' }));
+    setAdded((s) => ({ ...s, [m.tmdb]: res.ok ? 'done' : 'error' }));
     if (res.ok) router.push('/movies');
   }
 
@@ -75,10 +75,10 @@ export function MovieSearch() {
 
       <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {results.map((m) => {
-          const state = added[m.imdb];
+          const state = added[m.tmdb];
           return (
             <li
-              key={m.imdb}
+              key={m.tmdb}
               className="flex flex-col overflow-hidden rounded-lg border border-line bg-panel"
             >
               <div className="aspect-[2/3] bg-line">

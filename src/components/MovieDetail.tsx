@@ -94,7 +94,7 @@ export function MovieDetail({
           <p className="mt-1 flex flex-wrap gap-x-3 text-sm text-neutral-400">
             {movie.rated && <span>{movie.rated}</span>}
             {movie.runtime && <span>{movie.runtime} min</span>}
-            {movie.rating_imdb != null && <span>★ {movie.rating_imdb} IMDb</span>}
+            {movie.rating_tmdb != null && <span>★ {movie.rating_tmdb} TMDB</span>}
             {movie.genre && <span>{movie.genre}</span>}
           </p>
         </div>

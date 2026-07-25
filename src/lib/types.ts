@@ -3,9 +3,12 @@
 export interface Movie {
   id: string;
   title: string;
-  imdb: string;
+  tmdb: number | null;
+  imdb: string | null;
   release_date: string | null;
+  /** Legacy OMDb-era value, frozen and never displayed (druthers-api#163). */
   rating_imdb: number | null;
+  rating_tmdb: number | null;
   runtime: number | null;
   language: string | null;
   rated: string | null;
@@ -31,11 +34,14 @@ export interface UserMovie {
 }
 
 export interface MovieSearchResult {
-  imdb: string;
+  /** TMDB id is the catalog key; TMDB's title search returns no IMDb id. */
+  tmdb: number;
+  imdb: string | null;
   title: string;
   year: string | null;
   poster_url: string | null;
   type: string | null;
+  popularity: number | null;
   on_watchlist: boolean;
   on_rankings: boolean;
   rank: number | null;

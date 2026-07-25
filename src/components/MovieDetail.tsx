@@ -105,23 +105,12 @@ export function MovieDetail({
           <Field label="Director" value={movie.director} />
           <Field label="Cast" value={movie.actors} />
           <Field label="Language" value={movie.language} />
-          {movie.imdb && (
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-neutral-500">
-                IMDb
-              </dt>
-              <dd className="text-sm">
-                <a
-                  href={`https://www.imdb.com/title/${movie.imdb}/`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-brass hover:text-brass-bright"
-                >
-                  {movie.imdb}
-                </a>
-              </dd>
-            </div>
-          )}
+          {/*
+            No IMDb id here. Since the TMDB migration (druthers-api#163) IMDb
+            is a legacy column we still store but deliberately don't present —
+            movie data, ratings and posters all come from TMDB now, and
+            surfacing an IMDb id implies a source relationship we don't have.
+          */}
         </dl>
 
         {/* Lists */}

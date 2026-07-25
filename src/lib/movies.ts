@@ -43,6 +43,23 @@ export function byRank(a: UserMovie, b: UserMovie): number {
 }
 
 /**
+ * The lowest rank actually present in a placed list — the floor the rankings
+ * pager may scroll to.
+ *
+ * The API's contract is 1-based, but legacy rows imported from the old site
+ * can carry a 0-based rank (see druthers-api backfill_rank_base). The board
+ * windows by rank, so anchoring that window on a hardcoded 1 filtered those
+ * rows out of every page *and* left them unreachable — invisible, but still
+ * counted in the total, so the pager read "Showing #1–#25 of 340" while
+ * rendering 24 rows. Anchoring on the data instead degrades gracefully
+ * whatever the ranks turn out to be. Pure — safe to test.
+ */
+export function lowestPlacedRank(placed: UserMovie[]): number {
+  const ranks = placed.map((m) => m.rank).filter((r): r is number => r != null);
+  return ranks.length ? Math.min(...ranks) : 1;
+}
+
+/**
  * Split a user's tracked movies into the lists the UI renders:
  *  - watchlist:      on_watchlist, by title
  *  - rankingsPlaced: on_rankings with a rank position, ordered by rank

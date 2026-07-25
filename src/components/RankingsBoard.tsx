@@ -22,6 +22,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { UserMovie } from '@/lib/types';
+import { lowestPlacedRank } from '@/lib/movies';
 
 const WINDOW = 25;
 
@@ -193,7 +194,10 @@ export function RankingsBoard({
   placedCount: number;
 }) {
   const router = useRouter();
-  const [start, setStart] = useState(1);
+  // Anchor the window on the lowest rank present, not the 1-based contract —
+  // see lowestPlacedRank. A hardcoded 1 made out-of-contract rows unreachable.
+  const lowestRank = lowestPlacedRank(placed);
+  const [start, setStart] = useState(lowestRank);
   const [goto, setGoto] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -201,7 +205,9 @@ export function RankingsBoard({
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
-  const windowItems = placed.filter((m) => (m.rank ?? 0) >= start).slice(0, WINDOW);
+  const windowItems = placed
+    .filter((m) => (m.rank ?? lowestRank) >= start)
+    .slice(0, WINDOW);
   const byId = (id: string) =>
     [...placed, ...unplaced].find((m) => m.movie.id === id);
 
@@ -209,7 +215,7 @@ export function RankingsBoard({
     e.preventDefault();
     const n = parseInt(goto, 10);
     if (Number.isFinite(n) && n >= 1) {
-      setStart(Math.max(1, Math.min(n, Math.max(1, placedCount))));
+      setStart(Math.max(lowestRank, Math.min(n, Math.max(lowestRank, placedCount))));
     }
   }
 
@@ -328,8 +334,8 @@ export function RankingsBoard({
             </span>
             <span className="flex gap-2">
               <button
-                onClick={() => setStart((s) => Math.max(1, s - WINDOW))}
-                disabled={start <= 1}
+                onClick={() => setStart((s) => Math.max(lowestRank, s - WINDOW))}
+                disabled={start <= lowestRank}
                 className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
               >
                 ↑ up

@@ -42,26 +42,36 @@ export default function AboutPage() {
           The data on the shelves
         </h2>
         <ul className="mt-3 flex flex-col gap-2.5 text-sm leading-relaxed text-neutral-400">
-          <li>
-            Movie data and posters from the{' '}
-            <a
-              href="https://www.omdbapi.com/"
-              className="text-brass hover:text-brass-bright"
-              rel="noreferrer"
-              target="_blank"
-            >
-              OMDb API
-            </a>{' '}
-            (licensed{' '}
-            <a
-              href="https://creativecommons.org/licenses/by-nc/4.0/"
-              className="underline decoration-line hover:text-neutral-300"
-              rel="noreferrer"
-              target="_blank"
-            >
-              CC BY-NC 4.0
-            </a>
-            ).
+          <li className="flex flex-col gap-2">
+            <span>
+              Movie data and posters from{' '}
+              <a
+                href="https://www.themoviedb.org/"
+                className="text-brass hover:text-brass-bright"
+                rel="noreferrer"
+                target="_blank"
+              >
+                TMDB
+              </a>
+              .
+            </span>
+            {/*
+              TMDB requires this exact sentence alongside an unmodified logo
+              for every application using their data or images. Don't reword
+              it, and don't recolor or crop the mark.
+              https://www.themoviedb.org/about/logos-attribution
+            */}
+            <span className="flex items-center gap-2.5">
+              <img
+                src="/tmdb.svg"
+                alt="TMDB"
+                className="h-3 w-auto shrink-0"
+              />
+              <span className="text-xs text-neutral-500">
+                This product uses the TMDB API but is not endorsed or certified
+                by TMDB.
+              </span>
+            </span>
           </li>
           <li>
             TV shows, episodes, and air dates from{' '}

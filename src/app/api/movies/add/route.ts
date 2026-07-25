@@ -5,10 +5,10 @@ import type { Movie, UserMovie } from '@/lib/types';
 // Add a movie to one of the user's lists. Ensures the catalog entry exists
 // (creating it requires admin), then marks it for the requested list.
 export async function POST(request: Request) {
-  const { imdb, title, poster_url, list } = await request.json();
-  if (!imdb || !title) {
+  const { tmdb, title, poster_url, list } = await request.json();
+  if (!tmdb || !title) {
     return NextResponse.json(
-      { error: 'imdb and title are required' },
+      { error: 'tmdb and title are required' },
       { status: 400 },
     );
   }
@@ -19,12 +19,14 @@ export async function POST(request: Request) {
     try {
       movie = await apiFetch<Movie>('/v1/movies', {
         method: 'POST',
-        body: { imdb, title, poster_url: poster_url ?? null },
+        body: { tmdb, title, poster_url: poster_url ?? null },
       });
     } catch (err) {
+      // 400 means the catalog already has it — find the existing row so the
+      // add still lands on the user's list. Keyed on tmdb since #163.
       if (err instanceof ApiError && err.status === 400) {
         const all = await apiFetch<Movie[]>('/v1/movies');
-        const found = all.find((m) => m.imdb === imdb);
+        const found = all.find((m) => m.tmdb === tmdb);
         if (!found) throw err;
         movie = found;
       } else {

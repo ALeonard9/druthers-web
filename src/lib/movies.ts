@@ -31,7 +31,7 @@ export function filterMovies(
     if (f.yearMax != null && (m.year == null || m.year > f.yearMax)) return false;
     if (
       f.ratingMin != null &&
-      (m.rating_imdb == null || m.rating_imdb < f.ratingMin)
+      (m.rating_tmdb == null || m.rating_tmdb < f.ratingMin)
     )
       return false;
     return true;

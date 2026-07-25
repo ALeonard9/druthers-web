@@ -17,6 +17,7 @@ function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
       imdb: `tt${partial.id}`,
       release_date: null,
       rating_imdb: null,
+      rating_tmdb: null,
       runtime: null,
       language: null,
       rated: null,
@@ -67,7 +68,8 @@ describe('filterMovies', () => {
     actors: 'Leonardo DiCaprio',
     genre: 'Sci-Fi',
     year: 2010,
-    rating_imdb: 8.8,
+    rating_imdb: null,
+    rating_tmdb: 8.8,
   };
   movies[1].movie = {
     ...movies[1].movie,
@@ -75,7 +77,8 @@ describe('filterMovies', () => {
     director: 'Nick Cassavetes',
     genre: 'Romance',
     year: 2004,
-    rating_imdb: 7.8,
+    rating_imdb: null,
+    rating_tmdb: 7.8,
   };
   movies[2].movie = {
     ...movies[2].movie,
@@ -83,7 +86,8 @@ describe('filterMovies', () => {
     director: 'Christopher Nolan',
     genre: 'War',
     year: 2017,
-    rating_imdb: 7.8,
+    rating_imdb: null,
+    rating_tmdb: 7.8,
   };
 
   it('matches text across title, director, and cast', () => {

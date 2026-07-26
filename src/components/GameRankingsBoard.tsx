@@ -22,6 +22,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { UserVideoGame } from '@/lib/types';
+import { pagerWindow } from '@/lib/pagerWindow';
 
 const WINDOW = 25;
 
@@ -201,6 +202,9 @@ export function GameRankingsBoard({
   placedCount: number;
 }) {
   const router = useRouter();
+  // `start` is a 1-based position within `placed` (whatever's currently
+  // displayed — filtered or not), not the item's real rank — see
+  // pagerWindow for why (api#225 / web#80).
   const [start, setStart] = useState(1);
   const [goto, setGoto] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -209,7 +213,8 @@ export function GameRankingsBoard({
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
-  const windowItems = placed.filter((g) => (g.rank ?? 0) >= start).slice(0, WINDOW);
+  const win = pagerWindow(start, WINDOW, placedCount);
+  const windowItems = placed.slice(win.start - 1, win.start - 1 + win.length);
   const byId = (id: string) =>
     [...placed, ...unplaced].find((g) => g.game.id === id);
 
@@ -217,7 +222,7 @@ export function GameRankingsBoard({
     e.preventDefault();
     const n = parseInt(goto, 10);
     if (Number.isFinite(n) && n >= 1) {
-      setStart(Math.max(1, Math.min(n, Math.max(1, placedCount))));
+      setStart(n);
     }
   }
 
@@ -331,22 +336,19 @@ export function GameRankingsBoard({
         <>
           <div className="mb-2 flex items-center justify-between text-xs text-neutral-500">
             <span>
-              Showing #{windowItems[0]?.rank ?? start}–#
-              {windowItems[windowItems.length - 1]?.rank ?? start} of {placedCount}
+              Showing #{win.start}–#{win.end} of {placedCount}
             </span>
             <span className="flex gap-2">
               <button
-                onClick={() => setStart((s) => Math.max(1, s - WINDOW))}
-                disabled={start <= 1}
+                onClick={() => setStart(win.start - WINDOW)}
+                disabled={!win.hasPrev}
                 className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
               >
                 ↑ up
               </button>
               <button
-                onClick={() =>
-                  setStart((s) => Math.min(placedCount, s + WINDOW))
-                }
-                disabled={(windowItems[windowItems.length - 1]?.rank ?? 0) >= placedCount}
+                onClick={() => setStart(win.start + WINDOW)}
+                disabled={!win.hasNext}
                 className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
               >
                 ↓ down

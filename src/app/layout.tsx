@@ -1,8 +1,9 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Fraunces, Instrument_Sans } from 'next/font/google';
 import './globals.css';
 import { Sidebar, BottomTabs } from '@/components/Sidebar';
 import { TopBar } from '@/components/TopBar';
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 
 // Display face: bookish, characterful — wordmark, page titles, rank numerals.
 const fraunces = Fraunces({
@@ -32,6 +33,16 @@ const getTitle = () => {
 export const metadata: Metadata = {
   title: getTitle(),
   description: 'Your favorites — watched, read, played, and ranked.',
+  appleWebApp: {
+    title: 'Druthers',
+    statusBarStyle: 'black-translucent',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#101014',
+  colorScheme: 'dark',
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -49,12 +60,13 @@ export default function RootLayout({
           <Sidebar />
           <div className="flex min-w-0 flex-1 flex-col">
             <TopBar />
-            <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 pb-24 md:px-8 md:pb-8">
+            <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pb-8">
               {children}
             </main>
           </div>
         </div>
         <BottomTabs />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

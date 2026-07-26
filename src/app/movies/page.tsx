@@ -1,22 +1,17 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { partitionMovies, filterMovies, type MovieFilters } from '@/lib/movies';
+import { partitionMovies, filterMovies } from '@/lib/movies';
+import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
 import type { UserMovie, Summary } from '@/lib/types';
 import { RankingsBoard } from '@/components/RankingsBoard';
-import { WatchlistCard } from '@/components/WatchlistCard';
-import { FilterBar, type FilterValues } from '@/components/FilterBar';
+import { FilterBar } from '@/components/FilterBar';
+import { SectionTabs } from '@/components/SectionTabs';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
-
-function num(v: string | undefined): number | undefined {
-  if (!v) return undefined;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : undefined;
-}
 
 export default async function MoviesPage({
   searchParams,
@@ -39,35 +34,28 @@ export default async function MoviesPage({
     throw err;
   }
 
-  const filters: MovieFilters = {
-    q: sp.q,
-    genre: sp.genre,
-    yearMin: num(sp.yearMin),
-    yearMax: num(sp.yearMax),
-    ratingMin: num(sp.ratingMin),
-  };
-  const filterValues: FilterValues = {
-    q: sp.q ?? '',
-    genre: sp.genre ?? '',
-    yearMin: sp.yearMin ?? '',
-    yearMax: sp.yearMax ?? '',
-    ratingMin: sp.ratingMin ?? '',
-  };
-  const hasFilter = Object.values(filterValues).some(Boolean);
-
-  const filtered = filterMovies(movies, filters);
-  const { watchlist, rankingsPlaced, rankingsUnplaced } =
-    partitionMovies(filtered);
+  const { filters, filterValues, hasFilter } = parseFilterParams(sp);
+  const { rankingsPlaced, rankingsUnplaced } = partitionMovies(
+    filterMovies(movies, filters),
+  );
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionTabs
+        tabs={[
+          { href: '/movies', label: 'Rankings' },
+          { href: '/movies/watchlist', label: 'Watchlist' },
+        ]}
+      />
+
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="font-display text-3xl font-medium tracking-tight text-paper">My Movies</h1>
+          <h1 className="font-display text-3xl font-medium tracking-tight text-paper">
+            My Movies
+          </h1>
           <p className="text-sm text-neutral-400">
-            {watchlist.length} on watchlist · {rankingsPlaced.length} ranked
-            {rankingsUnplaced.length > 0 &&
-              ` · ${rankingsUnplaced.length} to rank`}
+            {rankingsPlaced.length} ranked
+            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
             {hasFilter && ' (filtered)'}
           </p>
         </div>
@@ -85,47 +73,56 @@ export default async function MoviesPage({
         </div>
       </div>
 
-      <FilterBar initial={filterValues} />
+      <FilterBar
+        initial={filterValues}
+        basePath="/movies"
+        genreOptions={optionsWithCounts(movies.map((m) => m.movie.genre))}
+        extras={[
+          {
+            kind: 'select',
+            name: 'rated',
+            label: 'Rated',
+            options: optionsWithCounts(movies.map((m) => m.movie.rated)),
+          },
+          {
+            kind: 'number',
+            name: 'runtimeMax',
+            label: 'Max runtime (min)',
+            width: 'w-28',
+          },
+        ]}
+      />
 
-      <div className="grid gap-10 lg:grid-cols-2">
-        <section>
-          <h2 className="mb-1 text-lg font-medium text-neutral-200">Watchlist</h2>
-          <p className="mb-4 text-xs text-neutral-500">Movies you want to watch.</p>
-          {watchlist.length === 0 ? (
-            <p className="text-sm text-neutral-500">
-              {hasFilter ? (
-                'No watchlist movies match the filter.'
-              ) : (
-                <>
-                  Nothing queued —{' '}
-                  <Link href="/movies/search" className="text-brass">
-                    add one
-                  </Link>
-                  .
-                </>
-              )}
-            </p>
-          ) : (
-            <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              {watchlist.map((m) => (
-                <WatchlistCard key={m.id} userMovie={m} />
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section>
-          <h2 className="mb-1 text-lg font-medium text-neutral-200">Rankings</h2>
-          <p className="mb-4 text-xs text-neutral-500">
-            Drag a “to rank” movie into the list, or use Go To to jump to a spot.
+      <section>
+        <p className="mb-4 text-xs text-neutral-500">
+          Drag a “to rank” movie into the list, or use Go To to jump to a spot.
+        </p>
+        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
+          <p className="text-sm text-neutral-500">
+            {hasFilter ? (
+              'No ranked movies match the filter.'
+            ) : (
+              <>
+                Nothing ranked yet —{' '}
+                <Link href="/movies/search" className="text-brass">
+                  add a movie
+                </Link>{' '}
+                or promote one from your{' '}
+                <Link href="/movies/watchlist" className="text-brass">
+                  watchlist
+                </Link>
+                .
+              </>
+            )}
           </p>
+        ) : (
           <RankingsBoard
             placed={rankingsPlaced}
             unplaced={rankingsUnplaced}
             placedCount={rankingsPlaced.length}
           />
-        </section>
-      </div>
+        )}
+      </section>
     </div>
   );
 }

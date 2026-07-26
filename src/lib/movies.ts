@@ -1,4 +1,5 @@
 import type { UserMovie } from './types';
+import { hasToken } from './filterParams';
 
 const RANK_MAX = 1e9;
 
@@ -8,15 +9,19 @@ export interface MovieFilters {
   yearMin?: number;
   yearMax?: number;
   ratingMin?: number;
+  rated?: string; // MPAA certificate (G, PG, PG-13, R, NC-17, NR)
+  runtimeMax?: number; // minutes
 }
 
-/** Filter tracked movies by text (title/director/cast), genre, year, rating. */
+/**
+ * Filter tracked movies by text (title/director/cast), genre, year, rating,
+ * MPAA certificate and runtime.
+ */
 export function filterMovies(
   movies: UserMovie[],
   f: MovieFilters,
 ): UserMovie[] {
   const q = f.q?.trim().toLowerCase();
-  const genre = f.genre?.trim().toLowerCase();
   return movies.filter((um) => {
     const m = um.movie;
     if (q) {
@@ -26,13 +31,17 @@ export function filterMovies(
         .toLowerCase();
       if (!hay.includes(q)) return false;
     }
-    if (genre && !(m.genre ?? '').toLowerCase().includes(genre)) return false;
+    if (f.genre && !hasToken(m.genre, f.genre)) return false;
     if (f.yearMin != null && (m.year == null || m.year < f.yearMin)) return false;
     if (f.yearMax != null && (m.year == null || m.year > f.yearMax)) return false;
     if (
       f.ratingMin != null &&
       (m.rating_tmdb == null || m.rating_tmdb < f.ratingMin)
     )
+      return false;
+    if (f.rated && (m.rated ?? '').toLowerCase() !== f.rated.toLowerCase())
+      return false;
+    if (f.runtimeMax != null && (m.runtime == null || m.runtime > f.runtimeMax))
       return false;
     return true;
   });

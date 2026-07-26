@@ -7,13 +7,13 @@ import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionBooks, filterBooks } from '@/lib/books';
 import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
 import type { UserBook, Summary } from '@/lib/types';
-import { BookRankingsBoard } from '@/components/BookRankingsBoard';
+import { BookWatchlistCard } from '@/components/BookWatchlistCard';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
 
-export default async function BooksPage({
+export default async function BooksToReadPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -35,9 +35,7 @@ export default async function BooksPage({
   }
 
   const { filters, filterValues, hasFilter } = parseFilterParams(sp);
-  const { rankingsPlaced, rankingsUnplaced } = partitionBooks(
-    filterBooks(books, filters),
-  );
+  const { watchlist } = partitionBooks(filterBooks(books, filters));
 
   return (
     <div className="flex flex-col gap-6">
@@ -54,8 +52,7 @@ export default async function BooksPage({
             My Books
           </h1>
           <p className="text-sm text-neutral-400">
-            {rankingsPlaced.length} ranked
-            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
+            {watchlist.length} to read
             {hasFilter && ' (filtered)'}
           </p>
         </div>
@@ -75,7 +72,7 @@ export default async function BooksPage({
 
       <FilterBar
         initial={filterValues}
-        basePath="/books"
+        basePath="/books/to-read"
         searchLabel="Search (title, author)"
         searchPlaceholder="e.g. Herbert"
         ratingMaxBound={5}
@@ -86,33 +83,27 @@ export default async function BooksPage({
       />
 
       <section>
-        <p className="mb-4 text-xs text-neutral-500">
-          Drag a “to rank” book into the list, or use Go To to jump to a spot.
-        </p>
-        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
+        <p className="mb-4 text-xs text-neutral-500">Books you want to read.</p>
+        {watchlist.length === 0 ? (
           <p className="text-sm text-neutral-500">
             {hasFilter ? (
-              'No ranked books match the filter.'
+              'No to-read books match the filter.'
             ) : (
               <>
-                Nothing ranked yet —{' '}
+                Nothing queued —{' '}
                 <Link href="/books/search" className="text-brass">
-                  add a book
-                </Link>{' '}
-                or promote one from your{' '}
-                <Link href="/books/to-read" className="text-brass">
-                  to-read list
+                  add one
                 </Link>
                 .
               </>
             )}
           </p>
         ) : (
-          <BookRankingsBoard
-            placed={rankingsPlaced}
-            unplaced={rankingsUnplaced}
-            placedCount={rankingsPlaced.length}
-          />
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {watchlist.map((b) => (
+              <BookWatchlistCard key={b.id} userBook={b} />
+            ))}
+          </ul>
         )}
       </section>
     </div>

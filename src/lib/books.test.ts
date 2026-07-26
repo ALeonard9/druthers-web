@@ -79,7 +79,9 @@ describe('filterBooks', () => {
   });
 
   it('filters by genre, year range, and min rating', () => {
-    expect(filterBooks(books, { genre: 'science' })).toHaveLength(2);
+    // Whole-token match, case-insensitive; the partial 'science' does not hit.
+    expect(filterBooks(books, { genre: 'Science fiction' })).toHaveLength(2);
+    expect(filterBooks(books, { genre: 'science' })).toHaveLength(0);
     expect(filterBooks(books, { yearMin: 2000 }).map((b) => b.id)).toEqual(['2']);
     expect(filterBooks(books, { ratingMin: 4.4 }).map((b) => b.id)).toEqual(['2']);
   });

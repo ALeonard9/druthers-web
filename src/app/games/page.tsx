@@ -4,19 +4,14 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { partitionGames, filterGames, type GameFilters } from '@/lib/games';
+import { partitionGames, filterGames } from '@/lib/games';
+import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
 import type { UserVideoGame, Summary } from '@/lib/types';
 import { GameRankingsBoard } from '@/components/GameRankingsBoard';
-import { GameWatchlistCard } from '@/components/GameWatchlistCard';
-import { FilterBar, type FilterValues } from '@/components/FilterBar';
+import { FilterBar } from '@/components/FilterBar';
+import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
-
-function num(v: string | undefined): number | undefined {
-  if (!v) return undefined;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : undefined;
-}
 
 export default async function GamesPage({
   searchParams,
@@ -39,35 +34,28 @@ export default async function GamesPage({
     throw err;
   }
 
-  const filters: GameFilters = {
-    q: sp.q,
-    genre: sp.genre,
-    yearMin: num(sp.yearMin),
-    yearMax: num(sp.yearMax),
-    ratingMin: num(sp.ratingMin),
-  };
-  const filterValues: FilterValues = {
-    q: sp.q ?? '',
-    genre: sp.genre ?? '',
-    yearMin: sp.yearMin ?? '',
-    yearMax: sp.yearMax ?? '',
-    ratingMin: sp.ratingMin ?? '',
-  };
-  const hasFilter = Object.values(filterValues).some(Boolean);
-
-  const filtered = filterGames(games, filters);
-  const { watchlist, rankingsPlaced, rankingsUnplaced } =
-    partitionGames(filtered);
+  const { filters, filterValues, hasFilter } = parseFilterParams(sp);
+  const { rankingsPlaced, rankingsUnplaced } = partitionGames(
+    filterGames(games, filters),
+  );
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionTabs
+        tabs={[
+          { href: '/games', label: 'Rankings' },
+          { href: '/games/backlog', label: 'Backlog' },
+        ]}
+      />
+
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="font-display text-3xl font-medium tracking-tight text-paper">My Games</h1>
+          <h1 className="font-display text-3xl font-medium tracking-tight text-paper">
+            My Games
+          </h1>
           <p className="text-sm text-neutral-400">
-            {watchlist.length} on backlog · {rankingsPlaced.length} ranked
-            {rankingsUnplaced.length > 0 &&
-              ` · ${rankingsUnplaced.length} to rank`}
+            {rankingsPlaced.length} ranked
+            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
             {hasFilter && ' (filtered)'}
           </p>
         </div>
@@ -91,47 +79,48 @@ export default async function GamesPage({
         searchLabel="Search (title, platform)"
         searchPlaceholder="e.g. Zelda"
         ratingMaxBound={100}
+        genreOptions={optionsWithCounts(games.map((g) => g.game.genre))}
+        extras={[
+          {
+            kind: 'select',
+            name: 'platform',
+            label: 'Platform',
+            options: optionsWithCounts(games.map((g) => g.game.platforms)),
+          },
+          { kind: 'checkbox', name: 'hundred', label: '100% completed' },
+        ]}
       />
 
-      <div className="grid gap-10 lg:grid-cols-2">
-        <section>
-          <h2 className="mb-1 text-lg font-medium text-neutral-200">Backlog</h2>
-          <p className="mb-4 text-xs text-neutral-500">Games you want to play.</p>
-          {watchlist.length === 0 ? (
-            <p className="text-sm text-neutral-500">
-              {hasFilter ? (
-                'No backlog games match the filter.'
-              ) : (
-                <>
-                  Nothing queued —{' '}
-                  <Link href="/games/search" className="text-brass">
-                    add one
-                  </Link>
-                  .
-                </>
-              )}
-            </p>
-          ) : (
-            <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              {watchlist.map((g) => (
-                <GameWatchlistCard key={g.id} userGame={g} />
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section>
-          <h2 className="mb-1 text-lg font-medium text-neutral-200">Rankings</h2>
-          <p className="mb-4 text-xs text-neutral-500">
-            Drag a “to rank” game into the list, or use Go To to jump to a spot.
+      <section>
+        <p className="mb-4 text-xs text-neutral-500">
+          Drag a “to rank” game into the list, or use Go To to jump to a spot.
+        </p>
+        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
+          <p className="text-sm text-neutral-500">
+            {hasFilter ? (
+              'No ranked games match the filter.'
+            ) : (
+              <>
+                Nothing ranked yet —{' '}
+                <Link href="/games/search" className="text-brass">
+                  add a game
+                </Link>{' '}
+                or promote one from your{' '}
+                <Link href="/games/backlog" className="text-brass">
+                  backlog
+                </Link>
+                .
+              </>
+            )}
           </p>
+        ) : (
           <GameRankingsBoard
             placed={rankingsPlaced}
             unplaced={rankingsUnplaced}
             placedCount={rankingsPlaced.length}
           />
-        </section>
-      </div>
+        )}
+      </section>
     </div>
   );
 }

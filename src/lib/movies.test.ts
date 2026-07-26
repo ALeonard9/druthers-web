@@ -75,6 +75,8 @@ describe('filterMovies', () => {
     year: 2010,
     rating_imdb: null,
     rating_tmdb: 8.8,
+    rated: 'PG-13',
+    runtime: 148,
   };
   movies[1].movie = {
     ...movies[1].movie,
@@ -93,6 +95,8 @@ describe('filterMovies', () => {
     year: 2017,
     rating_imdb: null,
     rating_tmdb: 7.8,
+    rated: 'R',
+    runtime: 106,
   };
 
   it('matches text across title, director, and cast', () => {
@@ -104,7 +108,28 @@ describe('filterMovies', () => {
   });
 
   it('filters by genre, year range, and min rating', () => {
-    expect(filterMovies(movies, { genre: 'sci' }).map((m) => m.id)).toEqual(['1']);
+    // Genre comes from a dropdown of real values, so it matches a whole token;
+    // a partial like 'sci' deliberately no longer matches 'Sci-Fi'.
+    expect(filterMovies(movies, { genre: 'Sci-Fi' }).map((m) => m.id)).toEqual(['1']);
+    expect(filterMovies(movies, { genre: 'sci' })).toEqual([]);
+  });
+
+  it('filters by MPAA certificate', () => {
+    expect(filterMovies(movies, { rated: 'PG-13' }).map((m) => m.id)).toEqual(['1']);
+    expect(filterMovies(movies, { rated: 'pg-13' }).map((m) => m.id)).toEqual(['1']);
+    expect(filterMovies(movies, { rated: 'G' })).toEqual([]);
+  });
+
+  it('filters by max runtime, excluding movies with no runtime', () => {
+    expect(filterMovies(movies, { runtimeMax: 120 }).map((m) => m.id)).toEqual(['3']);
+    expect(filterMovies(movies, { runtimeMax: 150 }).map((m) => m.id).sort()).toEqual([
+      '1',
+      '3',
+    ]);
+    // movies[1] has no runtime, so a runtime filter must exclude it.
+    expect(
+      filterMovies(movies, { runtimeMax: 9999 }).map((m) => m.id),
+    ).not.toContain('2');
     expect(
       filterMovies(movies, { yearMin: 2005, yearMax: 2018 }).map((m) => m.id).sort(),
     ).toEqual(['1', '3']);

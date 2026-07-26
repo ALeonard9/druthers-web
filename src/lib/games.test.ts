@@ -82,7 +82,9 @@ describe('filterGames', () => {
   });
 
   it('filters by genre, year range, and min rating (0-100 scale)', () => {
-    expect(filterGames(games, { genre: 'rogue' }).map((g) => g.id)).toEqual(['2']);
+    // Whole-token match: 'Roguelike' hits, the partial 'rogue' does not.
+    expect(filterGames(games, { genre: 'Roguelike' }).map((g) => g.id)).toEqual(['2']);
+    expect(filterGames(games, { genre: 'rogue' })).toEqual([]);
     expect(filterGames(games, { yearMin: 2018 }).map((g) => g.id)).toEqual(['2']);
     expect(filterGames(games, { ratingMin: 90 }).map((g) => g.id)).toEqual(['1']);
   });
@@ -94,5 +96,38 @@ describe('byRank', () => {
     expect(
       byRank(ug({ id: '1', rank: null }), ug({ id: '2', rank: 5 })),
     ).toBeGreaterThan(0);
+  });
+});
+
+describe('filterGames — game-specific fields', () => {
+  const games = [
+    ug({
+      id: '1', on_watchlist: true, is_100_percent: true,
+      game: {
+        id: 'g1', title: 'Hades', igdb: null, poster_url: null, rating: 93,
+        time_to_beat: null, slug: null, year: 2020,
+        genre: 'Roguelike', platforms: 'PC, Switch',
+      },
+    }),
+    ug({
+      id: '2', on_watchlist: true, is_100_percent: false,
+      game: {
+        id: 'g2', title: 'Bloodborne', igdb: null, poster_url: null, rating: 92,
+        time_to_beat: null, slug: null, year: 2015,
+        genre: 'Action', platforms: 'PS4',
+      },
+    }),
+  ];
+
+  it('filters by a single platform out of the comma-joined list', () => {
+    expect(filterGames(games, { platform: 'Switch' }).map((g) => g.id)).toEqual(['1']);
+    expect(filterGames(games, { platform: 'PS4' }).map((g) => g.id)).toEqual(['2']);
+    expect(filterGames(games, { platform: 'PS5' })).toEqual([]);
+  });
+
+  it('filters to 100%-completed games only when the flag is set', () => {
+    expect(filterGames(games, { hundred: true }).map((g) => g.id)).toEqual(['1']);
+    // Unset must not act as "only incomplete" — it means "don't filter".
+    expect(filterGames(games, {}).map((g) => g.id)).toEqual(['1', '2']);
   });
 });

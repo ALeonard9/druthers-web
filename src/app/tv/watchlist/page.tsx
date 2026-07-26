@@ -8,13 +8,13 @@ import { partitionShows, filterShows } from '@/lib/tv';
 import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
 import { tvExtras } from '@/lib/tvFilterFields';
 import type { UserTVShow, Summary } from '@/lib/types';
-import { TVRankingsBoard } from '@/components/TVRankingsBoard';
+import { TVWatchlistCard } from '@/components/TVWatchlistCard';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TVPage({
+export default async function TVWatchlistPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -36,9 +36,7 @@ export default async function TVPage({
   }
 
   const { filters, filterValues, hasFilter } = parseFilterParams(sp);
-  const { rankingsPlaced, rankingsUnplaced } = partitionShows(
-    filterShows(shows, filters),
-  );
+  const { watchlist } = partitionShows(filterShows(shows, filters));
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,8 +54,7 @@ export default async function TVPage({
             My TV Shows
           </h1>
           <p className="text-sm text-neutral-400">
-            {rankingsPlaced.length} ranked
-            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
+            {watchlist.length} on watchlist
             {hasFilter && ' (filtered)'}
           </p>
         </div>
@@ -74,7 +71,7 @@ export default async function TVPage({
 
       <FilterBar
         initial={filterValues}
-        basePath="/tv"
+        basePath="/tv/watchlist"
         searchLabel="Search (title, network)"
         searchPlaceholder="e.g. Severance"
         genreOptions={optionsWithCounts(shows.map((s) => s.tv_show.genre))}
@@ -82,33 +79,27 @@ export default async function TVPage({
       />
 
       <section>
-        <p className="mb-4 text-xs text-neutral-500">
-          Drag a “to rank” show into the list, or use Go To to jump to a spot.
-        </p>
-        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
+        <p className="mb-4 text-xs text-neutral-500">Shows you want to watch.</p>
+        {watchlist.length === 0 ? (
           <p className="text-sm text-neutral-500">
             {hasFilter ? (
-              'No ranked shows match the filter.'
+              'No watchlist shows match the filter.'
             ) : (
               <>
-                Nothing ranked yet —{' '}
+                Nothing queued —{' '}
                 <Link href="/tv/search" className="text-brass">
-                  add a show
-                </Link>{' '}
-                or promote one from your{' '}
-                <Link href="/tv/watchlist" className="text-brass">
-                  watchlist
+                  add one
                 </Link>
                 .
               </>
             )}
           </p>
         ) : (
-          <TVRankingsBoard
-            placed={rankingsPlaced}
-            unplaced={rankingsUnplaced}
-            placedCount={rankingsPlaced.length}
-          />
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {watchlist.map((s) => (
+              <TVWatchlistCard key={s.id} userShow={s} />
+            ))}
+          </ul>
         )}
       </section>
     </div>

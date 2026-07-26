@@ -107,6 +107,18 @@ export default function AboutPage() {
             , an Internet Archive project.
           </li>
           <li>
+            Streaming availability from{' '}
+            <a
+              href="https://www.justwatch.com"
+              className="text-brass hover:text-brass-bright"
+              rel="noreferrer"
+              target="_blank"
+            >
+              JustWatch
+            </a>
+            , served through the TMDB API.
+          </li>
+          <li>
             Video game data and covers from{' '}
             <a
               href="https://www.igdb.com"

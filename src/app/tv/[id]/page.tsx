@@ -2,7 +2,13 @@ import Link from 'next/link';
 import { redirect, notFound } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
-import type { TVEpisode, TVShow, UserTVEpisode, UserTVShow } from '@/lib/types';
+import type {
+  TVEpisode,
+  TVShow,
+  UserTVEpisode,
+  UserTVShow,
+  WatchProviders,
+} from '@/lib/types';
 import { TVShowDetail } from '@/components/TVShowDetail';
 import { EpisodeList } from '@/components/EpisodeList';
 
@@ -25,16 +31,25 @@ export default async function TVShowDetailPage({
     },
   );
 
+  // Streaming availability is a nicety (#26) — it already degrades to empty
+  // buckets upstream, so swallowing the error here only covers the API itself
+  // being unreachable, and never fails the page.
+  const providersOrNull = apiFetch<WatchProviders>(
+    `/v1/tv-shows/${id}/watch-providers`,
+  ).catch(() => null);
+
   let show: TVShow;
   let tracker: UserTVShow | null;
   let episodes: TVEpisode[];
   let marks: UserTVEpisode[];
+  let providers: WatchProviders | null;
   try {
-    [show, tracker, episodes, marks] = await Promise.all([
+    [show, tracker, episodes, marks, providers] = await Promise.all([
       apiFetch<TVShow>(`/v1/tv-shows/${id}`),
       trackerOrNull,
       apiFetch<TVEpisode[]>(`/v1/tv-shows/${id}/episodes`),
       apiFetch<UserTVEpisode[]>(`/v1/users/me/tv-shows/${id}/episodes`),
+      providersOrNull,
     ]);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) notFound();
@@ -50,7 +65,7 @@ export default async function TVShowDetailPage({
       <Link href="/tv" className="text-sm text-brass hover:text-brass-bright">
         ← Back to My TV Shows
       </Link>
-      <TVShowDetail show={show} tracker={tracker} />
+      <TVShowDetail show={show} tracker={tracker} providers={providers} />
       <section>
         <h2 className="mb-3 text-lg font-medium text-neutral-200">Episodes</h2>
         <EpisodeList showId={id} episodes={episodes} watchedIds={watchedIds} />

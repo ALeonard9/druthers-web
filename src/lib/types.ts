@@ -47,6 +47,29 @@ export interface MovieSearchResult {
   rank: number | null;
 }
 
+/** One streaming service a title is available on (druthers-api watch-providers). */
+export interface WatchProvider {
+  provider_id: number | null;
+  name: string;
+  logo_url: string | null;
+}
+
+/**
+ * Where a title can be watched in one region. Live TMDB/JustWatch data — the
+ * API never 404s here, it returns empty buckets, so callers check the tiers
+ * rather than the response.
+ */
+export interface WatchProviders {
+  region: string;
+  link: string | null;
+  /** The credit TMDB requires wherever this data is shown ("JustWatch"). */
+  attribution: string;
+  stream: WatchProvider[];
+  free: WatchProvider[];
+  rent: WatchProvider[];
+  buy: WatchProvider[];
+}
+
 export interface TVShow {
   id: string;
   title: string;

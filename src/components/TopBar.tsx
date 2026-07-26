@@ -17,7 +17,10 @@ export async function TopBar() {
   const user = await getSessionUser();
 
   return (
-    <header className="flex items-center justify-between gap-4 border-b border-line bg-night px-4 py-3 md:px-8">
+    <header
+      className="flex items-center justify-between gap-4 border-b border-line bg-night px-4 py-3 md:px-8"
+      style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}
+    >
       <div className="flex items-center gap-3">
         {/* Wordmark shows only on mobile, where the sidebar is hidden. */}
         <Link href="/" className="flex items-center gap-1 md:hidden">

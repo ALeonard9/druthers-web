@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { CompletedDateField } from './CompletedDateField';
-import type { Movie, UserMovie } from '@/lib/types';
+import { WhereToWatch } from './WhereToWatch';
+import type { Movie, UserMovie, WatchProviders } from '@/lib/types';
 
 function Field({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
@@ -18,9 +19,11 @@ function Field({ label, value }: { label: string; value: string | null }) {
 export function MovieDetail({
   movie,
   tracker,
+  providers,
 }: {
   movie: Movie;
   tracker: UserMovie | null;
+  providers: WatchProviders | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -112,6 +115,8 @@ export function MovieDetail({
             surfacing an IMDb id implies a source relationship we don't have.
           */}
         </dl>
+
+        <WhereToWatch providers={providers} />
 
         {/* Lists */}
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel p-3">

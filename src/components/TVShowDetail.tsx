@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { CompletedDateField } from './CompletedDateField';
-import type { TVShow, UserTVShow } from '@/lib/types';
+import { WhereToWatch } from './WhereToWatch';
+import type { TVShow, UserTVShow, WatchProviders } from '@/lib/types';
 
 function Field({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
@@ -18,9 +19,11 @@ function Field({ label, value }: { label: string; value: string | null }) {
 export function TVShowDetail({
   show,
   tracker,
+  providers,
 }: {
   show: TVShow;
   tracker: UserTVShow | null;
+  providers: WatchProviders | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -123,6 +126,8 @@ export function TVShowDetail({
             </div>
           )}
         </dl>
+
+        <WhereToWatch providers={providers} />
 
         {/* Lists */}
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel p-3">

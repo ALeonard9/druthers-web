@@ -22,7 +22,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { UserMovie } from '@/lib/types';
-import { lowestPlacedRank } from '@/lib/movies';
+import { pagerWindow } from '@/lib/pagerWindow';
 
 const WINDOW = 25;
 
@@ -194,10 +194,10 @@ export function RankingsBoard({
   placedCount: number;
 }) {
   const router = useRouter();
-  // Anchor the window on the lowest rank present, not the 1-based contract —
-  // see lowestPlacedRank. A hardcoded 1 made out-of-contract rows unreachable.
-  const lowestRank = lowestPlacedRank(placed);
-  const [start, setStart] = useState(lowestRank);
+  // `start` is a 1-based position within `placed` (whatever's currently
+  // displayed — filtered or not), not the item's real rank — see
+  // pagerWindow for why (api#225 / web#80).
+  const [start, setStart] = useState(1);
   const [goto, setGoto] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -205,9 +205,8 @@ export function RankingsBoard({
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
-  const windowItems = placed
-    .filter((m) => (m.rank ?? lowestRank) >= start)
-    .slice(0, WINDOW);
+  const win = pagerWindow(start, WINDOW, placedCount);
+  const windowItems = placed.slice(win.start - 1, win.start - 1 + win.length);
   const byId = (id: string) =>
     [...placed, ...unplaced].find((m) => m.movie.id === id);
 
@@ -215,7 +214,7 @@ export function RankingsBoard({
     e.preventDefault();
     const n = parseInt(goto, 10);
     if (Number.isFinite(n) && n >= 1) {
-      setStart(Math.max(lowestRank, Math.min(n, Math.max(lowestRank, placedCount))));
+      setStart(n);
     }
   }
 
@@ -329,22 +328,19 @@ export function RankingsBoard({
         <>
           <div className="mb-2 flex items-center justify-between text-xs text-neutral-500">
             <span>
-              Showing #{windowItems[0]?.rank ?? start}–#
-              {windowItems[windowItems.length - 1]?.rank ?? start} of {placedCount}
+              Showing #{win.start}–#{win.end} of {placedCount}
             </span>
             <span className="flex gap-2">
               <button
-                onClick={() => setStart((s) => Math.max(lowestRank, s - WINDOW))}
-                disabled={start <= lowestRank}
+                onClick={() => setStart(win.start - WINDOW)}
+                disabled={!win.hasPrev}
                 className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
               >
                 ↑ up
               </button>
               <button
-                onClick={() =>
-                  setStart((s) => Math.min(placedCount, s + WINDOW))
-                }
-                disabled={(windowItems[windowItems.length - 1]?.rank ?? 0) >= placedCount}
+                onClick={() => setStart(win.start + WINDOW)}
+                disabled={!win.hasNext}
                 className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
               >
                 ↓ down

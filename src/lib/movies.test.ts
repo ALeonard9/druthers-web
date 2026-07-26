@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  partitionMovies,
-  byRank,
-  filterMovies,
-  lowestPlacedRank,
-} from './movies';
+import { partitionMovies, byRank, filterMovies } from './movies';
 import type { UserMovie } from './types';
 
 function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
@@ -141,26 +136,5 @@ describe('byRank', () => {
   it('orders lower rank first, null last', () => {
     expect(byRank(um({ id: '1', rank: 1 }), um({ id: '2', rank: 2 }))).toBeLessThan(0);
     expect(byRank(um({ id: '1', rank: null }), um({ id: '2', rank: 5 }))).toBeGreaterThan(0);
-  });
-});
-
-describe('lowestPlacedRank', () => {
-  const at = (rank: number | null): UserMovie =>
-    ({ rank, movie: { title: 't' } }) as unknown as UserMovie;
-
-  it('returns the lowest rank present', () => {
-    expect(lowestPlacedRank([at(3), at(1), at(2)])).toBe(1);
-  });
-
-  it('returns 0 when a legacy 0-based rank is present', () => {
-    // The bug this guards: a hardcoded floor of 1 filtered these rows out of
-    // every window and left them unreachable (druthers-api backfill_rank_base).
-    expect(lowestPlacedRank([at(0), at(1), at(2)])).toBe(0);
-  });
-
-  it('ignores unplaced rows and defaults to 1 when empty', () => {
-    expect(lowestPlacedRank([at(null), at(4)])).toBe(4);
-    expect(lowestPlacedRank([])).toBe(1);
-    expect(lowestPlacedRank([at(null)])).toBe(1);
   });
 });

@@ -1,4 +1,5 @@
 import type { UserTVShow } from './types';
+import { hasToken } from './filterParams';
 
 const RANK_MAX = 1e9;
 
@@ -8,23 +9,30 @@ export interface TVFilters {
   yearMin?: number;
   yearMax?: number;
   ratingMin?: number;
+  status?: string; // the show's own status: Running / Ended
+  watchStatus?: string; // this user's progress: not_started / behind / up_to_date / complete
 }
 
-/** Filter tracked shows by text (title/network), genre, year, rating. */
+/**
+ * Filter tracked shows by text (title/network), genre, year, rating, the
+ * show's run status, and how far along this user is.
+ */
 export function filterShows(shows: UserTVShow[], f: TVFilters): UserTVShow[] {
   const q = f.q?.trim().toLowerCase();
-  const genre = f.genre?.trim().toLowerCase();
   return shows.filter((us) => {
     const s = us.tv_show;
     if (q) {
       const hay = [s.title, s.network].filter(Boolean).join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
-    if (genre && !(s.genre ?? '').toLowerCase().includes(genre)) return false;
+    if (f.genre && !hasToken(s.genre, f.genre)) return false;
     if (f.yearMin != null && (s.year == null || s.year < f.yearMin)) return false;
     if (f.yearMax != null && (s.year == null || s.year > f.yearMax)) return false;
     if (f.ratingMin != null && (s.rating == null || s.rating < f.ratingMin))
       return false;
+    if (f.status && (s.status ?? '').toLowerCase() !== f.status.toLowerCase())
+      return false;
+    if (f.watchStatus && us.watch_status !== f.watchStatus) return false;
     return true;
   });
 }

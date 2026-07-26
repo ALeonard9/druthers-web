@@ -3,16 +3,17 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-// Sub-navigation within a section (e.g. TV → Shows · Schedule). The active
-// tab is matched exactly so nested detail routes fall back to the first tab.
+// Sub-navigation within a section (e.g. Movies → Rankings · Watchlist). The
+// active tab is matched exactly so nested detail routes fall back to the first
+// tab. Each tab filters independently — switching tabs drops the current
+// filter rather than carrying it across.
 export function SectionTabs({
   tabs,
 }: {
   tabs: { href: string; label: string }[];
 }) {
   const pathname = usePathname();
-  const active =
-    tabs.find((t) => t.href === pathname)?.href ?? tabs[0].href;
+  const active = tabs.find((t) => t.href === pathname)?.href ?? tabs[0].href;
 
   return (
     <div className="flex gap-1 border-b border-line">

@@ -41,7 +41,8 @@ export default async function SchedulePage() {
     <div className="flex flex-col gap-8">
       <SectionTabs
         tabs={[
-          { href: '/tv', label: 'Shows' },
+          { href: '/tv', label: 'Rankings' },
+          { href: '/tv/watchlist', label: 'Watchlist' },
           { href: '/tv/schedule', label: 'Schedule' },
         ]}
       />

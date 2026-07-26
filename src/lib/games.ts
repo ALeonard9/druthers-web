@@ -1,4 +1,5 @@
 import type { UserVideoGame } from './types';
+import { hasToken } from './filterParams';
 
 const RANK_MAX = 1e9;
 
@@ -8,23 +9,29 @@ export interface GameFilters {
   yearMin?: number;
   yearMax?: number;
   ratingMin?: number; // IGDB ratings are 0-100
+  platform?: string;
+  hundred?: boolean; // only games taken to 100%
 }
 
-/** Filter tracked games by text (title/platforms), genre, year, rating. */
+/**
+ * Filter tracked games by text (title/platforms), genre, year, rating,
+ * platform and completionist status.
+ */
 export function filterGames(games: UserVideoGame[], f: GameFilters): UserVideoGame[] {
   const q = f.q?.trim().toLowerCase();
-  const genre = f.genre?.trim().toLowerCase();
   return games.filter((ug) => {
     const g = ug.game;
     if (q) {
       const hay = [g.title, g.platforms].filter(Boolean).join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
-    if (genre && !(g.genre ?? '').toLowerCase().includes(genre)) return false;
+    if (f.genre && !hasToken(g.genre, f.genre)) return false;
     if (f.yearMin != null && (g.year == null || g.year < f.yearMin)) return false;
     if (f.yearMax != null && (g.year == null || g.year > f.yearMax)) return false;
     if (f.ratingMin != null && (g.rating == null || g.rating < f.ratingMin))
       return false;
+    if (f.platform && !hasToken(g.platforms, f.platform)) return false;
+    if (f.hundred && !ug.is_100_percent) return false;
     return true;
   });
 }

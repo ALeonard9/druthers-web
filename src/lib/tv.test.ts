@@ -94,7 +94,8 @@ describe('filterShows', () => {
 
   it('filters by genre, year range, and min rating', () => {
     expect(
-      filterShows(shows, { genre: 'science' }).map((s) => s.id).sort(),
+      // Whole-token match: 'Science-Fiction' hits, the partial 'science' does not.
+      filterShows(shows, { genre: 'Science-Fiction' }).map((s) => s.id).sort(),
     ).toEqual(['1', '3']);
     expect(
       filterShows(shows, { yearMin: 2020, yearMax: 2023 }).map((s) => s.id).sort(),
@@ -112,5 +113,46 @@ describe('byRank', () => {
     expect(
       byRank(us({ id: '1', rank: null }), us({ id: '2', rank: 5 })),
     ).toBeGreaterThan(0);
+  });
+});
+
+describe('filterShows — TV-specific fields', () => {
+  const shows = [
+    us({
+      id: '1',
+      on_watchlist: true,
+      watch_status: 'behind',
+      tv_show: {
+        id: 's1', title: 'Running Behind', imdb: null, tvmaze: null,
+        status: 'Running', poster_url: null, year: 2020,
+        genre: 'Drama', network: 'HBO', runtime: 60, rating: 8,
+      },
+    }),
+    us({
+      id: '2',
+      on_watchlist: true,
+      watch_status: 'complete',
+      tv_show: {
+        id: 's2', title: 'Ended Complete', imdb: null, tvmaze: null,
+        status: 'Ended', poster_url: null, year: 2015,
+        genre: 'Comedy', network: 'NBC', runtime: 22, rating: 7,
+      },
+    }),
+  ];
+
+  it('filters by the show’s run status', () => {
+    expect(filterShows(shows, { status: 'Ended' }).map((s) => s.id)).toEqual(['2']);
+    expect(filterShows(shows, { status: 'running' }).map((s) => s.id)).toEqual(['1']);
+  });
+
+  it('filters by the viewer’s own progress', () => {
+    expect(filterShows(shows, { watchStatus: 'behind' }).map((s) => s.id)).toEqual(['1']);
+    expect(filterShows(shows, { watchStatus: 'not_started' })).toEqual([]);
+  });
+
+  it('combines run status with progress', () => {
+    expect(
+      filterShows(shows, { status: 'Running', watchStatus: 'complete' }),
+    ).toEqual([]);
   });
 });

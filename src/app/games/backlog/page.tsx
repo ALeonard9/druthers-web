@@ -4,16 +4,16 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { partitionBooks, filterBooks } from '@/lib/books';
+import { partitionGames, filterGames } from '@/lib/games';
 import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
-import type { UserBook, Summary } from '@/lib/types';
-import { BookRankingsBoard } from '@/components/BookRankingsBoard';
+import type { UserVideoGame, Summary } from '@/lib/types';
+import { GameWatchlistCard } from '@/components/GameWatchlistCard';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
 
-export default async function BooksPage({
+export default async function GamesBacklogPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -22,11 +22,11 @@ export default async function BooksPage({
   if (!user) redirect('/login');
   const sp = await searchParams;
 
-  let books: UserBook[] = [];
+  let games: UserVideoGame[] = [];
   let summary: Summary;
   try {
-    [books, summary] = await Promise.all([
-      apiFetch<UserBook[]>('/v1/users/me/books'),
+    [games, summary] = await Promise.all([
+      apiFetch<UserVideoGame[]>('/v1/users/me/games'),
       apiFetch<Summary>('/v1/users/me/summary'),
     ]);
   } catch (err) {
@@ -35,84 +35,81 @@ export default async function BooksPage({
   }
 
   const { filters, filterValues, hasFilter } = parseFilterParams(sp);
-  const { rankingsPlaced, rankingsUnplaced } = partitionBooks(
-    filterBooks(books, filters),
-  );
+  const { watchlist } = partitionGames(filterGames(games, filters));
 
   return (
     <div className="flex flex-col gap-6">
       <SectionTabs
         tabs={[
-          { href: '/books', label: 'Rankings' },
-          { href: '/books/to-read', label: 'To read' },
+          { href: '/games', label: 'Rankings' },
+          { href: '/games/backlog', label: 'Backlog' },
         ]}
       />
 
       <div className="flex items-end justify-between">
         <div>
           <h1 className="font-display text-3xl font-medium tracking-tight text-paper">
-            My Books
+            My Games
           </h1>
           <p className="text-sm text-neutral-400">
-            {rankingsPlaced.length} ranked
-            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
+            {watchlist.length} on backlog
             {hasFilter && ' (filtered)'}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <ShareTop5Button
             data={buildShareData(summary)}
-            initialCategory="books"
+            initialCategory="games"
           />
           <Link
-            href="/books/search"
+            href="/games/search"
             className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
-            + Add a book
+            + Add a game
           </Link>
         </div>
       </div>
 
       <FilterBar
         initial={filterValues}
-        basePath="/books"
-        searchLabel="Search (title, author)"
-        searchPlaceholder="e.g. Herbert"
-        ratingMaxBound={5}
-        genreOptions={optionsWithCounts(books.map((b) => b.book.genre))}
+        basePath="/games/backlog"
+        searchLabel="Search (title, platform)"
+        searchPlaceholder="e.g. Zelda"
+        ratingMaxBound={100}
+        genreOptions={optionsWithCounts(games.map((g) => g.game.genre))}
         extras={[
-          { kind: 'number', name: 'pagesMax', label: 'Max pages', width: 'w-24' },
+          {
+            kind: 'select',
+            name: 'platform',
+            label: 'Platform',
+            options: optionsWithCounts(games.map((g) => g.game.platforms)),
+          },
+          { kind: 'checkbox', name: 'hundred', label: '100% completed' },
         ]}
       />
 
       <section>
-        <p className="mb-4 text-xs text-neutral-500">
-          Drag a “to rank” book into the list, or use Go To to jump to a spot.
-        </p>
-        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
+        <p className="mb-4 text-xs text-neutral-500">Games you want to play.</p>
+        {watchlist.length === 0 ? (
           <p className="text-sm text-neutral-500">
             {hasFilter ? (
-              'No ranked books match the filter.'
+              'No backlog games match the filter.'
             ) : (
               <>
-                Nothing ranked yet —{' '}
-                <Link href="/books/search" className="text-brass">
-                  add a book
-                </Link>{' '}
-                or promote one from your{' '}
-                <Link href="/books/to-read" className="text-brass">
-                  to-read list
+                Nothing queued —{' '}
+                <Link href="/games/search" className="text-brass">
+                  add one
                 </Link>
                 .
               </>
             )}
           </p>
         ) : (
-          <BookRankingsBoard
-            placed={rankingsPlaced}
-            unplaced={rankingsUnplaced}
-            placedCount={rankingsPlaced.length}
-          />
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {watchlist.map((g) => (
+              <GameWatchlistCard key={g.id} userGame={g} />
+            ))}
+          </ul>
         )}
       </section>
     </div>

@@ -50,7 +50,10 @@ export function MovieSearch() {
       }),
     });
     setAdded((s) => ({ ...s, [m.tmdb]: res.ok ? 'done' : 'error' }));
-    if (res.ok) router.push('/movies');
+    // Land wherever the movie just went: a new rankings entry starts unranked
+    // in the "to rank" bucket on the board, which the top-25 deck won't show.
+    if (res.ok)
+      router.push(list === 'watchlist' ? '/movies/watchlist' : '/movies/ranking');
   }
 
   return (

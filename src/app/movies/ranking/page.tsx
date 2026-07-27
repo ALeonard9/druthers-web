@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
@@ -6,15 +5,16 @@ import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionMovies, filterMovies } from '@/lib/movies';
 import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
+import { MOVIE_TABS } from '@/lib/movieTabs';
 import type { UserMovie, Summary } from '@/lib/types';
-import { WatchlistCard } from '@/components/WatchlistCard';
+import { RankingsBoard } from '@/components/RankingsBoard';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
-import { MOVIE_TABS } from '@/lib/movieTabs';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default async function MoviesWatchlistPage({
+export default async function MoviesRankingPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -36,7 +36,9 @@ export default async function MoviesWatchlistPage({
   }
 
   const { filters, filterValues, hasFilter } = parseFilterParams(sp);
-  const { watchlist } = partitionMovies(filterMovies(movies, filters));
+  const { rankingsPlaced, rankingsUnplaced } = partitionMovies(
+    filterMovies(movies, filters),
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,7 +50,8 @@ export default async function MoviesWatchlistPage({
             My Movies
           </h1>
           <p className="text-sm text-neutral-400">
-            {watchlist.length} on watchlist
+            {rankingsPlaced.length} ranked
+            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
             {hasFilter && ' (filtered)'}
           </p>
         </div>
@@ -68,7 +71,7 @@ export default async function MoviesWatchlistPage({
 
       <FilterBar
         initial={filterValues}
-        basePath="/movies/watchlist"
+        basePath="/movies/ranking"
         genreOptions={optionsWithCounts(movies.map((m) => m.movie.genre))}
         extras={[
           {
@@ -87,27 +90,33 @@ export default async function MoviesWatchlistPage({
       />
 
       <section>
-        <p className="mb-4 text-xs text-neutral-500">Movies you want to watch.</p>
-        {watchlist.length === 0 ? (
+        <p className="mb-4 text-xs text-neutral-500">
+          Drag a “to rank” movie into the list, or use Go To to jump to a spot.
+        </p>
+        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
           <p className="text-sm text-neutral-500">
             {hasFilter ? (
-              'No watchlist movies match the filter.'
+              'No ranked movies match the filter.'
             ) : (
               <>
-                Nothing queued —{' '}
+                Nothing ranked yet —{' '}
                 <Link href="/movies/search" className="text-brass">
-                  add one
+                  add a movie
+                </Link>{' '}
+                or promote one from your{' '}
+                <Link href="/movies/watchlist" className="text-brass">
+                  watchlist
                 </Link>
                 .
               </>
             )}
           </p>
         ) : (
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {watchlist.map((m) => (
-              <WatchlistCard key={m.id} userMovie={m} />
-            ))}
-          </ul>
+          <RankingsBoard
+            placed={rankingsPlaced}
+            unplaced={rankingsUnplaced}
+            placedCount={rankingsPlaced.length}
+          />
         )}
       </section>
     </div>

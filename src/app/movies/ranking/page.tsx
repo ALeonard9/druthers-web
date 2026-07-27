@@ -5,7 +5,7 @@ import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionMovies, filterMovies } from '@/lib/movies';
 import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
-import { MOVIE_TABS } from '@/lib/movieTabs';
+import { MOVIE_TABS } from '@/lib/sectionTabs';
 import type { UserMovie, Summary } from '@/lib/types';
 import { RankingsBoard } from '@/components/RankingsBoard';
 import { FilterBar } from '@/components/FilterBar';

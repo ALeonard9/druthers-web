@@ -47,7 +47,10 @@ export function BookSearch() {
       }),
     });
     setAdded((s) => ({ ...s, [b.isbn!]: res.ok ? 'done' : 'error' }));
-    if (res.ok) router.push('/books');
+    // Land wherever it just went: a new rankings entry starts unranked
+    // in the "to rank" bucket on the board, which the deck won't show.
+    if (res.ok)
+      router.push(list === 'watchlist' ? '/books/to-read' : '/books/ranking');
   }
 
   return (

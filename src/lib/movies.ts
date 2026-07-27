@@ -3,14 +3,6 @@ import { hasToken } from './filterParams';
 
 const RANK_MAX = 1e9;
 
-/**
- * How many of the top ranked titles the poster deck on /movies runs through.
- * Lives here rather than beside the component because RankedPosterDeck is a
- * client module — a server component importing a plain value out of one gets a
- * client reference back, not the number.
- */
-export const DECK_SIZE = 25;
-
 export interface MovieFilters {
   q?: string; // matches title, director, actors
   genre?: string;

@@ -48,7 +48,10 @@ export function TVSearch() {
       }),
     });
     setAdded((prev) => ({ ...prev, [s.tvmaze!]: res.ok ? 'done' : 'error' }));
-    if (res.ok) router.push('/tv');
+    // Land wherever it just went: a new rankings entry starts unranked
+    // in the "to rank" bucket on the board, which the deck won't show.
+    if (res.ok)
+      router.push(list === 'watchlist' ? '/tv/watchlist' : '/tv/ranking');
   }
 
   return (

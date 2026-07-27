@@ -55,6 +55,16 @@ body {
   }
 }
 
+/* Section tab rail scrolls sideways on narrow screens; the scrollbar itself
+   would sit on the underline, so hide it. */
+.tab-rail {
+  scrollbar-width: none;
+}
+
+.tab-rail::-webkit-scrollbar {
+  display: none;
+}
+
 /* Ranked poster deck (RankedPosterDeck.tsx). Poster width lives here rather
    than in the component so the overlap transform can be pure CSS calc — the
    deck paints correctly on the server render with nothing measured.

@@ -6,15 +6,15 @@ import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionGames, filterGames } from '@/lib/games';
 import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
+import { GAME_TABS } from '@/lib/sectionTabs';
 import type { UserVideoGame, Summary } from '@/lib/types';
-import { GameWatchlistCard } from '@/components/GameWatchlistCard';
+import { GameRankingsBoard } from '@/components/GameRankingsBoard';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
-import { GAME_TABS } from '@/lib/sectionTabs';
 
 export const dynamic = 'force-dynamic';
 
-export default async function GamesBacklogPage({
+export default async function GamesRankingPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -36,7 +36,9 @@ export default async function GamesBacklogPage({
   }
 
   const { filters, filterValues, hasFilter } = parseFilterParams(sp);
-  const { watchlist } = partitionGames(filterGames(games, filters));
+  const { rankingsPlaced, rankingsUnplaced } = partitionGames(
+    filterGames(games, filters),
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,7 +50,8 @@ export default async function GamesBacklogPage({
             My Games
           </h1>
           <p className="text-sm text-neutral-400">
-            {watchlist.length} on backlog
+            {rankingsPlaced.length} ranked
+            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
             {hasFilter && ' (filtered)'}
           </p>
         </div>
@@ -68,7 +71,7 @@ export default async function GamesBacklogPage({
 
       <FilterBar
         initial={filterValues}
-        basePath="/games/backlog"
+        basePath="/games/ranking"
         searchLabel="Search (title, platform)"
         searchPlaceholder="e.g. Zelda"
         ratingMaxBound={100}
@@ -85,27 +88,33 @@ export default async function GamesBacklogPage({
       />
 
       <section>
-        <p className="mb-4 text-xs text-neutral-500">Games you want to play.</p>
-        {watchlist.length === 0 ? (
+        <p className="mb-4 text-xs text-neutral-500">
+          Drag a “to rank” game into the list, or use Go To to jump to a spot.
+        </p>
+        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
           <p className="text-sm text-neutral-500">
             {hasFilter ? (
-              'No backlog games match the filter.'
+              'No ranked games match the filter.'
             ) : (
               <>
-                Nothing queued —{' '}
+                Nothing ranked yet —{' '}
                 <Link href="/games/search" className="text-brass">
-                  add one
+                  add a game
+                </Link>{' '}
+                or promote one from your{' '}
+                <Link href="/games/backlog" className="text-brass">
+                  backlog
                 </Link>
                 .
               </>
             )}
           </p>
         ) : (
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {watchlist.map((g) => (
-              <GameWatchlistCard key={g.id} userGame={g} />
-            ))}
-          </ul>
+          <GameRankingsBoard
+            placed={rankingsPlaced}
+            unplaced={rankingsUnplaced}
+            placedCount={rankingsPlaced.length}
+          />
         )}
       </section>
     </div>

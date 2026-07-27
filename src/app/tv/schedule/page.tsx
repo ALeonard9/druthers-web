@@ -7,6 +7,7 @@ import type { Schedule } from '@/lib/types';
 import { ScheduleEpisodeRow } from '@/components/ScheduleEpisodeRow';
 import { FrozenShowsList } from '@/components/FrozenShowsList';
 import { SectionTabs } from '@/components/SectionTabs';
+import { TV_TABS } from '@/lib/sectionTabs';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,13 +40,7 @@ export default async function SchedulePage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <SectionTabs
-        tabs={[
-          { href: '/tv', label: 'Rankings' },
-          { href: '/tv/watchlist', label: 'Watchlist' },
-          { href: '/tv/schedule', label: 'Schedule' },
-        ]}
-      />
+      <SectionTabs tabs={TV_TABS} />
       <div>
         <h1 className="font-display text-3xl font-medium tracking-tight text-paper">Schedule</h1>
         <p className="text-sm text-neutral-400">

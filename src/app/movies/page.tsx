@@ -3,8 +3,9 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { partitionMovies, DECK_SIZE } from '@/lib/movies';
-import { MOVIE_TABS } from '@/lib/movieTabs';
+import { partitionMovies } from '@/lib/movies';
+import { DECK_SIZE, movieDeckItems } from '@/lib/deck';
+import { MOVIE_TABS } from '@/lib/sectionTabs';
 import type { UserMovie, Summary } from '@/lib/types';
 import { RankedPosterDeck } from '@/components/RankedPosterDeck';
 import { SectionTabs } from '@/components/SectionTabs';
@@ -31,7 +32,7 @@ export default async function MoviesPage() {
   // Deliberately unfiltered: this view is the top of the shelf as it stands.
   // Filtering belongs with the list on /movies/ranking.
   const { rankingsPlaced } = partitionMovies(movies);
-  const top = rankingsPlaced.slice(0, DECK_SIZE);
+  const top = movieDeckItems(rankingsPlaced.slice(0, DECK_SIZE));
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,7 +62,11 @@ export default async function MoviesPage() {
       </div>
 
       {top.length > 0 ? (
-        <RankedPosterDeck items={top} placedCount={rankingsPlaced.length} />
+        <RankedPosterDeck
+          items={top}
+          placedCount={rankingsPlaced.length}
+          label="Your highest ranked movies"
+        />
       ) : (
         <p className="text-sm text-neutral-500">
           Nothing ranked yet —{' '}

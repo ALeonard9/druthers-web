@@ -51,7 +51,10 @@ export function GameSearch() {
       }),
     });
     setAdded((s) => ({ ...s, [g.igdb!]: res.ok ? 'done' : 'error' }));
-    if (res.ok) router.push('/games');
+    // Land wherever it just went: a new rankings entry starts unranked
+    // in the "to rank" bucket on the board, which the deck won't show.
+    if (res.ok)
+      router.push(list === 'watchlist' ? '/games/backlog' : '/games/ranking');
   }
 
   return (

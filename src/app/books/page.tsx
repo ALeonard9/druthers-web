@@ -4,23 +4,18 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { partitionBooks, filterBooks } from '@/lib/books';
-import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
+import { partitionBooks } from '@/lib/books';
+import { DECK_SIZE, bookDeckItems } from '@/lib/deck';
+import { BOOK_TABS } from '@/lib/sectionTabs';
 import type { UserBook, Summary } from '@/lib/types';
-import { BookRankingsBoard } from '@/components/BookRankingsBoard';
-import { FilterBar } from '@/components/FilterBar';
+import { RankedPosterDeck } from '@/components/RankedPosterDeck';
 import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
 
-export default async function BooksPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | undefined>>;
-}) {
+export default async function BooksPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const sp = await searchParams;
 
   let books: UserBook[] = [];
   let summary: Summary;
@@ -34,19 +29,14 @@ export default async function BooksPage({
     throw err;
   }
 
-  const { filters, filterValues, hasFilter } = parseFilterParams(sp);
-  const { rankingsPlaced, rankingsUnplaced } = partitionBooks(
-    filterBooks(books, filters),
-  );
+  // Deliberately unfiltered: this view is the top of the shelf as it stands.
+  // Filtering belongs with the list on /books/ranking.
+  const { rankingsPlaced } = partitionBooks(books);
+  const top = bookDeckItems(rankingsPlaced.slice(0, DECK_SIZE));
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionTabs
-        tabs={[
-          { href: '/books', label: 'Rankings' },
-          { href: '/books/to-read', label: 'To read' },
-        ]}
-      />
+      <SectionTabs tabs={BOOK_TABS} />
 
       <div className="flex items-end justify-between">
         <div>
@@ -55,8 +45,6 @@ export default async function BooksPage({
           </h1>
           <p className="text-sm text-neutral-400">
             {rankingsPlaced.length} ranked
-            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
-            {hasFilter && ' (filtered)'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -73,48 +61,25 @@ export default async function BooksPage({
         </div>
       </div>
 
-      <FilterBar
-        initial={filterValues}
-        basePath="/books"
-        searchLabel="Search (title, author)"
-        searchPlaceholder="e.g. Herbert"
-        ratingMaxBound={5}
-        genreOptions={optionsWithCounts(books.map((b) => b.book.genre))}
-        extras={[
-          { kind: 'number', name: 'pagesMax', label: 'Max pages', width: 'w-24' },
-        ]}
-      />
-
-      <section>
-        <p className="mb-4 text-xs text-neutral-500">
-          Drag a “to rank” book into the list, or use Go To to jump to a spot.
+      {top.length > 0 ? (
+        <RankedPosterDeck
+          items={top}
+          placedCount={rankingsPlaced.length}
+          label="Your highest ranked books"
+        />
+      ) : (
+        <p className="text-sm text-neutral-500">
+          Nothing ranked yet —{' '}
+          <Link href="/books/search" className="text-brass">
+            add a book
+          </Link>{' '}
+          or promote one from your{' '}
+          <Link href="/books/to-read" className="text-brass">
+            to-read list
+          </Link>
+          .
         </p>
-        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
-          <p className="text-sm text-neutral-500">
-            {hasFilter ? (
-              'No ranked books match the filter.'
-            ) : (
-              <>
-                Nothing ranked yet —{' '}
-                <Link href="/books/search" className="text-brass">
-                  add a book
-                </Link>{' '}
-                or promote one from your{' '}
-                <Link href="/books/to-read" className="text-brass">
-                  to-read list
-                </Link>
-                .
-              </>
-            )}
-          </p>
-        ) : (
-          <BookRankingsBoard
-            placed={rankingsPlaced}
-            unplaced={rankingsUnplaced}
-            placedCount={rankingsPlaced.length}
-          />
-        )}
-      </section>
+      )}
     </div>
   );
 }

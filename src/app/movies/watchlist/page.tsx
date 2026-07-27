@@ -10,7 +10,7 @@ import type { UserMovie, Summary } from '@/lib/types';
 import { WatchlistCard } from '@/components/WatchlistCard';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
-import { MOVIE_TABS } from '@/lib/movieTabs';
+import { MOVIE_TABS } from '@/lib/sectionTabs';
 
 export const dynamic = 'force-dynamic';
 

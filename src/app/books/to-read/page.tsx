@@ -10,6 +10,7 @@ import type { UserBook, Summary } from '@/lib/types';
 import { BookWatchlistCard } from '@/components/BookWatchlistCard';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
+import { BOOK_TABS } from '@/lib/sectionTabs';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,12 +40,7 @@ export default async function BooksToReadPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionTabs
-        tabs={[
-          { href: '/books', label: 'Rankings' },
-          { href: '/books/to-read', label: 'To read' },
-        ]}
-      />
+      <SectionTabs tabs={BOOK_TABS} />
 
       <div className="flex items-end justify-between">
         <div>

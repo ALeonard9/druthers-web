@@ -4,24 +4,18 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { partitionShows, filterShows } from '@/lib/tv';
-import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
-import { tvExtras } from '@/lib/tvFilterFields';
+import { partitionShows } from '@/lib/tv';
+import { DECK_SIZE, tvDeckItems } from '@/lib/deck';
+import { TV_TABS } from '@/lib/sectionTabs';
 import type { UserTVShow, Summary } from '@/lib/types';
-import { TVRankingsBoard } from '@/components/TVRankingsBoard';
-import { FilterBar } from '@/components/FilterBar';
+import { RankedPosterDeck } from '@/components/RankedPosterDeck';
 import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TVPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | undefined>>;
-}) {
+export default async function TVPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const sp = await searchParams;
 
   let shows: UserTVShow[] = [];
   let summary: Summary;
@@ -35,20 +29,14 @@ export default async function TVPage({
     throw err;
   }
 
-  const { filters, filterValues, hasFilter } = parseFilterParams(sp);
-  const { rankingsPlaced, rankingsUnplaced } = partitionShows(
-    filterShows(shows, filters),
-  );
+  // Deliberately unfiltered: this view is the top of the shelf as it stands.
+  // Filtering belongs with the list on /tv/ranking.
+  const { rankingsPlaced } = partitionShows(shows);
+  const top = tvDeckItems(rankingsPlaced.slice(0, DECK_SIZE));
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionTabs
-        tabs={[
-          { href: '/tv', label: 'Rankings' },
-          { href: '/tv/watchlist', label: 'Watchlist' },
-          { href: '/tv/schedule', label: 'Schedule' },
-        ]}
-      />
+      <SectionTabs tabs={TV_TABS} />
 
       <div className="flex items-end justify-between">
         <div>
@@ -57,8 +45,6 @@ export default async function TVPage({
           </h1>
           <p className="text-sm text-neutral-400">
             {rankingsPlaced.length} ranked
-            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
-            {hasFilter && ' (filtered)'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -72,45 +58,25 @@ export default async function TVPage({
         </div>
       </div>
 
-      <FilterBar
-        initial={filterValues}
-        basePath="/tv"
-        searchLabel="Search (title, network)"
-        searchPlaceholder="e.g. Severance"
-        genreOptions={optionsWithCounts(shows.map((s) => s.tv_show.genre))}
-        extras={tvExtras(shows)}
-      />
-
-      <section>
-        <p className="mb-4 text-xs text-neutral-500">
-          Drag a “to rank” show into the list, or use Go To to jump to a spot.
+      {top.length > 0 ? (
+        <RankedPosterDeck
+          items={top}
+          placedCount={rankingsPlaced.length}
+          label="Your highest ranked shows"
+        />
+      ) : (
+        <p className="text-sm text-neutral-500">
+          Nothing ranked yet —{' '}
+          <Link href="/tv/search" className="text-brass">
+            add a show
+          </Link>{' '}
+          or promote one from your{' '}
+          <Link href="/tv/watchlist" className="text-brass">
+            watchlist
+          </Link>
+          .
         </p>
-        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
-          <p className="text-sm text-neutral-500">
-            {hasFilter ? (
-              'No ranked shows match the filter.'
-            ) : (
-              <>
-                Nothing ranked yet —{' '}
-                <Link href="/tv/search" className="text-brass">
-                  add a show
-                </Link>{' '}
-                or promote one from your{' '}
-                <Link href="/tv/watchlist" className="text-brass">
-                  watchlist
-                </Link>
-                .
-              </>
-            )}
-          </p>
-        ) : (
-          <TVRankingsBoard
-            placed={rankingsPlaced}
-            unplaced={rankingsUnplaced}
-            placedCount={rankingsPlaced.length}
-          />
-        )}
-      </section>
+      )}
     </div>
   );
 }

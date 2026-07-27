@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { UserMovie } from '@/lib/types';
+import type { DeckItem } from '@/lib/deck';
 
 // Posters sit closer together than they are wide, so they overlap. The width
 // itself lives in .poster-deck (globals.css) as --deck-card, which lets the
@@ -17,14 +17,17 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 
 /**
  * The top of a user's rankings as a deck of overlapping posters, dragged with
- * a finger. Opens on #1; the rank rides the artwork on a brass plate.
+ * a finger. Opens on #1; the rank rides the artwork on a brass plate. Domain
+ * agnostic — callers flatten their rows to DeckItem (see lib/deck.ts).
  */
 export function RankedPosterDeck({
   items,
   placedCount,
+  label = 'Your highest ranked titles',
 }: {
-  items: UserMovie[];
+  items: DeckItem[];
   placedCount: number;
+  label?: string;
 }) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
@@ -35,7 +38,12 @@ export function RankedPosterDeck({
   // Mirrors `drag` so the pointerup handler reads the live value rather than
   // whatever was captured when it last rendered.
   const dragRef = useRef(0);
-  const pointerRef = useRef<{ id: number; x: number; t: number } | null>(null);
+  const pointerRef = useRef<{
+    id: number;
+    x: number;
+    t: number;
+    captured: boolean;
+  } | null>(null);
   const movedRef = useRef(false);
 
   const last = items.length - 1;
@@ -61,17 +69,29 @@ export function RankedPosterDeck({
     if (pointerRef.current) return;
     // Timestamps come off the events themselves rather than a clock read, so
     // nothing impure is called during a render pass.
-    pointerRef.current = { id: e.pointerId, x: e.clientX, t: e.timeStamp };
+    pointerRef.current = {
+      id: e.pointerId,
+      x: e.clientX,
+      t: e.timeStamp,
+      captured: false,
+    };
     movedRef.current = false;
-    setDragging(true);
-    e.currentTarget.setPointerCapture(e.pointerId);
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
     const p = pointerRef.current;
     if (!p || e.pointerId !== p.id) return;
     const dx = e.clientX - p.x;
-    if (Math.abs(dx) > 3) movedRef.current = true;
+    // Capture only once this is definitely a drag. Capturing on pointerdown
+    // would retarget the following click to this container, and a plain tap on
+    // a poster would never reach its own handler.
+    if (!movedRef.current) {
+      if (Math.abs(dx) <= 3) return;
+      movedRef.current = true;
+      p.captured = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setDragging(true);
+    }
     let d = -dx / stepPx();
     // Rubber-band rather than hard-stop when dragged past either end.
     if (index + d < 0) d = -index + (index + d) * 0.3;
@@ -82,9 +102,15 @@ export function RankedPosterDeck({
   function onPointerUp(e: React.PointerEvent<HTMLDivElement>) {
     const p = pointerRef.current;
     if (!p || e.pointerId !== p.id) return;
+    if (p.captured) e.currentTarget.releasePointerCapture(e.pointerId);
+    pointerRef.current = null;
+    // A tap never moved anything — leave it to the card's click handler.
+    if (!movedRef.current) {
+      setDragging(false);
+      return;
+    }
     const d = dragRef.current;
     const velocity = (d / Math.max(e.timeStamp - p.t, 1)) * 1000;
-    pointerRef.current = null;
     const target =
       Math.abs(velocity) > FLICK_CARDS_PER_SEC
         ? index + Math.sign(d) * Math.max(1, Math.round(Math.abs(d)))
@@ -93,10 +119,10 @@ export function RankedPosterDeck({
   }
 
   // Tapping a poster behind the front one brings it forward; tapping the front
-  // one opens the movie.
+  // one opens its detail page.
   function onCardClick(i: number) {
     if (movedRef.current) return;
-    if (i === nearest) router.push(`/movies/${items[i].movie.id}`);
+    if (i === nearest) router.push(items[i].href);
     else settle(i);
   }
 
@@ -111,7 +137,7 @@ export function RankedPosterDeck({
   }
 
   return (
-    <section className="poster-deck" aria-label="Your highest ranked movies">
+    <section className="poster-deck" aria-label={label}>
       <div
         className="relative select-none touch-pan-y [overflow-x:clip] [overflow-y:visible]"
         style={{ height: 'calc(var(--deck-card) * 1.5 + 1.5rem)' }}
@@ -129,7 +155,7 @@ export function RankedPosterDeck({
           const lift = Math.min(depth, DEPTH) * 5;
           return (
             <div
-              key={m.movie.id}
+              key={m.id}
               ref={i === 0 ? cardRef : undefined}
               onClick={() => onCardClick(i)}
               className={`deck-card absolute left-1/2 top-1.5 w-[var(--deck-card)] cursor-pointer ${
@@ -145,10 +171,10 @@ export function RankedPosterDeck({
               }}
             >
               <div className="relative aspect-[2/3] overflow-hidden rounded-md border border-line bg-panel shadow-[0_18px_34px_-16px_rgba(0,0,0,0.95)]">
-                {m.movie.poster_url ? (
+                {m.posterUrl ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src={m.movie.poster_url}
+                    src={m.posterUrl}
                     alt=""
                     draggable={false}
                     loading={i < 6 ? 'eager' : 'lazy'}
@@ -172,14 +198,12 @@ export function RankedPosterDeck({
         })}
       </div>
 
-      <div key={front.movie.id} className="deck-caption mt-5 text-center">
+      <div key={front.id} className="deck-caption mt-5 text-center">
         <p className="font-display text-xl font-medium tracking-tight text-paper">
-          {front.movie.title}
+          {front.title}
         </p>
         <p className="mt-1 text-sm text-neutral-400 tabular-nums">
-          {[front.movie.year, front.movie.genre?.split(',')[0]?.trim()]
-            .filter(Boolean)
-            .join(' · ')}
+          {front.subtitle}
         </p>
       </div>
 
@@ -191,7 +215,9 @@ export function RankedPosterDeck({
           />
         </div>
         <p className="text-xs text-neutral-500">
-          Drag to move down the list · top {items.length} of {placedCount}
+          {items.length < placedCount
+            ? `Top ${items.length} of ${placedCount}`
+            : `All ${placedCount}`}
         </p>
       </div>
     </section>

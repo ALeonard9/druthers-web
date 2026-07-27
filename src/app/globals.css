@@ -54,3 +54,55 @@ body {
     animation: none;
   }
 }
+
+/* Ranked poster deck (RankedPosterDeck.tsx). Poster width lives here rather
+   than in the component so the overlap transform can be pure CSS calc — the
+   deck paints correctly on the server render with nothing measured.
+   --deck-step is under one poster width, which is what makes them overlap. */
+.poster-deck {
+  --deck-card: 60vw;
+  --deck-step: calc(var(--deck-card) * 0.72);
+}
+
+@media (min-width: 640px) {
+  .poster-deck {
+    --deck-card: 220px;
+  }
+}
+
+/* Engraved brass plate carrying the rank, echoing the shelf-plate numerals on
+   the ranked rows. Solid brass rather than the rows' wash: it has to stay
+   legible over whatever the poster art is doing underneath it. */
+.deck-plate {
+  background: linear-gradient(
+    160deg,
+    var(--color-brass-bright),
+    var(--color-brass) 62%,
+    #b8975b
+  );
+  box-shadow:
+    0 2px 10px rgb(0 0 0 / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+
+@keyframes deck-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.deck-caption {
+  animation: deck-fade 0.18s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster-deck .deck-card {
+    transition: none;
+  }
+  .deck-caption {
+    animation: none;
+  }
+}

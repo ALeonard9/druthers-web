@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
+import { catalogIdFrom, duelHrefFor } from '@/lib/duelShelves';
 import { TrackedBadge } from './TrackedBadge';
 
 const DOMAIN_PAGE = {
@@ -43,7 +44,14 @@ export function AddFromSearchButton({
       if (res.ok) {
         playPop();
         setState('added');
-        router.push(DOMAIN_PAGE[domain]);
+        // Straight to the duel when it's going on the rankings — the API adds
+        // it unplaced, so the position still has to be decided.
+        if (list === 'rankings') {
+          const tracker = await res.json().catch(() => null);
+          router.push(duelHrefFor(domain, catalogIdFrom(domain, tracker)));
+        } else {
+          router.push(DOMAIN_PAGE[domain]);
+        }
       } else {
         setState('error');
       }

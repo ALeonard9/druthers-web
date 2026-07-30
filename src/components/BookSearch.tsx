@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { catalogIdFrom, duelHrefFor } from '@/lib/duelShelves';
 import type { BookSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
 
@@ -49,8 +50,16 @@ export function BookSearch() {
     setAdded((s) => ({ ...s, [b.isbn!]: res.ok ? 'done' : 'error' }));
     // Land wherever it just went: a new rankings entry starts unranked
     // in the "to rank" bucket on the board, which the deck won't show.
-    if (res.ok)
-      router.push(list === 'watchlist' ? '/books/to-read' : '/books/ranking');
+    // Adding to the rankings leaves the title *unplaced*, so hand straight to
+    // the duel to decide where it goes — the add is only half the gesture.
+    if (res.ok) {
+      if (list === 'watchlist') {
+        router.push('/books/to-read');
+      } else {
+        const tracker = await res.json().catch(() => null);
+        router.push(duelHrefFor('books', catalogIdFrom('books', tracker)));
+      }
+    }
   }
 
   return (

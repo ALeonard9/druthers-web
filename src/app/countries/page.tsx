@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
@@ -54,9 +55,17 @@ export default async function CountriesPage() {
         </section>
 
         <section>
-          <h2 className="mb-1 text-lg font-medium text-neutral-200">
-            Visited rankings
-          </h2>
+          <div className="mb-1 flex items-baseline justify-between gap-3">
+            <h2 className="text-lg font-medium text-neutral-200">
+              Visited rankings
+            </h2>
+            <Link
+              href="/countries/duel"
+              className="shrink-0 text-xs text-brass hover:underline"
+            >
+              Rank by comparison →
+            </Link>
+          </div>
           <p className="mb-4 text-xs text-neutral-500">
             Drag a “to rank” country into the list, or use Go To to jump to a
             spot.

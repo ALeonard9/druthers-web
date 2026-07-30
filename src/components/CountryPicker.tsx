@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { duelHrefFor } from '@/lib/duelShelves';
 import type { Country } from '@/lib/types';
 
 // Add-a-country flow: filter the (finite, seeded) catalog of untracked
@@ -32,7 +33,12 @@ export function CountryPicker({ untracked }: { untracked: Country[] }) {
         body: JSON.stringify(body),
       });
       setQ('');
-      router.refresh();
+      // Added to the ranking but unplaced — go decide where it sits.
+      if (body.on_rankings === true) {
+        router.push(duelHrefFor('countries', country.id));
+      } else {
+        router.refresh();
+      }
     });
   }
 

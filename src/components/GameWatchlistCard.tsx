@@ -3,6 +3,7 @@
 import { useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { duelHrefFor } from '@/lib/duelShelves';
 import type { UserVideoGame } from '@/lib/types';
 
 export function GameWatchlistCard({ userGame }: { userGame: UserVideoGame }) {
@@ -17,7 +18,13 @@ export function GameWatchlistCard({ userGame }: { userGame: UserVideoGame }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      router.refresh();
+      // Promoting to the rankings leaves it unplaced, so carry straight on to
+      // the duel to decide where it goes; anything else just refreshes here.
+      if (body.on_rankings === true) {
+        router.push(duelHrefFor('games', game.id));
+      } else {
+        router.refresh();
+      }
     });
   }
 

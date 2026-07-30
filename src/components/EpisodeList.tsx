@@ -7,7 +7,11 @@ import type { TVEpisode } from '@/lib/types';
 
 // Episode list grouped by season, with per-episode watched toggles. The
 // watched set comes from the server (user's marks); toggles hit the BFF and
-// refresh so the server stays the source of truth.
+// refresh so the server stays the source of truth. `overrides` is a local
+// optimistic layer on top of that: it flips instantly on click so the button
+// doesn't wait on the round trip, then gets cleared once fresh server data
+// (a new `watchedIds` prop, via router.refresh()) lands — or rolled back if
+// the request fails.
 export function EpisodeList({
   showId,
   episodes,
@@ -20,31 +24,68 @@ export function EpisodeList({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [overrides, setOverrides] = useState<Map<string, boolean>>(new Map());
   const watched = useMemo(() => new Set(watchedIds), [watchedIds]);
 
-  function markAllWatched(season?: number) {
-    playPop();
-    setError(null);
-    startTransition(async () => {
-      const qs = season != null ? `?season=${season}` : '';
-      const res = await fetch(`/api/tv/${showId}/watch-all${qs}`, { method: 'POST' });
-      if (!res.ok) {
-        setError('Could not mark episodes watched — try again.');
-        return;
-      }
-      router.refresh();
+  // The server just resynced (a new watchedIds array landed via
+  // router.refresh()) — it's the source of truth again, so drop any
+  // optimistic overrides instead of shadowing it. Adjusting state during
+  // render (rather than in an effect) per
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes.
+  const [prevWatchedIds, setPrevWatchedIds] = useState(watchedIds);
+  if (watchedIds !== prevWatchedIds) {
+    setPrevWatchedIds(watchedIds);
+    setOverrides(new Map());
+  }
+
+  function isWatched(id: string): boolean {
+    return overrides.has(id) ? overrides.get(id)! : watched.has(id);
+  }
+
+  function setOverride(id: string, value: boolean) {
+    setOverrides((prev) => {
+      const next = new Map(prev);
+      next.set(id, value);
+      return next;
     });
   }
 
-  const seasons = useMemo(() => {
+  const bySeasonMap = useMemo(() => {
     const bySeason = new Map<number, TVEpisode[]>();
     for (const ep of episodes) {
       const s = ep.season ?? 0;
       if (!bySeason.has(s)) bySeason.set(s, []);
       bySeason.get(s)!.push(ep);
     }
-    return [...bySeason.entries()].sort(([a], [b]) => a - b);
+    return bySeason;
   }, [episodes]);
+
+  const seasons = useMemo(
+    () => [...bySeasonMap.entries()].sort(([a], [b]) => a - b),
+    [bySeasonMap],
+  );
+
+  function markAllWatched(season?: number) {
+    playPop();
+    setError(null);
+    const targets = season != null ? (bySeasonMap.get(season) ?? []) : episodes;
+    const previous = new Map(overrides);
+    setOverrides((prev) => {
+      const next = new Map(prev);
+      for (const ep of targets) next.set(ep.id, true);
+      return next;
+    });
+    startTransition(async () => {
+      const qs = season != null ? `?season=${season}` : '';
+      const res = await fetch(`/api/tv/${showId}/watch-all${qs}`, { method: 'POST' });
+      if (!res.ok) {
+        setError('Could not mark episodes watched — try again.');
+        setOverrides(previous);
+        return;
+      }
+      router.refresh();
+    });
+  }
 
   // Default the open season to the first with an unwatched episode.
   const firstUnwatched = seasons.find(([, eps]) =>
@@ -53,14 +94,17 @@ export function EpisodeList({
   const [open, setOpen] = useState<number | null>(firstUnwatched ?? null);
 
   function toggle(ep: TVEpisode) {
-    if (!watched.has(ep.id)) playPop();
+    const wasWatched = isWatched(ep.id);
+    if (!wasWatched) playPop();
     setError(null);
+    setOverride(ep.id, !wasWatched);
     startTransition(async () => {
       const res = await fetch(`/api/tv/episodes/${ep.id}/watch`, {
-        method: watched.has(ep.id) ? 'DELETE' : 'POST',
+        method: wasWatched ? 'DELETE' : 'POST',
       });
       if (!res.ok) {
         setError('Could not update watched state — try again.');
+        setOverride(ep.id, wasWatched);
         return;
       }
       router.refresh();
@@ -75,7 +119,7 @@ export function EpisodeList({
     );
   }
 
-  const totalWatched = episodes.filter((e) => watched.has(e.id)).length;
+  const totalWatched = episodes.filter((e) => isWatched(e.id)).length;
 
   return (
     <div className="flex flex-col gap-3">
@@ -95,7 +139,7 @@ export function EpisodeList({
       </div>
       {error && <p className="text-xs text-red-400">{error}</p>}
       {seasons.map(([season, eps]) => {
-        const seasonWatched = eps.filter((e) => watched.has(e.id)).length;
+        const seasonWatched = eps.filter((e) => isWatched(e.id)).length;
         const isOpen = open === season;
         return (
           <div
@@ -130,7 +174,7 @@ export function EpisodeList({
             {isOpen && (
               <ul className="border-t border-line">
                 {eps.map((ep) => {
-                  const isWatched = watched.has(ep.id);
+                  const epWatched = isWatched(ep.id);
                   return (
                     <li
                       key={ep.id}
@@ -141,7 +185,7 @@ export function EpisodeList({
                       </span>
                       <span
                         className={`flex-1 truncate ${
-                          isWatched ? 'text-neutral-500' : 'text-neutral-200'
+                          epWatched ? 'text-neutral-500' : 'text-neutral-200'
                         }`}
                       >
                         {ep.title}
@@ -154,14 +198,14 @@ export function EpisodeList({
                       <button
                         onClick={() => toggle(ep)}
                         disabled={pending}
-                        title={isWatched ? 'Mark unwatched' : 'Mark watched'}
+                        title={epWatched ? 'Mark unwatched' : 'Mark watched'}
                         className={`shrink-0 rounded px-2 py-1 text-xs font-medium disabled:opacity-50 ${
-                          isWatched
+                          epWatched
                             ? 'bg-moss text-ink hover:bg-moss-bright'
                             : 'bg-plum-wash text-plum hover:bg-plum hover:text-ink'
                         }`}
                       >
-                        {isWatched ? '✓ Watched' : 'Unwatched'}
+                        {epWatched ? '✓ Watched' : 'Unwatched'}
                       </button>
                     </li>
                   );

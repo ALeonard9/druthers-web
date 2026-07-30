@@ -24,6 +24,12 @@ export function FrozenShowsList({ shows }: { shows: ScheduleFrozenShow[] }) {
 
   if (shows.length === 0) return null;
 
+  const sortedShows = [...shows].sort((a, b) =>
+    a.show_title.localeCompare(b.show_title, undefined, {
+      sensitivity: 'base',
+    }),
+  );
+
   return (
     <section>
       <h2 className="mb-1 text-lg font-medium text-neutral-200">
@@ -34,7 +40,7 @@ export function FrozenShowsList({ shows }: { shows: ScheduleFrozenShow[] }) {
         them.
       </p>
       <ul className="divide-y divide-line rounded-lg border border-line bg-panel">
-        {shows.map((s) => (
+        {sortedShows.map((s) => (
           <li
             key={s.show_id}
             className="flex items-center justify-between px-3 py-2 text-sm"

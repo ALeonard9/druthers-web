@@ -25,7 +25,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section className="relative flex flex-col items-center gap-6 overflow-hidden px-4 pb-16 pt-16 text-center sm:pt-24">
+      <section className="relative flex flex-col items-center gap-7 overflow-hidden px-4 pb-24 pt-20 text-center sm:pt-28">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[32rem] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,var(--color-brass-wash),transparent)]"
           aria-hidden
@@ -37,7 +37,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
           Your favorites — movies, TV, books, and games — watched, read, and
           played, then ranked into the order you&apos;d pick them again.
         </p>
-        <div className="mt-4 rounded-xl border border-brass/40 bg-panel p-6 shadow-[0_0_60px_-15px_var(--color-brass-wash)]">
+        <div className="mt-3 rounded-xl border border-brass/40 bg-panel p-6 shadow-[0_0_60px_-15px_var(--color-brass-wash)]">
           <GoogleSignIn clientId={googleClientId} />
         </div>
         <Link
@@ -49,7 +49,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
       </section>
 
       {/* Ranked, not rated — reusing the framing from /about verbatim. */}
-      <section className="border-y border-line bg-panel px-6 py-14 text-center sm:px-10">
+      <section className="border-y border-line bg-panel px-6 py-20 text-center sm:px-10">
         <p className="font-mono text-xs uppercase tracking-[0.3em] text-brass">
           Not another five-star rating
         </p>
@@ -65,7 +65,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
       </section>
 
       {/* Four domains */}
-      <section className="flex flex-col items-center gap-8 px-4 py-16">
+      <section className="flex flex-col items-center gap-10 px-4 py-24">
         <h2 className="font-display text-3xl text-paper sm:text-4xl">
           One shelf, four collections
         </h2>
@@ -85,7 +85,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
       </section>
 
       {/* Top 5 share card showcase */}
-      <section className="flex flex-col items-center gap-6 bg-panel px-4 py-16">
+      <section className="flex flex-col items-center gap-8 border-y border-line bg-panel px-4 py-24">
         <div className="max-w-lg text-center">
           <h2 className="font-display text-3xl text-paper sm:text-4xl">
             Rank five, get a card worth sharing
@@ -101,12 +101,31 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
         </div>
       </section>
 
-      {/* Closing CTA */}
-      <section className="flex flex-col items-center gap-5 px-4 py-20 text-center">
-        <p className="font-display text-2xl text-paper sm:text-3xl">
-          Got sent a card? Build your own shelf in under a minute.
-        </p>
-        <GoogleSignIn clientId={googleClientId} />
+      {/* Closing CTA — a ticket stub, not a hero re-run. Same paper/ink/
+          dashed-rule/slight-rotation language /about uses for its own "ticket"
+          treatment, so the one light-on-dark moment on the page pays off the
+          "on the record" line above rather than repeating the hero's button
+          in a bigger font. */}
+      <section className="flex flex-col items-center px-4 py-28">
+        <div className="w-full max-w-sm -rotate-1 rounded-lg bg-paper px-8 py-8 text-center text-ink shadow-[0_25px_60px_rgba(0,0,0,0.55)]">
+          <div className="flex items-center justify-between border-b border-dashed border-brass-wash/40 pb-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass-wash/70">
+              Admit one
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass-wash/70">
+              No expiration
+            </span>
+          </div>
+          <p className="mt-6 font-display text-2xl italic leading-snug">
+            Got sent a card?
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-ink/70">
+            Build your own shelf in under a minute.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <GoogleSignIn clientId={googleClientId} />
+          </div>
+        </div>
       </section>
     </div>
   );

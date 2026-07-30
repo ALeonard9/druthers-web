@@ -61,6 +61,12 @@ export default async function MoviesRankingPage({
             initialCategory="movies"
           />
           <Link
+            href="/movies/ranking/duel"
+            className="rounded border border-line px-3 py-2 text-sm text-neutral-300 hover:border-brass hover:text-paper"
+          >
+            Rank by comparison →
+          </Link>
+          <Link
             href="/movies/search"
             className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >

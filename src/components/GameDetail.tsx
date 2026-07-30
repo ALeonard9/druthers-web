@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { duelHrefFor } from '@/lib/duelShelves';
 import { CompletedDateField } from './CompletedDateField';
 import type { UserVideoGame, VideoGame } from '@/lib/types';
 
@@ -50,7 +51,13 @@ export function GameDetail({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      router.refresh();
+      // It goes on the rankings unplaced, so the position still has to be
+      // decided — hand straight to the duel rather than leaving it in limbo.
+      if (body.on_rankings === true) {
+        router.push(duelHrefFor('games', game.id));
+      } else {
+        router.refresh();
+      }
     });
   }
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { catalogIdFrom, duelHrefFor } from '@/lib/duelShelves';
 import type { TVShowSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
 
@@ -50,8 +51,16 @@ export function TVSearch() {
     setAdded((prev) => ({ ...prev, [s.tvmaze!]: res.ok ? 'done' : 'error' }));
     // Land wherever it just went: a new rankings entry starts unranked
     // in the "to rank" bucket on the board, which the deck won't show.
-    if (res.ok)
-      router.push(list === 'watchlist' ? '/tv/watchlist' : '/tv/ranking');
+    // Adding to the rankings leaves the title *unplaced*, so hand straight to
+    // the duel to decide where it goes — the add is only half the gesture.
+    if (res.ok) {
+      if (list === 'watchlist') {
+        router.push('/tv/watchlist');
+      } else {
+        const tracker = await res.json().catch(() => null);
+        router.push(duelHrefFor('tv', catalogIdFrom('tv', tracker)));
+      }
+    }
   }
 
   return (

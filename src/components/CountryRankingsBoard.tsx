@@ -69,6 +69,13 @@ function ToRankChip({
       >
         {item.country.title}
       </Link>
+      <Link
+        href={`/countries/duel?item=${item.country.id}`}
+        title="Place it by comparison instead of dragging"
+        className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright"
+      >
+        Place it →
+      </Link>
       <button
         onClick={() => onMoveToBucket(item)}
         title="Move back to the bucket list"

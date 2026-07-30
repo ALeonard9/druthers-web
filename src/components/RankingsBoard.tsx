@@ -71,6 +71,13 @@ function ToRankChip({
       >
         {item.movie.title}
       </Link>
+      <Link
+        href={`/movies/ranking/duel?item=${item.movie.id}`}
+        title="Place it by comparison instead of dragging"
+        className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright"
+      >
+        Place it →
+      </Link>
       <button
         onClick={() => onPlaceTop(item)}
         title="Place at #1 without dragging"

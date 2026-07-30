@@ -3,6 +3,7 @@
 import { useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { duelHrefFor } from '@/lib/duelShelves';
 import type { UserCountry } from '@/lib/types';
 
 // The travel bucket list — simple rows with a "been there" promotion action.
@@ -17,7 +18,13 @@ export function CountryBucketList({ items }: { items: UserCountry[] }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      router.refresh();
+      // Marking one visited puts it on the ranking unplaced — the duel is
+      // where it gets a position.
+      if (body.on_rankings === true) {
+        router.push(duelHrefFor('countries', countryId));
+      } else {
+        router.refresh();
+      }
     });
   }
 

@@ -9,6 +9,8 @@ import { DECK_SIZE, tvDeckItems } from '@/lib/deck';
 import { TV_TABS } from '@/lib/sectionTabs';
 import type { UserTVShow, Summary } from '@/lib/types';
 import { RankedPosterDeck } from '@/components/RankedPosterDeck';
+import { ProgressBanner } from '@/components/ProgressBanner';
+import { progressMessage } from '@/lib/progress';
 import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +35,7 @@ export default async function TVPage() {
   // Filtering belongs with the list on /tv/ranking.
   const { rankingsPlaced } = partitionShows(shows);
   const top = tvDeckItems(rankingsPlaced.slice(0, DECK_SIZE));
+  const banner = progressMessage(rankingsPlaced.length, 'show');
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,11 +62,14 @@ export default async function TVPage() {
       </div>
 
       {top.length > 0 ? (
-        <RankedPosterDeck
-          items={top}
-          placedCount={rankingsPlaced.length}
-          label="Your highest ranked shows"
-        />
+        <>
+          {banner && <ProgressBanner message={banner} />}
+          <RankedPosterDeck
+            items={top}
+            placedCount={rankingsPlaced.length}
+            label="Your highest ranked shows"
+          />
+        </>
       ) : (
         <p className="text-sm text-neutral-500">
           Nothing ranked yet —{' '}

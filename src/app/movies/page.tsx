@@ -8,6 +8,8 @@ import { DECK_SIZE, movieDeckItems } from '@/lib/deck';
 import { MOVIE_TABS } from '@/lib/sectionTabs';
 import type { UserMovie, Summary } from '@/lib/types';
 import { RankedPosterDeck } from '@/components/RankedPosterDeck';
+import { ProgressBanner } from '@/components/ProgressBanner';
+import { progressMessage } from '@/lib/progress';
 import { SectionTabs } from '@/components/SectionTabs';
 import Link from 'next/link';
 
@@ -33,6 +35,7 @@ export default async function MoviesPage() {
   // Filtering belongs with the list on /movies/ranking.
   const { rankingsPlaced } = partitionMovies(movies);
   const top = movieDeckItems(rankingsPlaced.slice(0, DECK_SIZE));
+  const banner = progressMessage(rankingsPlaced.length, 'movie');
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,11 +65,14 @@ export default async function MoviesPage() {
       </div>
 
       {top.length > 0 ? (
-        <RankedPosterDeck
-          items={top}
-          placedCount={rankingsPlaced.length}
-          label="Your highest ranked movies"
-        />
+        <>
+          {banner && <ProgressBanner message={banner} />}
+          <RankedPosterDeck
+            items={top}
+            placedCount={rankingsPlaced.length}
+            label="Your highest ranked movies"
+          />
+        </>
       ) : (
         <p className="text-sm text-neutral-500">
           Nothing ranked yet —{' '}

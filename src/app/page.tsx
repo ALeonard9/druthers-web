@@ -1,19 +1,38 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { apiFetch, ApiError } from '@/lib/api';
+import type { Metadata } from 'next';
+import { ApiError, apiFetch } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { HomeActivity, ActivitySkeleton } from '@/components/HomeActivity';
 import { HomeTonight, TonightSkeleton } from '@/components/HomeTonight';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { Top5Board } from '@/components/Top5Board';
+import { PublicLanding } from '@/components/PublicLanding';
 import type { Summary } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
+// Signed-in visitors keep the root layout's default title (see
+// app/layout.tsx); a signed-out visitor gets marketing copy instead, mostly
+// for link-preview cards when a shared Top 5 card's "view druthers" link
+// resolves here.
+export async function generateMetadata(): Promise<Metadata> {
+  const user = await getSessionUser();
+  if (user) return {};
+  return {
+    title: 'Druthers — your favorites, ranked',
+    description:
+      'Movies, TV, books, and games — watched, read, played, then ranked into the order you’d pick them again. Not ratings out of ten: druthers.',
+  };
+}
+
 /**
- * The landing page: your Top 5 across all four shelves.
+ * `/`: a public marketing landing page for signed-out visitors (issue #27 —
+ * the most likely arrival path is a shared Top 5 card, and a bare login form
+ * doesn't sell the product), or your own Top 5 across all four shelves once
+ * signed in.
  *
  * Only the summary is awaited before first paint — one bounded request that
  * replaced four full-collection fetches (~1,400 movie rows alone) the page
@@ -23,7 +42,13 @@ export const dynamic = 'force-dynamic';
  */
 export default async function HomePage() {
   const user = await getSessionUser();
-  if (!user) redirect('/login');
+  if (!user) {
+    return (
+      <PublicLanding
+        googleClientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ''}
+      />
+    );
+  }
 
   let summary: Summary;
   try {

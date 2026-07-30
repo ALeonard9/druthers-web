@@ -9,6 +9,8 @@ import { DECK_SIZE, bookDeckItems } from '@/lib/deck';
 import { BOOK_TABS } from '@/lib/sectionTabs';
 import type { UserBook, Summary } from '@/lib/types';
 import { RankedPosterDeck } from '@/components/RankedPosterDeck';
+import { ProgressBanner } from '@/components/ProgressBanner';
+import { progressMessage } from '@/lib/progress';
 import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +35,7 @@ export default async function BooksPage() {
   // Filtering belongs with the list on /books/ranking.
   const { rankingsPlaced } = partitionBooks(books);
   const top = bookDeckItems(rankingsPlaced.slice(0, DECK_SIZE));
+  const banner = progressMessage(rankingsPlaced.length, 'book');
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,11 +65,14 @@ export default async function BooksPage() {
       </div>
 
       {top.length > 0 ? (
-        <RankedPosterDeck
-          items={top}
-          placedCount={rankingsPlaced.length}
-          label="Your highest ranked books"
-        />
+        <>
+          {banner && <ProgressBanner message={banner} />}
+          <RankedPosterDeck
+            items={top}
+            placedCount={rankingsPlaced.length}
+            label="Your highest ranked books"
+          />
+        </>
       ) : (
         <p className="text-sm text-neutral-500">
           Nothing ranked yet —{' '}

@@ -9,6 +9,8 @@ import { DECK_SIZE, gameDeckItems } from '@/lib/deck';
 import { GAME_TABS } from '@/lib/sectionTabs';
 import type { UserVideoGame, Summary } from '@/lib/types';
 import { RankedPosterDeck } from '@/components/RankedPosterDeck';
+import { ProgressBanner } from '@/components/ProgressBanner';
+import { progressMessage } from '@/lib/progress';
 import { SectionTabs } from '@/components/SectionTabs';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +35,7 @@ export default async function GamesPage() {
   // Filtering belongs with the list on /games/ranking.
   const { rankingsPlaced } = partitionGames(games);
   const top = gameDeckItems(rankingsPlaced.slice(0, DECK_SIZE));
+  const banner = progressMessage(rankingsPlaced.length, 'game');
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,11 +65,14 @@ export default async function GamesPage() {
       </div>
 
       {top.length > 0 ? (
-        <RankedPosterDeck
-          items={top}
-          placedCount={rankingsPlaced.length}
-          label="Your highest ranked games"
-        />
+        <>
+          {banner && <ProgressBanner message={banner} />}
+          <RankedPosterDeck
+            items={top}
+            placedCount={rankingsPlaced.length}
+            label="Your highest ranked games"
+          />
+        </>
       ) : (
         <p className="text-sm text-neutral-500">
           Nothing ranked yet —{' '}

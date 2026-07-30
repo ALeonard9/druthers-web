@@ -4,6 +4,7 @@ import './globals.css';
 import { Sidebar, BottomTabs } from '@/components/Sidebar';
 import { TopBar } from '@/components/TopBar';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
+import { getSessionUser } from '@/lib/session';
 
 // Display face: bookish, characterful — wordmark, page titles, rank numerals.
 const fraunces = Fraunces({
@@ -45,27 +46,38 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Signed-out visitors only ever reach public pages (the landing page,
+  // /login, /about) — none of them want the logged-in app shell (its nav
+  // just bounces back to /login anyway). Keeping this check here, rather
+  // than per-page, is what lets the public landing page (#27) go chrome-free
+  // without a route-group refactor of every existing page.
+  const user = await getSessionUser();
+
   return (
     <html
       lang="en"
       className={`h-full antialiased ${fraunces.variable} ${instrumentSans.variable}`}
     >
       <body className="min-h-full bg-night text-neutral-100">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <TopBar />
-            <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pb-8">
-              {children}
-            </main>
+        {user ? (
+          <div className="flex min-h-screen">
+            <Sidebar />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <TopBar />
+              <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pb-8">
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
-        <BottomTabs />
+        ) : (
+          <main className="min-h-screen px-4 py-8 md:px-8">{children}</main>
+        )}
+        {user && <BottomTabs />}
         <ServiceWorkerRegister />
       </body>
     </html>

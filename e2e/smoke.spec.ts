@@ -12,7 +12,11 @@ test('login page renders the sign-in options', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
 });
 
-test('unauthenticated root redirects to login', async ({ page }) => {
+test('unauthenticated root shows the public landing page', async ({ page }) => {
+  // #27: signed-out visitors get a marketing landing page at `/` instead of
+  // a redirect to /login (the arrival path from a shared Top 5 card).
   await page.goto('/');
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('heading', { name: /druthers/, level: 1 })).toBeVisible();
+  await expect(page.getByText('One shelf, four collections')).toBeVisible();
 });

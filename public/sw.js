@@ -1,7 +1,14 @@
 // App-shell cache so the installed PWA opens instantly instead of a blank
 // screen when the network is slow or briefly unavailable. Not a full offline
 // mode — API data always comes from the network.
-const CACHE_NAME = 'druthers-shell-v1';
+//
+// Only the shell URLs below and Next's hashed /_next/static/ build output are
+// cache-first. Everything else — including client-side route transitions,
+// which fetch a page's RSC payload from that same page's URL rather than
+// under /api/ — must always hit the network. Caching those cache-first froze
+// a page's server-rendered snapshot (e.g. /tv/schedule's watched status)
+// indefinitely, since nothing here bumps the entry once cached.
+const CACHE_NAME = 'druthers-shell-v2';
 const SHELL_URLS = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -44,6 +51,10 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+
+  const cacheable =
+    url.pathname.startsWith('/_next/static/') || SHELL_URLS.includes(url.pathname);
+  if (!cacheable) return;
 
   event.respondWith(
     caches.match(request).then(

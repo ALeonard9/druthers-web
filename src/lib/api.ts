@@ -1,8 +1,7 @@
 import { getToken } from './session';
 
-// Base URL of the FastAPI backend. Server-side only (never shipped to client).
-export const API_BASE_URL =
-  process.env.API_BASE_URL ?? 'http://127.0.0.1:8000';
+export { API_BASE_URL } from './apiBase';
+import { API_BASE_URL } from './apiBase';
 
 export class ApiError extends Error {
   status: number;

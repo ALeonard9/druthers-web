@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { API_BASE_URL } from '@/lib/api';
-import { SESSION_COOKIE, USER_COOKIE, cookieOptions } from '@/lib/session';
+import { applyTokenCookies } from '@/lib/session';
 
 // BFF login: exchange email/password for a JWT at the API's OAuth2 token
 // endpoint, then store it in an httpOnly cookie. The token never reaches the
@@ -28,18 +28,7 @@ export async function POST(request: Request) {
   }
 
   const data = await res.json();
-  const store = await cookies();
-  store.set(SESSION_COOKIE, data.access_token, cookieOptions);
-  const user = {
-    user_id: data.user_id,
-    email: data.email,
-    user_group: data.user_group,
-  };
-  // Non-sensitive; readable by the client to render the nav.
-  store.set(USER_COOKIE, JSON.stringify(user), {
-    ...cookieOptions,
-    httpOnly: false,
-  });
+  const user = applyTokenCookies(await cookies(), data);
 
   return NextResponse.json({ ok: true, user });
 }

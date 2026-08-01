@@ -1,15 +1,29 @@
 import { cookies } from 'next/headers';
 import type { SessionUser } from './types';
+import { REFRESH_COOKIE, SESSION_COOKIE, USER_COOKIE } from './sessionCookies';
 
-// The BFF stores the API's JWT in an httpOnly cookie so it is never exposed to
-// client-side JavaScript. A second (readable) cookie holds non-sensitive user
-// info for rendering the nav without decoding the JWT on the client.
-export const SESSION_COOKIE = 'aleonard_session';
-export const USER_COOKIE = 'aleonard_user';
+// Cookie names, options, and the read/write helpers live in ./sessionCookies
+// so middleware can share them; this module adds the `cookies()`-backed reads
+// that only work inside the app.
+export {
+  SESSION_COOKIE,
+  USER_COOKIE,
+  REFRESH_COOKIE,
+  cookieOptions,
+  applyTokenCookies,
+  clearSessionCookies,
+  sessionUserFrom,
+} from './sessionCookies';
+export type { TokenResponse } from './sessionCookies';
 
 export async function getToken(): Promise<string | undefined> {
   const store = await cookies();
   return store.get(SESSION_COOKIE)?.value;
+}
+
+export async function getRefreshToken(): Promise<string | undefined> {
+  const store = await cookies();
+  return store.get(REFRESH_COOKIE)?.value;
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -22,14 +36,3 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     return null;
   }
 }
-
-export const cookieOptions = {
-  httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: process.env.NODE_ENV === 'production',
-  path: '/',
-  // Matches the API token lifetime (ACCESS_TOKEN_EXPIRE_MINUTES, 12h in
-  // dev). If the cookie outlives the token, /login re-verifies before
-  // redirecting, so a stale cookie can't cause a loop.
-  maxAge: 60 * 60 * 12,
-};

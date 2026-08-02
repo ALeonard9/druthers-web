@@ -59,6 +59,9 @@ export default async function TVShowDetailPage({
   const watchedIds = marks
     .filter((m) => m.watched)
     .map((m) => m.episode.id);
+  const favoritedIds = marks
+    .filter((m) => m.favorited)
+    .map((m) => m.episode.id);
 
   return (
     <div className="flex flex-col gap-6">
@@ -68,7 +71,12 @@ export default async function TVShowDetailPage({
       <TVShowDetail show={show} tracker={tracker} providers={providers} />
       <section>
         <h2 className="mb-3 text-lg font-medium text-neutral-200">Episodes</h2>
-        <EpisodeList showId={id} episodes={episodes} watchedIds={watchedIds} />
+        <EpisodeList
+          showId={id}
+          episodes={episodes}
+          watchedIds={watchedIds}
+          favoritedIds={favoritedIds}
+        />
       </section>
     </div>
   );

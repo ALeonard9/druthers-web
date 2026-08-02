@@ -16,18 +16,24 @@ export function EpisodeList({
   showId,
   episodes,
   watchedIds,
+  favoritedIds,
 }: {
   showId: string;
   episodes: TVEpisode[];
   watchedIds: string[];
+  favoritedIds: string[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<Map<string, boolean>>(new Map());
+  const [favoriteOverrides, setFavoriteOverrides] = useState<Map<string, boolean>>(
+    new Map(),
+  );
   const watched = useMemo(() => new Set(watchedIds), [watchedIds]);
+  const favorited = useMemo(() => new Set(favoritedIds), [favoritedIds]);
 
-  // The server just resynced (a new watchedIds array landed via
+  // The server just resynced (a new watchedIds/favoritedIds array landed via
   // router.refresh()) — it's the source of truth again, so drop any
   // optimistic overrides instead of shadowing it. Adjusting state during
   // render (rather than in an effect) per
@@ -37,6 +43,11 @@ export function EpisodeList({
     setPrevWatchedIds(watchedIds);
     setOverrides(new Map());
   }
+  const [prevFavoritedIds, setPrevFavoritedIds] = useState(favoritedIds);
+  if (favoritedIds !== prevFavoritedIds) {
+    setPrevFavoritedIds(favoritedIds);
+    setFavoriteOverrides(new Map());
+  }
 
   function isWatched(id: string): boolean {
     return overrides.has(id) ? overrides.get(id)! : watched.has(id);
@@ -44,6 +55,18 @@ export function EpisodeList({
 
   function setOverride(id: string, value: boolean) {
     setOverrides((prev) => {
+      const next = new Map(prev);
+      next.set(id, value);
+      return next;
+    });
+  }
+
+  function isFavorited(id: string): boolean {
+    return favoriteOverrides.has(id) ? favoriteOverrides.get(id)! : favorited.has(id);
+  }
+
+  function setFavoriteOverride(id: string, value: boolean) {
+    setFavoriteOverrides((prev) => {
       const next = new Map(prev);
       next.set(id, value);
       return next;
@@ -105,6 +128,24 @@ export function EpisodeList({
       if (!res.ok) {
         setError('Could not update watched state — try again.');
         setOverride(ep.id, wasWatched);
+        return;
+      }
+      router.refresh();
+    });
+  }
+
+  function toggleFavorite(ep: TVEpisode) {
+    const wasFavorited = isFavorited(ep.id);
+    if (!wasFavorited) playPop();
+    setError(null);
+    setFavoriteOverride(ep.id, !wasFavorited);
+    startTransition(async () => {
+      const res = await fetch(`/api/tv/episodes/${ep.id}/favorite`, {
+        method: wasFavorited ? 'DELETE' : 'POST',
+      });
+      if (!res.ok) {
+        setError('Could not update favorite — try again.');
+        setFavoriteOverride(ep.id, wasFavorited);
         return;
       }
       router.refresh();
@@ -175,6 +216,7 @@ export function EpisodeList({
               <ul className="border-t border-line">
                 {eps.map((ep) => {
                   const epWatched = isWatched(ep.id);
+                  const epFavorited = isFavorited(ep.id);
                   return (
                     <li
                       key={ep.id}
@@ -195,6 +237,19 @@ export function EpisodeList({
                           {ep.airdate.slice(0, 10)}
                         </span>
                       )}
+                      <button
+                        onClick={() => toggleFavorite(ep)}
+                        disabled={pending}
+                        title={epFavorited ? 'Unfavorite' : 'Favorite'}
+                        aria-label={epFavorited ? 'Unfavorite episode' : 'Favorite episode'}
+                        className={`shrink-0 rounded px-1.5 py-1 text-sm disabled:opacity-50 ${
+                          epFavorited
+                            ? 'text-brass hover:text-brass-bright'
+                            : 'text-neutral-600 hover:text-neutral-400'
+                        }`}
+                      >
+                        {epFavorited ? '★' : '☆'}
+                      </button>
                       <button
                         onClick={() => toggle(ep)}
                         disabled={pending}

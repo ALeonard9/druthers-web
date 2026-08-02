@@ -72,6 +72,10 @@ body {
 .poster-deck {
   --deck-card: 60vw;
   --deck-step: calc(var(--deck-card) * 0.72);
+  /* deck-card z-index runs up to 1000 to layer overlapping posters; contain
+     that range here so it can't float above unrelated overlays (e.g. the
+     Share Top 5 modal) that sit later in the DOM at a much lower z-index. */
+  isolation: isolate;
 }
 
 @media (min-width: 640px) {

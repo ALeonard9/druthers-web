@@ -349,16 +349,25 @@ function drawStory(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   }
 
   const footY = perfY + 78;
+  const footGap = 32;
+
+  mono(ctx, f, 27);
+  const dateText = monthYear();
+  const dateW = ctx.measureText(dateText).width;
+
   mono(ctx, f, 27, 5);
   ctx.fillStyle = C.paperGold;
   ctx.textAlign = 'left';
-  const link = linkText(data);
+  // A claimed handle can push this past the date on the same line
+  // (e.g. www.druthers.io/u/<handle>) — truncate to whatever's left.
+  const link = truncate(ctx, linkText(data), pw - dateW - footGap);
   ctx.fillText(link, px, footY);
   line(ctx, px, footY + 12, px + ctx.measureText(link).width, footY + 12, C.paperDash, 2);
+
   mono(ctx, f, 27);
   ctx.fillStyle = C.paperMuted;
   ctx.textAlign = 'right';
-  ctx.fillText(monthYear(), px + pw, footY);
+  ctx.fillText(dateText, px + pw, footY);
 
   ctx.restore();
 }
@@ -389,7 +398,9 @@ function drawWide(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   );
   mono(ctx, f, 20, 4);
   ctx.fillStyle = C.brass;
-  ctx.fillText(linkText(data), pad, h - pad + 10);
+  // A claimed handle can otherwise run past the divider into the poster
+  // column (e.g. www.druthers.io/u/<handle>).
+  ctx.fillText(truncate(ctx, linkText(data), colW - pad * 2), pad, h - pad + 10);
 
   const rx = colW + 56;
   const rw = w - rx - pad;

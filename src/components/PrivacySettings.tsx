@@ -3,11 +3,15 @@
 import { useEffect, useState } from 'react';
 import type { Visibility } from '@/lib/types';
 
-const CATEGORIES: { flag: keyof Visibility; label: string }[] = [
-  { flag: 'public_movies', label: 'Movies' },
-  { flag: 'public_tv', label: 'TV' },
-  { flag: 'public_books', label: 'Books' },
-  { flag: 'public_games', label: 'Games' },
+const CATEGORIES: {
+  flag: keyof Visibility;
+  watchlistFlag: keyof Visibility;
+  label: string;
+}[] = [
+  { flag: 'public_movies', watchlistFlag: 'public_watchlist_movies', label: 'Movies' },
+  { flag: 'public_tv', watchlistFlag: 'public_watchlist_tv', label: 'TV' },
+  { flag: 'public_books', watchlistFlag: 'public_watchlist_books', label: 'Books' },
+  { flag: 'public_games', watchlistFlag: 'public_watchlist_games', label: 'Games' },
 ];
 
 // Handle + per-category public toggles (#143). Everything is private by
@@ -98,35 +102,64 @@ export function PrivacySettings() {
       </form>
 
       <ul className="divide-y divide-line/60 rounded-lg border border-line bg-panel">
-        {CATEGORIES.map(({ flag, label }) => {
+        {CATEGORIES.map(({ flag, watchlistFlag, label }) => {
           const isPublic = Boolean(settings[flag]);
+          const isWatchlistPublic = Boolean(settings[watchlistFlag]);
           return (
-            <li key={flag} className="flex items-center gap-3 px-4 py-2.5">
-              <span className="flex-1 text-sm text-neutral-200">{label}</span>
-              <span
-                className={`text-xs ${
-                  isPublic ? 'text-moss' : 'text-neutral-500'
-                }`}
-              >
-                {isPublic ? 'Public' : 'Private'}
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={isPublic}
-                aria-label={`${label} rankings ${isPublic ? 'public' : 'private'}`}
-                disabled={busy}
-                onClick={() => void save({ [flag]: !isPublic })}
-                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
-                  isPublic ? 'bg-moss' : 'bg-line'
-                }`}
-              >
+            <li key={flag} className="px-4 py-2.5">
+              <div className="flex items-center gap-3">
+                <span className="flex-1 text-sm text-neutral-200">{label}</span>
                 <span
-                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-night transition-all ${
-                    isPublic ? 'left-[18px]' : 'left-0.5'
+                  className={`text-xs ${
+                    isPublic ? 'text-moss' : 'text-neutral-500'
                   }`}
-                />
-              </button>
+                >
+                  {isPublic ? 'Public' : 'Private'}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isPublic}
+                  aria-label={`${label} rankings ${isPublic ? 'public' : 'private'}`}
+                  disabled={busy}
+                  onClick={() => void save({ [flag]: !isPublic })}
+                  className={`relative h-5 w-9 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                    isPublic ? 'bg-moss' : 'bg-line'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-night transition-all ${
+                      isPublic ? 'left-[18px]' : 'left-0.5'
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="mt-2 flex items-center gap-3 pl-3">
+                <span
+                  className={`flex-1 text-xs ${
+                    isPublic ? 'text-neutral-400' : 'text-neutral-600'
+                  }`}
+                >
+                  Also show watchlist
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isWatchlistPublic}
+                  aria-label={`${label} watchlist ${isWatchlistPublic ? 'public' : 'private'}`}
+                  disabled={busy || !isPublic}
+                  onClick={() => void save({ [watchlistFlag]: !isWatchlistPublic })}
+                  className={`relative h-4 w-7 shrink-0 rounded-full transition-colors disabled:opacity-30 ${
+                    isWatchlistPublic ? 'bg-moss' : 'bg-line'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-3 w-3 rounded-full bg-night transition-all ${
+                      isWatchlistPublic ? 'left-[14px]' : 'left-0.5'
+                    }`}
+                  />
+                </button>
+              </div>
             </li>
           );
         })}
@@ -141,7 +174,8 @@ export function PrivacySettings() {
           >
             www.druthers.io/u/{settings.handle}
           </a>{' '}
-          — ranked lists only; notes, watchlists, and activity stay private.
+          — ranked lists (plus any watchlist you&apos;ve opted in above) only;
+          notes and activity stay private.
         </p>
       )}
       {error && <p className="text-xs text-red-400">{error}</p>}

@@ -3,6 +3,7 @@ import type {
   UserTVShow,
   UserBook,
   UserVideoGame,
+  PublicShelf,
 } from './types';
 
 /**
@@ -93,5 +94,21 @@ export function gameDeckItems(rows: UserVideoGame[]): DeckItem[] {
     subtitle: subtitle(r.game.year, first(r.game.genre)),
     posterUrl: r.game.poster_url,
     href: `/games/${r.game.id}`,
+  }));
+}
+
+/**
+ * A public profile's shelf, read-only: rows carry no id and no detail
+ * route reaches an anonymous visitor, so `href` is unused (render with
+ * `interactive={false}`).
+ */
+export function publicDeckItems(shelf: PublicShelf): DeckItem[] {
+  return build(shelf.items, (item) => ({
+    id: `${shelf.category}-${item.rank}`,
+    rank: item.rank,
+    title: item.title,
+    subtitle: subtitle(item.year, null),
+    posterUrl: item.poster_url,
+    href: '',
   }));
 }

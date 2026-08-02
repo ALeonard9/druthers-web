@@ -155,7 +155,15 @@ function ShareModal({
   }, [filename]);
 
   const copyLink = useCallback(async () => {
-    await navigator.clipboard.writeText(data.url);
+    // data.url is always the production URL (the share *card* should read
+    // druthers.io even when generated locally) — but the copy-link action
+    // is for pasting somewhere and opening, so it needs to point at
+    // whatever's actually serving this page in dev/QA.
+    const url =
+      process.env.NEXT_PUBLIC_APP_ENV === 'prod'
+        ? data.url
+        : `${window.location.origin}${new URL(data.url).pathname}`;
+    await navigator.clipboard.writeText(url);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
   }, [data.url]);

@@ -336,6 +336,10 @@ export interface Visibility {
   public_tv: boolean | null;
   public_books: boolean | null;
   public_games: boolean | null;
+  public_watchlist_movies: boolean | null;
+  public_watchlist_tv: boolean | null;
+  public_watchlist_books: boolean | null;
+  public_watchlist_games: boolean | null;
 }
 
 export interface PublicShelfItem {
@@ -345,10 +349,18 @@ export interface PublicShelfItem {
   poster_url: string | null;
 }
 
+export interface PublicWatchlistItem {
+  title: string;
+  year: number | null;
+  poster_url: string | null;
+}
+
 export interface PublicShelf {
   category: string;
+  slug: string;
   ranked_count: number;
   items: PublicShelfItem[];
+  watchlist?: PublicWatchlistItem[];
 }
 
 export interface PublicProfile {

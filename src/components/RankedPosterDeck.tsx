@@ -24,10 +24,14 @@ export function RankedPosterDeck({
   items,
   placedCount,
   label = 'Your highest ranked titles',
+  interactive = true,
 }: {
   items: DeckItem[];
   placedCount: number;
   label?: string;
+  /** False for read-only contexts (e.g. a public profile) where the front
+   * card has nowhere to link — dragging through the deck still works. */
+  interactive?: boolean;
 }) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
@@ -122,8 +126,9 @@ export function RankedPosterDeck({
   // one opens its detail page.
   function onCardClick(i: number) {
     if (movedRef.current) return;
-    if (i === nearest) router.push(items[i].href);
-    else settle(i);
+    if (i === nearest) {
+      if (interactive) router.push(items[i].href);
+    } else settle(i);
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {

@@ -50,3 +50,6 @@ next-env.d.ts
 
 # Added by AI OS security enforcement
 .env
+
+# Local Claude Code artifacts (not checked in for this repo)
+graphify-out/

@@ -119,6 +119,7 @@ export interface TVEpisode {
 export interface UserTVEpisode {
   id: string;
   watched: number | null;
+  favorited: boolean | null;
   episode: TVEpisode;
 }
 

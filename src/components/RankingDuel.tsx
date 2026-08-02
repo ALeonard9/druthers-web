@@ -85,13 +85,19 @@ const GUTTER = 16;
 function useFittedStage(
   stageRef: React.RefObject<HTMLDivElement | null>,
   footerRef: React.RefObject<HTMLDivElement | null>,
+  // Whether the comparison UI (and so the footer) is actually on screen —
+  // it isn't for the "nothing to compare against yet" and "nothing left to
+  // place" states, and `footerRef.current` is null until it is (web#110).
+  active: boolean,
 ) {
   const [height, setHeight] = useState<number | null>(null);
 
   useLayoutEffect(() => {
+    const footer = footerRef.current;
+    if (!active || !footer) return;
+
     function measure() {
       const stage = stageRef.current;
-      const footer = footerRef.current;
       if (!stage || !footer) return;
       const viewportBottom = window.visualViewport?.height ?? window.innerHeight;
       const stageHeight = stage.getBoundingClientRect().height;
@@ -112,7 +118,7 @@ function useFittedStage(
     // watch what moves it instead: the page around it and the controls below.
     const observer = new ResizeObserver(measure);
     observer.observe(document.body);
-    observer.observe(footerRef.current!);
+    observer.observe(footer);
     window.visualViewport?.addEventListener('resize', measure);
     window.addEventListener('resize', measure);
     return () => {
@@ -120,7 +126,7 @@ function useFittedStage(
       window.visualViewport?.removeEventListener('resize', measure);
       window.removeEventListener('resize', measure);
     };
-  }, [stageRef, footerRef]);
+  }, [stageRef, footerRef, active]);
 
   return height;
 }
@@ -146,7 +152,6 @@ export function RankingDuel({
 
   const stageRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
-  const stageHeight = useFittedStage(stageRef, footerRef);
 
   const candidate = queue[0] ?? null;
 
@@ -159,6 +164,9 @@ export function RankingDuel({
         ? answers
         : startSession(ranked, candidate)
       : null;
+
+  const pair = session ? currentPair(session) : null;
+  const stageHeight = useFittedStage(stageRef, footerRef, Boolean(session && pair));
 
   /**
    * Writes the placement, then folds it into the local ranked list so the next
@@ -200,8 +208,6 @@ export function RankingDuel({
     },
     [router, shelf.id],
   );
-
-  const pair = session ? currentPair(session) : null;
 
   const answer = useCallback(
     (choice: Answer) => {

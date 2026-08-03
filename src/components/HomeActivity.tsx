@@ -34,8 +34,7 @@ export function ActivitySkeleton() {
 export async function HomeActivity() {
   let activity: ActivityItem[];
   try {
-    // Ask for a few more than we show: the country filter below drops some.
-    activity = await apiFetch<ActivityItem[]>('/v1/users/me/activity?limit=25');
+    activity = await apiFetch<ActivityItem[]>(`/v1/users/me/activity?limit=${FEED_LIMIT}`);
   } catch {
     return (
       <Frame>
@@ -50,10 +49,7 @@ export async function HomeActivity() {
     );
   }
 
-  // Countries was cut from the product — keep old entries out of the feed.
-  const feed = activity
-    .filter((a) => a.category !== 'country')
-    .slice(0, FEED_LIMIT);
+  const feed = activity.slice(0, FEED_LIMIT);
 
   return (
     <Frame>

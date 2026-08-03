@@ -23,7 +23,6 @@ const CATEGORY_LABELS: Record<ActivityItem['category'], string> = {
   tv_episode: 'Episode',
   game: 'Game',
   book: 'Book',
-  country: 'Country',
 };
 
 export function categoryLabel(category: ActivityItem['category']): string {
@@ -36,7 +35,6 @@ const DONE_VERB: Record<ActivityItem['category'], string> = {
   tv_episode: 'Watched',
   game: 'Played',
   book: 'Read',
-  country: 'Visited',
 };
 
 const WATCHLIST_LABEL: Record<ActivityItem['category'], string> = {
@@ -45,7 +43,6 @@ const WATCHLIST_LABEL: Record<ActivityItem['category'], string> = {
   tv_episode: 'Added to watchlist',
   game: 'Added to backlog',
   book: 'Added to to-read',
-  country: 'Added to bucket list',
 };
 
 /** Human label for the action taken, e.g. "Ranked #3", "Watched", "Added to watchlist". */
@@ -75,8 +72,6 @@ export function activityHref(item: ActivityItem): string {
       return `/games/${item.entity_id}`;
     case 'book':
       return `/books/${item.entity_id}`;
-    case 'country':
-      return `/countries/${item.entity_id}`;
     default:
       return '/';
   }

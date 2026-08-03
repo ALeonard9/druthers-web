@@ -196,31 +196,6 @@ export interface BookSearchResult {
   rank: number | null;
 }
 
-export interface Country {
-  id: string;
-  title: string;
-  country_code: string;
-  region: string | null;
-  subregion: string | null;
-  capital: string | null;
-  population: number | null;
-  flag_emoji: string | null;
-  flag_url: string | null;
-}
-
-export interface UserCountry {
-  id: string;
-  on_watchlist: boolean;
-  on_rankings: boolean;
-  rank: number | null;
-  completed: number | null;
-  notes: string | null;
-  first_visited: string | null;
-  country: Country;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface VideoGame {
   id: string;
   title: string;
@@ -264,7 +239,7 @@ export interface GameSearchResult {
 }
 
 export interface ActivityItem {
-  category: 'movie' | 'tv_show' | 'tv_episode' | 'game' | 'book' | 'country';
+  category: 'movie' | 'tv_show' | 'tv_episode' | 'game' | 'book';
   action: 'watchlist_added' | 'ranked' | 'marked_done' | 'watched_episode';
   title: string;
   subtitle: string | null;
@@ -275,7 +250,7 @@ export interface ActivityItem {
 }
 
 export interface BoredItem {
-  category: 'movie' | 'tv_show' | 'game' | 'book' | 'country';
+  category: 'movie' | 'tv_show' | 'game' | 'book';
   title: string;
   subtitle: string | null;
   entity_id: string;
@@ -301,7 +276,7 @@ export interface Notification {
   type: string;
   title: string;
   body: string | null;
-  category: 'movie' | 'tv_show' | 'game' | 'book' | 'country' | null;
+  category: 'movie' | 'tv_show' | 'game' | 'book' | null;
   entity_id: string | null;
   read: boolean;
   created_at: string;

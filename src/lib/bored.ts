@@ -11,8 +11,6 @@ export function boredHref(item: BoredItem): string {
       return `/games/${item.entity_id}`;
     case 'book':
       return `/books/${item.entity_id}`;
-    case 'country':
-      return `/countries/${item.entity_id}`;
     default:
       return '/';
   }

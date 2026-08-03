@@ -12,8 +12,6 @@ export function notificationHref(n: Notification): string | null {
       return `/games/${n.entity_id}`;
     case 'book':
       return `/books/${n.entity_id}`;
-    case 'country':
-      return `/countries/${n.entity_id}`;
     default:
       return null;
   }

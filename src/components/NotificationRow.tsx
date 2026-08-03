@@ -30,6 +30,11 @@ export function NotificationRow({ notification }: { notification: Notification }
     <span className="font-medium">{notification.title}</span>
   );
 
+  // An incoming friend request is something to act on; everything else
+  // (including its own "accepted" follow-up) is just news (#127) — the pill
+  // is what tells them apart at a glance rather than identical rows.
+  const actionNeeded = notification.type === 'friend_request';
+
   return (
     <li
       className={`flex items-center gap-3 border-b border-line/60 px-3 py-2 text-sm last:border-b-0 ${
@@ -41,6 +46,11 @@ export function NotificationRow({ notification }: { notification: Notification }
       )}
       <span className="flex-1">
         {title}
+        {actionNeeded && (
+          <span className="ml-2 rounded-full bg-brass-wash px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-brass">
+            Action needed
+          </span>
+        )}
         {notification.body && (
           <span className="block text-xs text-neutral-400">
             {notification.body}

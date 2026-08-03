@@ -28,6 +28,40 @@ describe('notificationHref', () => {
     expect(notificationHref(notification({ category: null }))).toBeNull();
     expect(notificationHref(notification({ entity_id: null }))).toBeNull();
   });
+
+  it('routes a friend request to the friends page, not a per-request link', () => {
+    expect(
+      notificationHref(
+        notification({
+          type: 'friend_request',
+          category: 'friend_request',
+          entity_id: 'friendship-1',
+        }),
+      ),
+    ).toBe('/friends');
+  });
+
+  it('routes an accepted-request notification to the same friends page', () => {
+    expect(
+      notificationHref(
+        notification({
+          type: 'friend_request_accepted',
+          category: 'friend_request',
+          entity_id: 'friendship-1',
+        }),
+      ),
+    ).toBe('/friends');
+  });
+
+  it('still routes to the friends page with no entity_id at all', () => {
+    // #282 cleans up notifications for resolved/deleted requests, but a
+    // stale one degrades to the same static page rather than a dead link.
+    expect(
+      notificationHref(
+        notification({ type: 'friend_request', category: 'friend_request', entity_id: null }),
+      ),
+    ).toBe('/friends');
+  });
 });
 
 describe('badgeLabel', () => {

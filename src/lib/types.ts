@@ -372,11 +372,21 @@ export interface PublicShelf {
   watchlist?: PublicWatchlistItem[];
 }
 
+// Who the caller is to the profile owner (#277). ANONYMOUS is not signed in
+// at all; NONE is signed in with no relationship — both see the same
+// shelves, but only ANONYMOUS can't act on a follow button without signing
+// in first.
+export type ViewerRelationship = 'anonymous' | 'none' | 'friend' | 'self';
+
 export interface PublicProfile {
   handle: string;
   display_name: string | null;
   shelves: PublicShelf[];
   total_ranked: number;
+  viewer: {
+    relationship: ViewerRelationship;
+    following: boolean;
+  };
 }
 
 /** One entry on a shelf's Top 5 (`/v1/users/me/summary`). */

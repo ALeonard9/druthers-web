@@ -320,6 +320,37 @@ export interface Visibility {
   visibility_watchlist_games: VisibilityTier;
 }
 
+// A friend or follow's counterpart — never email or visibility settings, only
+// as much as a relationship should expose.
+export interface RelatedUser {
+  id: string;
+  handle: string | null;
+  display_name: string | null;
+}
+
+export interface Friend {
+  id: string;
+  user: RelatedUser;
+  friends_since: string;
+}
+
+export interface FriendRequest {
+  id: string;
+  user: RelatedUser;
+  requested_at: string;
+}
+
+export interface PendingFriendRequests {
+  incoming: FriendRequest[];
+  outgoing: FriendRequest[];
+}
+
+export interface Follow {
+  id: string;
+  user: RelatedUser;
+  followed_at: string;
+}
+
 export interface PublicShelfItem {
   rank: number;
   title: string;

@@ -276,7 +276,7 @@ export interface Notification {
   type: string;
   title: string;
   body: string | null;
-  category: 'movie' | 'tv_show' | 'game' | 'book' | null;
+  category: 'movie' | 'tv_show' | 'game' | 'book' | 'friend_request' | null;
   entity_id: string | null;
   read: boolean;
   created_at: string;

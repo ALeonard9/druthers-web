@@ -14,7 +14,7 @@ export default async function TVDuelPage({
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const { item } = await searchParams;
+  const { item, wasRank } = await searchParams;
 
   let shows: UserTVShow[] = [];
   try {
@@ -29,6 +29,7 @@ export default async function TVDuelPage({
       shelf={SHELVES.tv}
       entries={shows.filter((s) => s.on_rankings).map(showToDuelEntry)}
       focusId={item}
+      priorRank={wasRank ? Number(wasRank) : undefined}
     />
   );
 }

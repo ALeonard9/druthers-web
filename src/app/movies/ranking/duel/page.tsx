@@ -14,7 +14,7 @@ export default async function MoviesDuelPage({
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const { item } = await searchParams;
+  const { item, wasRank } = await searchParams;
 
   let movies: UserMovie[] = [];
   try {
@@ -29,6 +29,7 @@ export default async function MoviesDuelPage({
       shelf={SHELVES.movies}
       entries={movies.filter((m) => m.on_rankings).map(movieToDuelEntry)}
       focusId={item}
+      priorRank={wasRank ? Number(wasRank) : undefined}
     />
   );
 }

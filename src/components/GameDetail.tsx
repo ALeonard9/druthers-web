@@ -66,6 +66,21 @@ export function GameDetail({
     track({ on_rankings: false });
   }
 
+  // Clears the position (closing the gap it leaves) without leaving
+  // Rankings, so it re-enters the "to rank" queue and completed_at is
+  // untouched — only a fresh entry into Rankings stamps that date.
+  function rerank() {
+    const wasRank = tracker?.rank;
+    startTransition(async () => {
+      await fetch(`/api/games/${game.id}/track`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rank: null }),
+      });
+      router.push(`${duelHrefFor('games', game.id)}&wasRank=${wasRank}`);
+    });
+  }
+
   function saveNotes() {
     if (notes === savedNote) return;
     setSavedNote(notes);
@@ -162,6 +177,16 @@ export function GameDetail({
                   ? `Ranked #${tracker.rank}`
                   : 'In “to rank” — drag it into place on the Games page'}
               </span>
+              {tracker?.rank && !confirmRemove && (
+                <button
+                  onClick={rerank}
+                  disabled={pending}
+                  title="Pull it back out and re-judge its position by comparison"
+                  className="rounded px-2 py-1 text-sm text-neutral-500 hover:text-brass disabled:opacity-50"
+                >
+                  Rerank
+                </button>
+              )}
               <button
                 onClick={() => track({ is_100_percent: !is100 })}
                 disabled={pending}

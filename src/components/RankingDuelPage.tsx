@@ -15,11 +15,14 @@ export function RankingDuelPage({
   shelf,
   entries,
   focusId,
+  priorRank,
 }: {
   shelf: ShelfConfig;
   entries: DuelEntry[];
   /** A specific title to place first, from the board's "Place it →" link. */
   focusId?: string;
+  /** `focusId`'s rank just before a "Rerank" sent it back through the duel. */
+  priorRank?: number;
 }) {
   const { ranked, queue } = duelLists(entries, focusId);
 
@@ -45,7 +48,13 @@ export function RankingDuelPage({
         </Link>
       </div>
 
-      <RankingDuel shelf={shelf} ranked={ranked} queue={queue} />
+      <RankingDuel
+        shelf={shelf}
+        ranked={ranked}
+        queue={queue}
+        rerankId={focusId}
+        priorRank={priorRank}
+      />
     </div>
   );
 }

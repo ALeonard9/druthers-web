@@ -14,7 +14,7 @@ export default async function BooksDuelPage({
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const { item } = await searchParams;
+  const { item, wasRank } = await searchParams;
 
   let books: UserBook[] = [];
   try {
@@ -29,6 +29,7 @@ export default async function BooksDuelPage({
       shelf={SHELVES.books}
       entries={books.filter((b) => b.on_rankings).map(bookToDuelEntry)}
       focusId={item}
+      priorRank={wasRank ? Number(wasRank) : undefined}
     />
   );
 }

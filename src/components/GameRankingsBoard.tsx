@@ -122,12 +122,14 @@ function RankedRow({
   onAskRemove,
   onCancelRemove,
   onConfirmRemove,
+  onRerank,
 }: {
   item: UserVideoGame;
   confirming: boolean;
   onAskRemove: (g: UserVideoGame) => void;
   onCancelRemove: () => void;
   onConfirmRemove: (g: UserVideoGame) => void;
+  onRerank: (g: UserVideoGame) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.game.id, data: { type: 'ranked', rank: item.rank } });
@@ -188,12 +190,21 @@ function RankedRow({
           </button>
         </span>
       ) : (
-        <button
-          onClick={() => onAskRemove(item)}
-          className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
-        >
-          Remove
-        </button>
+        <>
+          <button
+            onClick={() => onRerank(item)}
+            title="Pull it back out and re-judge its position by comparison"
+            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-brass"
+          >
+            Rerank
+          </button>
+          <button
+            onClick={() => onAskRemove(item)}
+            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
+          >
+            Remove
+          </button>
+        </>
       )}
     </li>
   );
@@ -260,6 +271,18 @@ export function GameRankingsBoard({
       body: JSON.stringify({ on_rankings: false, on_watchlist: true }),
     });
     router.refresh();
+  }
+
+  // Clears the position (closing the gap it leaves) without leaving
+  // Rankings, so it re-enters the "to rank" queue and completed_at is
+  // untouched — only a fresh entry into Rankings stamps that date.
+  async function rerank(g: UserVideoGame) {
+    await fetch(`/api/games/${g.game.id}/track`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rank: null }),
+    });
+    router.push(`/games/ranking/duel?item=${g.game.id}&wasRank=${g.rank}`);
   }
 
   function onDragEnd(e: DragEndEvent) {
@@ -375,6 +398,7 @@ export function GameRankingsBoard({
                   onAskRemove={(x) => setConfirmingId(x.game.id)}
                   onCancelRemove={() => setConfirmingId(null)}
                   onConfirmRemove={remove}
+                  onRerank={rerank}
                 />
               ))}
             </ul>

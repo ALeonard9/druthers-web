@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { fetchPublicProfile } from '@/lib/publicProfile';
+import { Top5Board } from '@/components/Top5Board';
+import { FollowButton } from '@/components/FollowButton';
+import { CopyProfileLinkButton } from '@/components/CopyProfileLinkButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,64 +19,86 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// Hub page (#93): links out to each opted-in shelf's own page rather than
-// cramming every carousel + watchlist onto one screen — a shelf's Top 25
-// deck and its watchlist are each a full-width page of their own.
+// A clone of the signed-in home page (#121), rescoped from the old compact
+// hub (#93): Top 5 per shelf this viewer may see, minus the activity and
+// schedule boxes those don't apply to a visitor. Which shelves show up, and
+// whether this 404s at all, is entirely the API's call (#277) — resolved
+// once into `profile.viewer` rather than re-derived here, so the page can't
+// disagree with the endpoint about who gets to see what.
 export default async function PublicProfilePage({ params }: Props) {
   const { handle } = await params;
   const profile = await fetchPublicProfile(handle);
   if (!profile) notFound();
 
+  const nothingRanked = profile.total_ranked === 0;
+  const shelfWord = profile.shelves.length === 1 ? 'shelf' : 'shelves';
+
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-6">
-      <div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-brass">
-          @{profile.handle}’s all-timers
-        </p>
-        <h1 className="mt-1 font-display text-3xl font-medium tracking-tight text-paper">
-          {profile.display_name ?? `@${profile.handle}`}
-        </h1>
-        <p className="text-sm text-neutral-400">
-          {profile.total_ranked} ranked · shared shelves only
-        </p>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-brass">
+            @{profile.handle}
+          </p>
+          <h1 className="mt-1 font-display text-2xl text-paper">
+            {profile.display_name ?? `@${profile.handle}`}’s Top 5
+          </h1>
+          <p className="text-sm text-neutral-500">
+            {nothingRanked
+              ? 'Nothing shared here yet.'
+              : `${profile.total_ranked} ranked across ${profile.shelves.length} ${shelfWord}.`}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {profile.viewer.relationship === 'friend' && (
+            <span className="rounded-full bg-moss-wash px-2.5 py-1 text-xs font-medium text-moss">
+              Friend
+            </span>
+          )}
+          {profile.viewer.relationship === 'self' && (
+            <span className="rounded-full bg-brass-wash px-2.5 py-1 text-xs font-medium text-brass">
+              This is your profile
+            </span>
+          )}
+          {profile.viewer.relationship === 'none' && (
+            <FollowButton handle={profile.handle} initialFollowing={profile.viewer.following} />
+          )}
+          {profile.viewer.relationship === 'anonymous' && (
+            <a
+              href="/login"
+              className="rounded border border-line px-3 py-1.5 text-sm text-neutral-300 hover:border-brass hover:text-paper"
+            >
+              Sign in to follow
+            </a>
+          )}
+          <CopyProfileLinkButton handle={profile.handle} />
+        </div>
       </div>
 
-      <ul className="flex flex-col gap-3">
+      <div className="grid gap-4 lg:grid-cols-2">
         {profile.shelves.map((shelf) => (
-          <li
+          <Top5Board
             key={shelf.slug}
-            className="rounded-lg border border-line bg-panel px-4 py-3"
-          >
-            <div className="flex items-center justify-between">
-              <Link
-                href={`/u/${profile.handle}/${shelf.slug}`}
-                className="font-display text-lg text-paper hover:text-brass"
-              >
-                {shelf.category}
-              </Link>
-              <span className="font-mono text-xs text-neutral-500">
-                {shelf.ranked_count} ranked
-              </span>
-            </div>
-            <div className="mt-1 flex gap-4 text-sm">
-              <Link
-                href={`/u/${profile.handle}/${shelf.slug}`}
-                className="text-brass hover:text-brass-bright"
-              >
-                Top 25 →
-              </Link>
-              {shelf.watchlist && shelf.watchlist.length > 0 && (
-                <Link
-                  href={`/u/${profile.handle}/${shelf.slug}/watchlist`}
-                  className="text-brass hover:text-brass-bright"
-                >
-                  Watchlist →
-                </Link>
-              )}
-            </div>
-          </li>
+            shelf={{
+              category: shelf.slug,
+              label: shelf.category,
+              ranked_count: shelf.ranked_count,
+              top: shelf.items.map((item) => ({
+                rank: item.rank,
+                title: item.title,
+                year: item.year,
+              })),
+            }}
+            href={`/u/${profile.handle}/${shelf.slug}`}
+            watchlistHref={
+              shelf.watchlist && shelf.watchlist.length > 0
+                ? `/u/${profile.handle}/${shelf.slug}/watchlist`
+                : undefined
+            }
+            emptyMessage="Nothing ranked here yet."
+          />
         ))}
-      </ul>
+      </div>
 
       <p className="text-center font-mono text-[11px] uppercase tracking-[0.18em] text-neutral-600">
         www.druthers.io — your favorites, ranked

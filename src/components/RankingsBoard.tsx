@@ -23,13 +23,14 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import type { UserMovie } from '@/lib/types';
 import { pagerWindow } from '@/lib/pagerWindow';
-
-const WINDOW = 25;
+import { useRankedListLength } from '@/lib/rankedListLength';
+import { useIncrementalReveal } from '@/lib/useIncrementalReveal';
+import { LengthControl } from './LengthControl';
 
 function Poster({ url, className }: { url: string | null; className: string }) {
   if (!url) return <div className={`${className} bg-line`} />;
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={url} alt="" className={`${className} object-cover`} />;
+  return <img src={url} alt="" loading="lazy" className={`${className} object-cover`} />;
 }
 
 // A movie in the "to rank" bucket — drag it (by the grip) into the ranked list,
@@ -212,10 +213,20 @@ export function RankingsBoard({
   placedCount: number;
 }) {
   const router = useRouter();
+  const [length, setLength] = useRankedListLength();
   // `start` is a 1-based position within `placed` (whatever's currently
   // displayed — filtered or not), not the item's real rank — see
   // pagerWindow for why (api#225 / web#80).
   const [start, setStart] = useState(1);
+  // Reset the window to the top when the length control changes, rather than
+  // keeping whatever position happened to be showing under the old size —
+  // adjusted during render (React's pattern for "reset state when a prop
+  // changes") instead of an effect, so it takes effect before paint.
+  const [lengthAtLastStart, setLengthAtLastStart] = useState(length);
+  if (lengthAtLastStart !== length) {
+    setLengthAtLastStart(length);
+    setStart(1);
+  }
   const [goto, setGoto] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -223,8 +234,17 @@ export function RankingsBoard({
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
-  const win = pagerWindow(start, WINDOW, placedCount);
-  const windowItems = placed.slice(win.start - 1, win.start - 1 + win.length);
+  // "All" doesn't page by window — it reveals more of the already-fetched
+  // list as the viewer scrolls, since mounting 2000 draggable rows at once
+  // (not fetching them; `placed` already holds everything) is the actual
+  // cost (#122).
+  const windowSize = length === 'all' ? placedCount : Number(length);
+  const win = pagerWindow(start, windowSize, placedCount);
+  const { count: revealCount, sentinelRef } = useIncrementalReveal(placedCount, length);
+  const windowItems =
+    length === 'all'
+      ? placed.slice(0, revealCount)
+      : placed.slice(win.start - 1, win.start - 1 + win.length);
   const byId = (id: string) =>
     [...placed, ...unplaced].find((m) => m.movie.id === id);
 
@@ -358,26 +378,35 @@ export function RankingsBoard({
         <p className="text-sm text-neutral-500">No ranked movies yet.</p>
       ) : (
         <>
-          <div className="mb-2 flex items-center justify-between text-xs text-neutral-500">
-            <span>
-              Showing #{win.start}–#{win.end} of {placedCount}
-            </span>
-            <span className="flex gap-2">
-              <button
-                onClick={() => setStart(win.start - WINDOW)}
-                disabled={!win.hasPrev}
-                className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
-              >
-                ↑ up
-              </button>
-              <button
-                onClick={() => setStart(win.start + WINDOW)}
-                disabled={!win.hasNext}
-                className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
-              >
-                ↓ down
-              </button>
-            </span>
+          <div className="mb-2 flex items-center justify-between gap-2 text-xs text-neutral-500">
+            {length === 'all' ? (
+              <span>
+                Showing {windowItems.length} of {placedCount}
+              </span>
+            ) : (
+              <>
+                <span>
+                  Showing #{win.start}–#{win.end} of {placedCount}
+                </span>
+                <span className="flex gap-2">
+                  <button
+                    onClick={() => setStart(win.start - windowSize)}
+                    disabled={!win.hasPrev}
+                    className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
+                  >
+                    ↑ up
+                  </button>
+                  <button
+                    onClick={() => setStart(win.start + windowSize)}
+                    disabled={!win.hasNext}
+                    className="rounded px-2 py-1 hover:text-neutral-200 disabled:opacity-40"
+                  >
+                    ↓ down
+                  </button>
+                </span>
+              </>
+            )}
+            <LengthControl value={length} onChange={setLength} />
           </div>
           <SortableContext
             items={windowItems.map((m) => m.movie.id)}
@@ -397,6 +426,9 @@ export function RankingsBoard({
               ))}
             </ul>
           </SortableContext>
+          {length === 'all' && windowItems.length < placedCount && (
+            <div ref={sentinelRef} className="h-4" />
+          )}
         </>
       )}
 

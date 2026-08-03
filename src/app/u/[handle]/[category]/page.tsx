@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { fetchPublicProfile } from '@/lib/publicProfile';
-import { RankedPosterDeck } from '@/components/RankedPosterDeck';
-import { publicDeckItems } from '@/lib/deck';
+import { PublicShelfRankedViewer } from '@/components/PublicShelfRankedViewer';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +27,7 @@ export default async function PublicShelfPage({ params }: Props) {
   if (!shelf) notFound();
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div>
         <Link
           href={`/u/${profile.handle}`}
@@ -52,16 +51,13 @@ export default async function PublicShelfPage({ params }: Props) {
         </div>
       </div>
 
-      {shelf.items.length > 0 ? (
-        <RankedPosterDeck
-          items={publicDeckItems(shelf)}
-          placedCount={shelf.ranked_count}
-          label={`@${profile.handle}’s ${shelf.category}`}
-          interactive={false}
-        />
-      ) : (
-        <p className="text-sm text-neutral-500">Nothing ranked yet.</p>
-      )}
+      <PublicShelfRankedViewer
+        handle={profile.handle}
+        slug={shelf.slug}
+        label={`@${profile.handle}’s ${shelf.category}`}
+        initialItems={shelf.items}
+        totalCount={shelf.ranked_count}
+      />
     </div>
   );
 }

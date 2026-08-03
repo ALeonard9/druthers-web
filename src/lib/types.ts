@@ -305,6 +305,12 @@ export interface ApiKeyCreated extends ApiKey {
   key: string;
 }
 
+export type RankedListLength = '25' | '50' | '100' | 'all';
+
+export interface Preferences {
+  ranked_list_length: RankedListLength;
+}
+
 export type VisibilityTier = 'private' | 'friends' | 'public';
 
 export interface Visibility {
@@ -370,6 +376,9 @@ export interface PublicShelf {
   ranked_count: number;
   items: PublicShelfItem[];
   watchlist?: PublicWatchlistItem[];
+  // Present alongside `watchlist` (#279) — the true watchlist total,
+  // independent of however many items this response actually carries.
+  watchlist_count?: number;
 }
 
 // Who the caller is to the profile owner (#277). ANONYMOUS is not signed in

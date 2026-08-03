@@ -10,7 +10,6 @@ const DRAW_LABEL: Record<string, string> = {
   tv_show: 'Series',
   game: 'Game',
   book: 'Book',
-  country: 'Trip',
 };
 
 // The pick, styled as a paper ticket stub: poster above a perforated tear

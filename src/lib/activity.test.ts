@@ -38,9 +38,6 @@ describe('describeActivity', () => {
 
   it('uses a per-category verb for marked_done', () => {
     expect(
-      describeActivity(item({ entity_id: 'a', category: 'country', action: 'marked_done' })),
-    ).toBe('Visited');
-    expect(
       describeActivity(item({ entity_id: 'a', category: 'book', action: 'marked_done' })),
     ).toBe('Read');
   });
@@ -70,6 +67,5 @@ describe('activityHref', () => {
     expect(activityHref(item({ entity_id: 'm1', category: 'movie' }))).toBe('/movies/m1');
     expect(activityHref(item({ entity_id: 's1', category: 'tv_show' }))).toBe('/tv/s1');
     expect(activityHref(item({ entity_id: 's1', category: 'tv_episode' }))).toBe('/tv/s1');
-    expect(activityHref(item({ entity_id: 'c1', category: 'country' }))).toBe('/countries/c1');
   });
 });

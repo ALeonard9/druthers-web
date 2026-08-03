@@ -2,30 +2,29 @@
  * What the comparison ("which would you rather?") screen needs to know about
  * each shelf.
  *
- * The five ranking boards differ only in the nested media key and their copy,
+ * The four ranking boards differ only in the nested media key and their copy,
  * so the duel takes a normalised `DuelEntry` and one `ShelfConfig` rather than
- * five near-identical components. Adding a shelf is a config entry plus a
+ * four near-identical components. Adding a shelf is a config entry plus a
  * `toDuelEntry` call on its page.
  */
 
 import type {
   UserBook,
-  UserCountry,
   UserMovie,
   UserTVShow,
   UserVideoGame,
 } from '@/lib/types';
 
-export type ShelfId = 'movies' | 'tv' | 'books' | 'games' | 'countries';
+export type ShelfId = 'movies' | 'tv' | 'books' | 'games';
 
 /** One contender in a duel, stripped of everything the screen doesn't show. */
 export interface DuelEntry {
   /** The catalog id — what `PUT /api/{shelf}/{id}/rank` takes. */
   id: string;
   title: string;
-  /** The quiet line under the title: a year, or a region for countries. */
+  /** The quiet line under the title: usually a year. */
   subtitle: string | null;
-  /** Poster or cover. Null for countries, which show a flag instead. */
+  /** Poster or cover art. */
   imageUrl: string | null;
   /** Stands in for artwork where there is none. */
   emoji: string | null;
@@ -94,18 +93,6 @@ export const SHELVES: Record<ShelfId, ShelfConfig> = {
     addHref: '/games/search',
     addLabel: 'Add a game',
   },
-  countries: {
-    // The only shelf whose board isn't at /{domain}/ranking — countries share
-    // one page with the bucket list, so the duel hangs off the root instead.
-    id: 'countries',
-    label: 'Countries',
-    noun: 'country',
-    boardHref: '/countries',
-    duelHref: '/countries/duel',
-    itemBase: '/countries',
-    addHref: '/countries',
-    addLabel: 'Track a country',
-  },
 };
 
 /** The key each shelf's tracker payload nests its catalog row under. */
@@ -114,7 +101,6 @@ const CATALOG_KEY: Record<ShelfId, string> = {
   tv: 'tv_show',
   books: 'book',
   games: 'game',
-  countries: 'country',
 };
 
 /**
@@ -187,18 +173,6 @@ export function gameToDuelEntry(g: UserVideoGame): DuelEntry {
     imageUrl: g.game.poster_url,
     emoji: null,
     rank: g.rank,
-  };
-}
-
-export function countryToDuelEntry(c: UserCountry): DuelEntry {
-  return {
-    id: c.country.id,
-    title: c.country.title,
-    subtitle: c.country.region,
-    // Flag images are inconsistent across the catalog; the emoji always reads.
-    imageUrl: null,
-    emoji: c.country.flag_emoji ?? '🏳️',
-    rank: c.rank,
   };
 }
 

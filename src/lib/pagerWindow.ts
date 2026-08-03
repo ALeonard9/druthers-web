@@ -1,6 +1,6 @@
 /**
  * Windowing math for the rankings pager, shared by every *RankingsBoard
- * component (movies/tv/books/games/countries).
+ * component (movies/tv/books/games).
  *
  * `start` is a 1-based position within whatever list is currently rendered
  * (filtered or not) — never an item's real rank. Real ranks go sparse once a

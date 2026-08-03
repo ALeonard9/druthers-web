@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { catalogIdFrom, duelHrefFor } from '@/lib/duelShelves';
+import { catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import type { TVShowSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
 
@@ -51,14 +51,20 @@ export function TVSearch() {
     setAdded((prev) => ({ ...prev, [s.tvmaze!]: res.ok ? 'done' : 'error' }));
     // Land wherever it just went: a new rankings entry starts unranked
     // in the "to rank" bucket on the board, which the deck won't show.
-    // Adding to the rankings leaves the title *unplaced*, so hand straight to
-    // the duel to decide where it goes — the add is only half the gesture.
+    // Adding to the rankings usually leaves the title *unplaced*, so hand
+    // straight to the duel to decide where it goes — the add is only half
+    // the gesture. Exception: the first show into an empty shelf auto-places
+    // at #1 (api#289), so there's nothing left to decide — go to the board.
     if (res.ok) {
       if (list === 'watchlist') {
         router.push('/tv/watchlist');
       } else {
         const tracker = await res.json().catch(() => null);
-        router.push(duelHrefFor('tv', catalogIdFrom('tv', tracker)));
+        if (isAlreadyPlaced(tracker)) {
+          router.push('/tv/ranking');
+        } else {
+          router.push(duelHrefFor('tv', catalogIdFrom('tv', tracker)));
+        }
       }
     }
   }

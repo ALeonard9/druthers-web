@@ -119,14 +119,27 @@ export function catalogIdFrom(shelf: ShelfId, tracker: unknown): string | null {
 /**
  * Where to land after putting something on the rankings.
  *
- * The API admits a title to the rankings *unplaced*, so adding it is only half
- * the gesture — deciding where it goes is the other half, and that's the duel.
- * Same handoff the phone makes, where "+ Rank it" goes straight to the
- * comparison screen rather than dropping you on a list.
+ * Normally the API admits a title to the rankings *unplaced*, so adding it is
+ * only half the gesture — deciding where it goes is the other half, and
+ * that's the duel. Same handoff the phone makes, where "+ Rank it" goes
+ * straight to the comparison screen rather than dropping you on a list.
+ *
+ * Exception: the first title into an empty shelf auto-places at #1 (api#289)
+ * — see {@link isAlreadyPlaced}, which callers check before reaching for this.
  */
 export function duelHrefFor(shelf: ShelfId, catalogId?: string | null): string {
   const { duelHref } = SHELVES[shelf];
   return catalogId ? `${duelHref}?item=${catalogId}` : duelHref;
+}
+
+/**
+ * True when an add/track response already carries a rank — the auto-place
+ * case for the first title into an empty shelf (api#289). Nothing's left to
+ * decide, so callers should skip the duel rather than send someone to a
+ * comparison screen with nothing queued.
+ */
+export function isAlreadyPlaced(tracker: unknown): boolean {
+  return (tracker as { rank?: number | null } | null | undefined)?.rank != null;
 }
 
 const year = (y: number | null) => (y ? String(y) : null);

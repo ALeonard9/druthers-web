@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { catalogIdFrom, duelHrefFor } from '@/lib/duelShelves';
+import { catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import type { MovieSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
 
@@ -53,14 +53,20 @@ export function MovieSearch() {
     setAdded((s) => ({ ...s, [m.tmdb]: res.ok ? 'done' : 'error' }));
     // Land wherever the movie just went: a new rankings entry starts unranked
     // in the "to rank" bucket on the board, which the top-25 deck won't show.
-    // Adding to the rankings leaves the title *unplaced*, so hand straight to
-    // the duel to decide where it goes — the add is only half the gesture.
+    // Adding to the rankings usually leaves the title *unplaced*, so hand
+    // straight to the duel to decide where it goes — the add is only half
+    // the gesture. Exception: the first movie into an empty shelf auto-places
+    // at #1 (api#289), so there's nothing left to decide — go to the board.
     if (res.ok) {
       if (list === 'watchlist') {
         router.push('/movies/watchlist');
       } else {
         const tracker = await res.json().catch(() => null);
-        router.push(duelHrefFor('movies', catalogIdFrom('movies', tracker)));
+        if (isAlreadyPlaced(tracker)) {
+          router.push('/movies/ranking');
+        } else {
+          router.push(duelHrefFor('movies', catalogIdFrom('movies', tracker)));
+        }
       }
     }
   }

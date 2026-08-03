@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
-import { catalogIdFrom, duelHrefFor } from '@/lib/duelShelves';
+import { SHELVES, catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import { TrackedBadge } from './TrackedBadge';
 
 const DOMAIN_PAGE = {
@@ -44,11 +44,17 @@ export function AddFromSearchButton({
       if (res.ok) {
         playPop();
         setState('added');
-        // Straight to the duel when it's going on the rankings — the API adds
-        // it unplaced, so the position still has to be decided.
+        // Straight to the duel when it's going on the rankings — the API
+        // usually adds it unplaced, so the position still has to be decided.
+        // Exception: the first title into an empty shelf auto-places at #1
+        // (api#289), so there's nothing left to decide — go to the board.
         if (list === 'rankings') {
           const tracker = await res.json().catch(() => null);
-          router.push(duelHrefFor(domain, catalogIdFrom(domain, tracker)));
+          if (isAlreadyPlaced(tracker)) {
+            router.push(SHELVES[domain].boardHref);
+          } else {
+            router.push(duelHrefFor(domain, catalogIdFrom(domain, tracker)));
+          }
         } else {
           router.push(DOMAIN_PAGE[domain]);
         }

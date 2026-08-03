@@ -31,6 +31,32 @@ export default async function SettingsPage() {
 
       <section className="flex flex-col gap-3">
         <div>
+          <h2 className="font-display text-lg text-paper">Privacy</h2>
+          <p className="text-sm text-neutral-400">
+            Everything starts private. Pick a handle, then choose Private,
+            Friends, or Public for each shelf and your profile.
+          </p>
+        </div>
+        <PrivacySettings />
+      </section>
+
+      <section>
+        <details>
+          <summary className="cursor-pointer font-display text-lg text-paper hover:text-brass-bright">
+            Sound
+          </summary>
+          <div className="mt-3 flex flex-col gap-3">
+            <p className="text-sm text-neutral-400">
+              Played when you mark something watched, read, or played. Saved
+              on this device.
+            </p>
+            <SoundPicker />
+          </div>
+        </details>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div>
           <h2 className="font-display text-lg text-paper">API keys</h2>
           <p className="text-sm text-neutral-400">
             Personal credentials for the{' '}
@@ -47,28 +73,6 @@ export default async function SettingsPage() {
           </p>
         </div>
         <ApiKeysManager />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="font-display text-lg text-paper">Privacy</h2>
-          <p className="text-sm text-neutral-400">
-            Everything starts private. Share a shelf by picking a handle and
-            switching that category on — only your ranked list goes public.
-          </p>
-        </div>
-        <PrivacySettings />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="font-display text-lg text-paper">Sound</h2>
-          <p className="text-sm text-neutral-400">
-            Played when you mark something watched, read, or played. Saved on
-            this device.
-          </p>
-        </div>
-        <SoundPicker />
       </section>
 
       <section className="flex flex-col gap-3">

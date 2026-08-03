@@ -305,16 +305,19 @@ export interface ApiKeyCreated extends ApiKey {
   key: string;
 }
 
+export type VisibilityTier = 'private' | 'friends' | 'public';
+
 export interface Visibility {
   handle: string | null;
-  public_movies: boolean | null;
-  public_tv: boolean | null;
-  public_books: boolean | null;
-  public_games: boolean | null;
-  public_watchlist_movies: boolean | null;
-  public_watchlist_tv: boolean | null;
-  public_watchlist_books: boolean | null;
-  public_watchlist_games: boolean | null;
+  visibility_profile: VisibilityTier;
+  visibility_movies: VisibilityTier;
+  visibility_tv: VisibilityTier;
+  visibility_books: VisibilityTier;
+  visibility_games: VisibilityTier;
+  visibility_watchlist_movies: VisibilityTier;
+  visibility_watchlist_tv: VisibilityTier;
+  visibility_watchlist_books: VisibilityTier;
+  visibility_watchlist_games: VisibilityTier;
 }
 
 export interface PublicShelfItem {

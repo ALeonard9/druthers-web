@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { duelHrefFor } from '@/lib/duelShelves';
+import { duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import { CompletedDateField } from './CompletedDateField';
 import { WhereToWatch } from './WhereToWatch';
 import type { TVShow, UserTVShow, WatchProviders } from '@/lib/types';
@@ -49,15 +49,22 @@ export function TVShowDetail({
 
   function mark(body: Record<string, unknown>) {
     startTransition(async () => {
-      await fetch(`/api/tv/${show.id}/track`, {
+      const res = await fetch(`/api/tv/${show.id}/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      // It goes on the rankings unplaced, so the position still has to be
-      // decided — hand straight to the duel rather than leaving it in limbo.
+      // It usually goes on the rankings unplaced, so the position still has
+      // to be decided — hand straight to the duel rather than leaving it in
+      // limbo. Exception: the first show into an empty shelf auto-places at
+      // #1 (api#289) — nothing to decide, so just refresh in place.
       if (body.on_rankings === true) {
-        router.push(duelHrefFor('tv', show.id));
+        const tracker = await res.json().catch(() => null);
+        if (isAlreadyPlaced(tracker)) {
+          router.refresh();
+        } else {
+          router.push(duelHrefFor('tv', show.id));
+        }
       } else {
         router.refresh();
       }

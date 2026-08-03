@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { duelHrefFor } from '@/lib/duelShelves';
+import { duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import { CompletedDateField } from './CompletedDateField';
 import type { Book, UserBook } from '@/lib/types';
 
@@ -45,15 +45,22 @@ export function BookDetail({
 
   function mark(body: Record<string, unknown>) {
     startTransition(async () => {
-      await fetch(`/api/books/${book.id}/track`, {
+      const res = await fetch(`/api/books/${book.id}/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      // It goes on the rankings unplaced, so the position still has to be
-      // decided — hand straight to the duel rather than leaving it in limbo.
+      // It usually goes on the rankings unplaced, so the position still has
+      // to be decided — hand straight to the duel rather than leaving it in
+      // limbo. Exception: the first book into an empty shelf auto-places at
+      // #1 (api#289) — nothing to decide, so just refresh in place.
       if (body.on_rankings === true) {
-        router.push(duelHrefFor('books', book.id));
+        const tracker = await res.json().catch(() => null);
+        if (isAlreadyPlaced(tracker)) {
+          router.refresh();
+        } else {
+          router.push(duelHrefFor('books', book.id));
+        }
       } else {
         router.refresh();
       }

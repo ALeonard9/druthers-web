@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { duelLists, type DuelEntry } from './duelShelves';
+import { duelLists, isAlreadyPlaced, type DuelEntry } from './duelShelves';
 
 const entry = (id: string, title: string, rank: number | null): DuelEntry => ({
   id,
@@ -43,5 +43,21 @@ describe('duelLists', () => {
     const { ranked, queue } = duelLists(shelf, 'nope');
     expect(ranked).toHaveLength(2);
     expect(queue).toHaveLength(2);
+  });
+});
+
+describe('isAlreadyPlaced', () => {
+  it('is true when the tracker carries a rank (api#289 auto-place)', () => {
+    expect(isAlreadyPlaced({ rank: 1 })).toBe(true);
+  });
+
+  it('is false when the tracker is unplaced', () => {
+    expect(isAlreadyPlaced({ rank: null })).toBe(false);
+  });
+
+  it('is false for a missing rank field, null, or a failed fetch', () => {
+    expect(isAlreadyPlaced({})).toBe(false);
+    expect(isAlreadyPlaced(null)).toBe(false);
+    expect(isAlreadyPlaced(undefined)).toBe(false);
   });
 });

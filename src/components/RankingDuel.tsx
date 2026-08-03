@@ -434,6 +434,10 @@ function Contender({
  * is the least-wrong guess available. Sits under the question alongside the
  * two titles the candidate would land between, so the estimate can be judged
  * before it's accepted.
+ *
+ * Both bounds always show a number, even before the first answer — "landing
+ * between #1 and #208" reads as a real range; "anywhere" doesn't tell you
+ * how long a shelf you're actually placing into.
  */
 function EscapeHatch({
   session,
@@ -458,36 +462,67 @@ function EscapeHatch({
         <span className="text-xs font-medium uppercase tracking-wide text-neutral-500">
           Landing between
         </span>
-        {better && <Neighbour entry={better} shelf={shelf} />}
-        {worse && <Neighbour entry={worse} shelf={shelf} />}
-        {/* Both bounds are open until the first answer comes in — the whole
-            shelf is still in play, which is not the same as an empty one. */}
-        {!better && !worse && (
-          <span className="text-sm text-neutral-500">
-            Anywhere — every position is still open.
-          </span>
+        {better ? (
+          <Neighbour entry={better} shelf={shelf} />
+        ) : (
+          <Bound rank={1} label="Top of the list" />
+        )}
+        {worse ? (
+          <Neighbour entry={worse} shelf={shelf} />
+        ) : (
+          <Bound rank={session.ranked.length + 1} label="End of the list" />
         )}
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button
-          onClick={onSettle}
-          disabled={disabled}
-          className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
+
+      {/* Perforated tear line, matching the ticket motif on BoredCard. */}
+      <div className="relative -mx-4 my-3">
+        <div className="border-t-2 border-dashed border-line" />
+        <span className="absolute -left-2.5 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-night" />
+        <span className="absolute -right-2.5 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-night" />
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link
+          href={shelf.addHref}
+          className="text-sm text-neutral-400 hover:text-white"
         >
-          Good enough — place at #{settledIndex(session) + 1}
-        </button>
-        <button
-          onClick={onSkip}
-          disabled={disabled}
-          className="rounded px-3 py-2 text-sm text-neutral-400 hover:text-white disabled:opacity-50"
-        >
-          Skip for now
-        </button>
-        <span className="ml-auto hidden text-xs text-neutral-600 sm:block">
-          ← / → to pick · Enter to accept the estimate
-        </span>
+          + {shelf.addLabel}
+        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <span className="hidden font-mono text-[11px] uppercase tracking-[0.2em] text-neutral-600 sm:block">
+            ←→ pick · ↵ accept
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onSkip}
+              disabled={disabled}
+              className="rounded border border-line px-3 py-2 text-sm font-medium text-neutral-300 hover:border-brass hover:text-paper disabled:opacity-50"
+            >
+              Skip for now
+            </button>
+            <button
+              onClick={onSettle}
+              disabled={disabled}
+              className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
+            >
+              Place at #{settledIndex(session) + 1}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+/** A boundary with no real neighbouring title — the very top or bottom of the shelf. */
+function Bound({ rank, label }: { rank: number; label: string }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2 text-sm">
+      <span className="inline-flex h-6 min-w-[2.5rem] shrink-0 items-center justify-center rounded bg-brass-wash px-1.5 font-display text-sm font-medium text-brass">
+        {rank}
+      </span>
+      <span className="truncate text-neutral-400">{label}</span>
+    </span>
   );
 }
 

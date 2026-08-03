@@ -24,7 +24,11 @@ interface FakeEvent {
   waitUntil: (p: unknown) => void;
 }
 
-function loadFetchHandler(): (event: FakeEvent) => void {
+function loadFetchHandler(
+  fakeFetch: (req: Request, init?: RequestInit) => Promise<Response> = async () =>
+    new Response('ok'),
+  puts: { request: Request; response: Response }[] = [],
+): (event: FakeEvent) => void {
   const src = readFileSync(resolve(__dirname, '../../public/sw.js'), 'utf8');
   const listeners: Record<string, (event: FakeEvent) => void> = {};
 
@@ -40,7 +44,9 @@ function loadFetchHandler(): (event: FakeEvent) => void {
   const fakeCaches = {
     open: async () => ({
       addAll: async () => {},
-      put: async () => {},
+      put: async (request: Request, response: Response) => {
+        puts.push({ request, response });
+      },
     }),
     match: async () => undefined,
     keys: async () => [],
@@ -50,7 +56,7 @@ function loadFetchHandler(): (event: FakeEvent) => void {
   const context = vm.createContext({
     self: fakeSelf,
     caches: fakeCaches,
-    fetch: async () => new Response('ok'),
+    fetch: fakeFetch,
     URL,
     Request,
     Response,
@@ -63,19 +69,37 @@ function loadFetchHandler(): (event: FakeEvent) => void {
   return handler;
 }
 
-function fetchEvent(url: string, mode: string): { event: FakeEvent; responded: boolean } {
-  const handler = loadFetchHandler();
-  const request = new Request(url, { method: 'GET', mode: mode as RequestMode });
+// The real `Request` constructor rejects `mode: 'navigate'` — browsers
+// reserve it for actual navigations, never settable from script. sw.js only
+// reads `.method`/`.url`/`.mode` off the request it's handed, so a plain
+// object stands in fine for a navigation event.
+function fakeNavigateRequest(url: string): Request {
+  return { method: 'GET', url, mode: 'navigate' } as Request;
+}
+
+function fetchEvent(
+  url: string,
+  mode: string,
+  fakeFetch?: (req: Request, init?: RequestInit) => Promise<Response>,
+  puts?: { request: Request; response: Response }[],
+): { event: FakeEvent; responded: boolean; result: Promise<unknown> | undefined } {
+  const handler = loadFetchHandler(fakeFetch, puts);
+  const request =
+    mode === 'navigate'
+      ? fakeNavigateRequest(url)
+      : new Request(url, { method: 'GET', mode: mode as RequestMode });
   let responded = false;
+  let result: Promise<unknown> | undefined;
   const event: FakeEvent = {
     request,
-    respondWith: () => {
+    respondWith: (p) => {
       responded = true;
+      result = p as Promise<unknown>;
     },
     waitUntil: () => {},
   };
   handler(event);
-  return { event, responded };
+  return { event, responded, result };
 }
 
 describe('sw.js fetch strategy (druthers-web#91 regression)', () => {
@@ -102,5 +126,58 @@ describe('sw.js fetch strategy (druthers-web#91 regression)', () => {
   it('still cache-firsts the declared app-shell URLs', () => {
     const { responded } = fetchEvent('http://localhost:3000/manifest.webmanifest', 'same-origin');
     expect(responded).toBe(true);
+  });
+});
+
+describe('sw.js does not pin a bad response into the cache (PWA-in-prod regression)', () => {
+  // A stale PWA session referencing a deploy's since-deleted hashed asset,
+  // or a brief server error during a deploy, must not get permanently
+  // cached — that would make the broken state outlive the deploy that
+  // caused it, since a cache-first URL is never retried once something is
+  // stored under it.
+
+  it('does not cache a 404 for a hashed static asset', async () => {
+    const puts: { request: Request; response: Response }[] = [];
+    const notFound = async () => new Response('not found', { status: 404 });
+    const { result } = fetchEvent(
+      'http://localhost:3000/_next/static/chunks/deleted-hash.js',
+      'same-origin',
+      notFound,
+      puts,
+    );
+    await result;
+    expect(puts).toHaveLength(0);
+  });
+
+  it('still caches a successful hashed static asset response', async () => {
+    const puts: { request: Request; response: Response }[] = [];
+    const ok = async () => new Response('ok');
+    const { result } = fetchEvent(
+      'http://localhost:3000/_next/static/chunks/current-hash.js',
+      'same-origin',
+      ok,
+      puts,
+    );
+    await result;
+    expect(puts).toHaveLength(1);
+  });
+
+  it('does not cache a failed navigation as the offline fallback', async () => {
+    const puts: { request: Request; response: Response }[] = [];
+    const serverError = async () => new Response('error', { status: 500 });
+    const { result } = fetchEvent('http://localhost:3000/', 'navigate', serverError, puts);
+    await result;
+    expect(puts).toHaveLength(0);
+  });
+
+  it('fetches navigations with cache: no-store, so no intermediate cache can hand back a stale page', async () => {
+    let sawInit: RequestInit | undefined;
+    const spy = async (_req: Request, init?: RequestInit) => {
+      sawInit = init;
+      return new Response('ok');
+    };
+    const { result } = fetchEvent('http://localhost:3000/', 'navigate', spy);
+    await result;
+    expect(sawInit?.cache).toBe('no-store');
   });
 });

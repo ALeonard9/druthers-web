@@ -8,7 +8,7 @@
 // under /api/ — must always hit the network. Caching those cache-first froze
 // a page's server-rendered snapshot (e.g. /tv/schedule's watched status)
 // indefinitely, since nothing here bumps the entry once cached.
-const CACHE_NAME = 'druthers-shell-v2';
+const CACHE_NAME = 'druthers-shell-v3';
 const SHELL_URLS = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -41,10 +41,16 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-store' })
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          // Only a genuinely fresh page is worth keeping as the offline
+          // fallback — caching an error response here would make a bad
+          // deploy or a 404 the thing every future offline load falls back
+          // to.
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
           return response;
         })
         .catch(() => caches.match(request).then((cached) => cached ?? caches.match('/'))),
@@ -61,8 +67,15 @@ self.addEventListener('fetch', (event) => {
       (cached) =>
         cached ??
         fetch(request).then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          // A build's hashed filenames only exist while that build is live —
+          // caching a 404 for one (e.g. a stale page still referencing a
+          // hash from a since-replaced deploy) would pin that failure in
+          // place forever, since a cache-first URL is never retried once
+          // something is stored under it.
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
           return response;
         }),
     ),

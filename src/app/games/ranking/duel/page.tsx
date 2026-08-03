@@ -14,7 +14,7 @@ export default async function GamesDuelPage({
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const { item } = await searchParams;
+  const { item, wasRank } = await searchParams;
 
   let games: UserVideoGame[] = [];
   try {
@@ -29,6 +29,7 @@ export default async function GamesDuelPage({
       shelf={SHELVES.games}
       entries={games.filter((g) => g.on_rankings).map(gameToDuelEntry)}
       focusId={item}
+      priorRank={wasRank ? Number(wasRank) : undefined}
     />
   );
 }

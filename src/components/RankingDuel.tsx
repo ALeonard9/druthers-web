@@ -135,10 +135,16 @@ export function RankingDuel({
   shelf,
   ranked: initialRanked,
   queue: initialQueue,
+  rerankId,
+  priorRank,
 }: {
   shelf: ShelfConfig;
   ranked: DuelEntry[];
   queue: DuelEntry[];
+  /** The one entry in `queue` that got here via "Rerank", if any. */
+  rerankId?: string;
+  /** Its rank just before that — the candidate's own `rank` is already null. */
+  priorRank?: number;
 }) {
   const router = useRouter();
   const [ranked, setRanked] = useState(initialRanked);
@@ -285,7 +291,11 @@ export function RankingDuel({
           >
             <Contender
               entry={pair.candidate}
-              badge="Unranked"
+              badge={
+                pair.candidate.id === rerankId && priorRank != null
+                  ? `Currently #${priorRank}`
+                  : 'Unranked'
+              }
               hint="←"
               onPick={() => answer('candidate')}
             />
@@ -481,7 +491,11 @@ function EscapeHatch({
         <span className="absolute -right-2.5 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-night" />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* No justify-between below sm: on a narrow/PWA viewport that pushes
+          the two halves onto separate lines, "+ Add a movie" ends up alone
+          on line one with nothing to its right — dead space, not a layout.
+          Left-aligned stacking there reads as one flow instead. */}
+      <div className="flex flex-wrap items-center gap-3 sm:justify-between">
         <Link
           href={shelf.addHref}
           className="text-sm text-neutral-400 hover:text-white"

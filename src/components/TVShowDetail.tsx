@@ -69,6 +69,21 @@ export function TVShowDetail({
     track({ on_rankings: false });
   }
 
+  // Clears the position (closing the gap it leaves) without leaving
+  // Rankings, so it re-enters the "to rank" queue and completed_at is
+  // untouched — only a fresh entry into Rankings stamps that date.
+  function rerank() {
+    const wasRank = tracker?.rank;
+    startTransition(async () => {
+      await fetch(`/api/tv/${show.id}/track`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rank: null }),
+      });
+      router.push(`${duelHrefFor('tv', show.id)}&wasRank=${wasRank}`);
+    });
+  }
+
   function saveNotes() {
     if (notes === savedNote) return;
     setSavedNote(notes);
@@ -161,6 +176,16 @@ export function TVShowDetail({
                   ? `Ranked #${tracker.rank}`
                   : 'In “to rank” — drag it into place on the TV page'}
               </span>
+              {tracker?.rank && !confirmRemove && (
+                <button
+                  onClick={rerank}
+                  disabled={pending}
+                  title="Pull it back out and re-judge its position by comparison"
+                  className="rounded px-2 py-1 text-sm text-neutral-500 hover:text-brass disabled:opacity-50"
+                >
+                  Rerank
+                </button>
+              )}
               {confirmRemove ? (
                 <span className="flex items-center gap-2 rounded bg-red-950/70 px-2 py-1 text-xs text-red-200 ring-1 ring-red-800">
                   Remove from rankings? Shows below move up.

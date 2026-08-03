@@ -122,12 +122,14 @@ function RankedRow({
   onAskRemove,
   onCancelRemove,
   onConfirmRemove,
+  onRerank,
 }: {
   item: UserMovie;
   confirming: boolean;
   onAskRemove: (m: UserMovie) => void;
   onCancelRemove: () => void;
   onConfirmRemove: (m: UserMovie) => void;
+  onRerank: (m: UserMovie) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.movie.id, data: { type: 'ranked', rank: item.rank } });
@@ -180,12 +182,21 @@ function RankedRow({
           </button>
         </span>
       ) : (
-        <button
-          onClick={() => onAskRemove(item)}
-          className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
-        >
-          Remove
-        </button>
+        <>
+          <button
+            onClick={() => onRerank(item)}
+            title="Pull it back out and re-judge its position by comparison"
+            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-brass"
+          >
+            Rerank
+          </button>
+          <button
+            onClick={() => onAskRemove(item)}
+            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
+          >
+            Remove
+          </button>
+        </>
       )}
     </li>
   );
@@ -252,6 +263,20 @@ export function RankingsBoard({
       body: JSON.stringify({ on_rankings: false, on_watchlist: true }),
     });
     router.refresh();
+  }
+
+  // Clears the position (closing the gap it leaves) without leaving
+  // Rankings, so it re-enters the "to rank" queue and completed_at is
+  // untouched — only a fresh entry into Rankings stamps that date.
+  async function rerank(m: UserMovie) {
+    await fetch(`/api/movies/${m.movie.id}/track`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rank: null }),
+    });
+    // wasRank carries the spot it just left so the duel can show "Currently
+    // #N" instead of "Unranked" — the server truth is already null by now.
+    router.push(`/movies/ranking/duel?item=${m.movie.id}&wasRank=${m.rank}`);
   }
 
   function onDragEnd(e: DragEndEvent) {
@@ -367,6 +392,7 @@ export function RankingsBoard({
                   onAskRemove={(x) => setConfirmingId(x.movie.id)}
                   onCancelRemove={() => setConfirmingId(null)}
                   onConfirmRemove={remove}
+                  onRerank={rerank}
                 />
               ))}
             </ul>

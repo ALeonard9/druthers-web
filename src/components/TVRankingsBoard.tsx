@@ -124,12 +124,14 @@ function RankedRow({
   onAskRemove,
   onCancelRemove,
   onConfirmRemove,
+  onRerank,
 }: {
   item: UserTVShow;
   confirming: boolean;
   onAskRemove: (s: UserTVShow) => void;
   onCancelRemove: () => void;
   onConfirmRemove: (s: UserTVShow) => void;
+  onRerank: (s: UserTVShow) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.tv_show.id, data: { type: 'ranked', rank: item.rank } });
@@ -183,12 +185,21 @@ function RankedRow({
           </button>
         </span>
       ) : (
-        <button
-          onClick={() => onAskRemove(item)}
-          className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
-        >
-          Remove
-        </button>
+        <>
+          <button
+            onClick={() => onRerank(item)}
+            title="Pull it back out and re-judge its position by comparison"
+            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-brass"
+          >
+            Rerank
+          </button>
+          <button
+            onClick={() => onAskRemove(item)}
+            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
+          >
+            Remove
+          </button>
+        </>
       )}
     </li>
   );
@@ -255,6 +266,18 @@ export function TVRankingsBoard({
       body: JSON.stringify({ on_rankings: false, on_watchlist: true }),
     });
     router.refresh();
+  }
+
+  // Clears the position (closing the gap it leaves) without leaving
+  // Rankings, so it re-enters the "to rank" queue and completed_at is
+  // untouched — only a fresh entry into Rankings stamps that date.
+  async function rerank(s: UserTVShow) {
+    await fetch(`/api/tv/${s.tv_show.id}/track`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rank: null }),
+    });
+    router.push(`/tv/ranking/duel?item=${s.tv_show.id}&wasRank=${s.rank}`);
   }
 
   function onDragEnd(e: DragEndEvent) {
@@ -370,6 +393,7 @@ export function TVRankingsBoard({
                   onAskRemove={(x) => setConfirmingId(x.tv_show.id)}
                   onCancelRemove={() => setConfirmingId(null)}
                   onConfirmRemove={remove}
+                  onRerank={rerank}
                 />
               ))}
             </ul>

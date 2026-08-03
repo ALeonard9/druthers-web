@@ -4,6 +4,7 @@ import './globals.css';
 import { Sidebar, BottomTabs } from '@/components/Sidebar';
 import { TopBar } from '@/components/TopBar';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
+import { RefreshHomeOnReturn } from '@/components/RefreshHomeOnReturn';
 import { getSessionUser } from '@/lib/session';
 
 // Display face: bookish, characterful — wordmark, page titles, rank numerals.
@@ -78,6 +79,7 @@ export default async function RootLayout({
           <main className="min-h-screen px-4 py-8 md:px-8">{children}</main>
         )}
         {user && <BottomTabs />}
+        {user && <RefreshHomeOnReturn />}
         <ServiceWorkerRegister />
       </body>
     </html>

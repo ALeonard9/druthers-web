@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { fetchPublicProfile } from '@/lib/publicProfile';
-import { Top5Board } from '@/components/Top5Board';
+import { PublicShelfCarousel } from '@/components/PublicShelfCarousel';
 import { FollowButton } from '@/components/FollowButton';
 import { CopyProfileLinkButton } from '@/components/CopyProfileLinkButton';
 
@@ -77,25 +77,10 @@ export default async function PublicProfilePage({ params }: Props) {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {profile.shelves.map((shelf) => (
-          <Top5Board
+          <PublicShelfCarousel
             key={shelf.slug}
-            shelf={{
-              category: shelf.slug,
-              label: shelf.category,
-              ranked_count: shelf.ranked_count,
-              top: shelf.items.map((item) => ({
-                rank: item.rank,
-                title: item.title,
-                year: item.year,
-              })),
-            }}
-            href={`/u/${profile.handle}/${shelf.slug}`}
-            watchlistHref={
-              shelf.watchlist && shelf.watchlist.length > 0
-                ? `/u/${profile.handle}/${shelf.slug}/watchlist`
-                : undefined
-            }
-            emptyMessage="Nothing ranked here yet."
+            handle={profile.handle}
+            shelf={shelf}
           />
         ))}
       </div>

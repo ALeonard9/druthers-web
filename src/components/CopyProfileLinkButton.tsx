@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { profileUrl } from '@/lib/shareCards';
+
 // The share affordance every shareable page needs (#121) — the universal
 // share menu itself is Phase 4 (#123); this is the plain-copy floor until
 // then.
@@ -12,7 +14,7 @@ export function CopyProfileLinkButton({ handle }: { handle: string }) {
     <button
       type="button"
       onClick={() => {
-        void navigator.clipboard.writeText(`https://www.druthers.io/u/${handle}`);
+        void navigator.clipboard.writeText(profileUrl(handle));
         setCopied(true);
         window.setTimeout(() => setCopied(false), 1500);
       }}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import type { PublicShelfItem } from '@/lib/types';
 import type { DeckItem } from '@/lib/deck';
 import { useRankedListLength } from '@/lib/rankedListLength';
@@ -104,20 +105,20 @@ export function PublicShelfRankedViewer({
           items={toDeckItems(items, slug)}
           placedCount={totalCount}
           label={label}
-          interactive={false}
         />
       ) : viewMode === 'icons' ? (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
           {items.map((item) => (
-            <div key={item.rank} className="flex flex-col gap-1">
-              <div className="relative">
-                <Poster url={item.poster_url} className="aspect-[2/3] w-full rounded" />
-                <span className="absolute left-1 top-1 rounded bg-night/80 px-1.5 py-0.5 font-display text-xs text-brass">
+            <Link href={`/${slug}/${item.id}`} key={item.rank} className="group flex flex-col gap-1">
+              <div className="relative overflow-hidden rounded">
+                <Poster url={item.poster_url} className="aspect-[2/3] w-full transition-transform duration-300 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/20" />
+                <span className="absolute left-1 top-1 rounded bg-night/80 px-1.5 py-0.5 font-display text-xs text-brass shadow-sm">
                   {item.rank}
                 </span>
               </div>
-              <p className="truncate text-xs text-neutral-300">{item.title}</p>
-            </div>
+              <p className="truncate text-xs font-medium text-neutral-300 transition-colors group-hover:text-brass-bright">{item.title}</p>
+            </Link>
           ))}
         </div>
       ) : (
@@ -125,13 +126,17 @@ export function PublicShelfRankedViewer({
           {items.map((item) => (
             <li
               key={item.rank}
-              className="flex items-center gap-3 border-b border-line/60 px-4 py-2.5 text-sm last:border-b-0"
+              className="group flex items-center gap-3 border-b border-line/60 px-4 py-2.5 text-sm transition-colors last:border-b-0 hover:bg-neutral-800/50"
             >
-              <span className="inline-flex h-6 w-8 shrink-0 items-center justify-center rounded bg-brass-wash font-display text-sm text-brass">
+              <span className="inline-flex h-6 w-8 shrink-0 items-center justify-center rounded bg-brass-wash font-display text-sm text-brass transition-colors group-hover:bg-brass group-hover:text-ink">
                 {item.rank}
               </span>
-              <Poster url={item.poster_url} className="h-10 w-7 shrink-0 rounded" />
-              <span className="flex-1 truncate text-neutral-200">{item.title}</span>
+              <Link href={`/${slug}/${item.id}`} className="block h-10 w-7 shrink-0 overflow-hidden rounded">
+                <Poster url={item.poster_url} className="h-full w-full transition-transform duration-300 group-hover:scale-110" />
+              </Link>
+              <Link href={`/${slug}/${item.id}`} className="flex-1 truncate text-neutral-200 transition-colors group-hover:text-brass-bright group-hover:underline">
+                {item.title}
+              </Link>
               {item.year && (
                 <span className="shrink-0 font-mono text-xs text-neutral-500">
                   {item.year}

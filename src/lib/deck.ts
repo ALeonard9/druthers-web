@@ -112,3 +112,52 @@ export function publicDeckItems(shelf: PublicShelf): DeckItem[] {
     href: '',
   }));
 }
+
+/**
+ * Watchlist rows have no rank to anchor a deck plate against, so `rank` here
+ * is just the row's position (list order) — callers render these with
+ * `showRank={false}` on RankedPosterDeck rather than trusting the number.
+ */
+function buildUnranked<T>(rows: T[], to: (row: T) => Omit<DeckItem, 'rank'>): DeckItem[] {
+  return rows.map((row, i) => ({ ...to(row), rank: i + 1 }));
+}
+
+export function movieWatchlistDeckItems(rows: UserMovie[]): DeckItem[] {
+  return buildUnranked(rows, (r) => ({
+    id: r.movie.id,
+    title: r.movie.title,
+    subtitle: subtitle(r.movie.year, first(r.movie.genre)),
+    posterUrl: r.movie.poster_url,
+    href: `/movies/${r.movie.id}`,
+  }));
+}
+
+export function tvWatchlistDeckItems(rows: UserTVShow[]): DeckItem[] {
+  return buildUnranked(rows, (r) => ({
+    id: r.tv_show.id,
+    title: r.tv_show.title,
+    subtitle: subtitle(r.tv_show.year, first(r.tv_show.genre)),
+    posterUrl: r.tv_show.poster_url,
+    href: `/tv/${r.tv_show.id}`,
+  }));
+}
+
+export function bookWatchlistDeckItems(rows: UserBook[]): DeckItem[] {
+  return buildUnranked(rows, (r) => ({
+    id: r.book.id,
+    title: r.book.title,
+    subtitle: subtitle(r.book.year, first(r.book.authors)),
+    posterUrl: r.book.poster_url,
+    href: `/books/${r.book.id}`,
+  }));
+}
+
+export function gameWatchlistDeckItems(rows: UserVideoGame[]): DeckItem[] {
+  return buildUnranked(rows, (r) => ({
+    id: r.game.id,
+    title: r.game.title,
+    subtitle: subtitle(r.game.year, first(r.game.genre)),
+    posterUrl: r.game.poster_url,
+    href: `/games/${r.game.id}`,
+  }));
+}

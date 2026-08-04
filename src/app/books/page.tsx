@@ -1,23 +1,30 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { partitionBooks } from '@/lib/books';
-import { DECK_SIZE, bookDeckItems } from '@/lib/deck';
+import { partitionBooks, filterBooks } from '@/lib/books';
+import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
+import { bookDeckItems } from '@/lib/deck';
 import { BOOK_TABS } from '@/lib/sectionTabs';
 import type { UserBook, Summary } from '@/lib/types';
-import { RankedPosterDeck } from '@/components/RankedPosterDeck';
+import { MyListViewer } from '@/components/MyListViewer';
+import { FilterBar } from '@/components/FilterBar';
 import { ProgressBanner } from '@/components/ProgressBanner';
 import { progressMessage } from '@/lib/progress';
 import { SectionTabs } from '@/components/SectionTabs';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default async function BooksPage() {
+export default async function BooksPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
+  const sp = await searchParams;
 
   let books: UserBook[] = [];
   let summary: Summary;
@@ -31,10 +38,11 @@ export default async function BooksPage() {
     throw err;
   }
 
-  // Deliberately unfiltered: this view is the top of the shelf as it stands.
-  // Filtering belongs with the list on /books/ranking.
+  const { filters, filterValues, hasFilter } = parseFilterParams(sp);
   const { rankingsPlaced } = partitionBooks(books);
-  const top = bookDeckItems(rankingsPlaced.slice(0, DECK_SIZE));
+  const { rankingsPlaced: filteredPlaced } = partitionBooks(
+    filterBooks(books, filters),
+  );
   const banner = progressMessage(rankingsPlaced.length, 'book');
 
   return (
@@ -48,6 +56,7 @@ export default async function BooksPage() {
           </h1>
           <p className="text-sm text-neutral-400">
             {rankingsPlaced.length} ranked
+            {hasFilter && ' (filtered)'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -64,28 +73,46 @@ export default async function BooksPage() {
         </div>
       </div>
 
-      {top.length > 0 ? (
-        <>
-          {banner && <ProgressBanner message={banner} />}
-          <RankedPosterDeck
-            items={top}
-            placedCount={rankingsPlaced.length}
-            label="Your highest ranked books"
+      {banner && <ProgressBanner message={banner} />}
+
+      <MyListViewer
+        items={bookDeckItems(filteredPlaced)}
+        totalCount={rankingsPlaced.length}
+        label="Your ranked books"
+        filterBar={
+          <FilterBar
+            key="filter"
+            initial={filterValues}
+            basePath="/books"
+            searchLabel="Search (title, author)"
+            searchPlaceholder="e.g. Herbert"
+            ratingMaxBound={5}
+            genreOptions={optionsWithCounts(books.map((b) => b.book.genre))}
+            extras={[
+              { kind: 'number', name: 'pagesMax', label: 'Max pages', width: 'w-24' },
+            ]}
           />
-        </>
-      ) : (
-        <p className="text-sm text-neutral-500">
-          Nothing ranked yet —{' '}
-          <Link href="/books/search" className="text-brass">
-            add a book
-          </Link>{' '}
-          or promote one from your{' '}
-          <Link href="/books/to-read" className="text-brass">
-            to-read list
-          </Link>
-          .
-        </p>
-      )}
+        }
+        emptyMessage={
+          <p key="empty" className="text-sm text-neutral-500">
+            {hasFilter ? (
+              'No ranked books match the filter.'
+            ) : (
+              <>
+                Nothing ranked yet —{' '}
+                <Link href="/books/search" className="text-brass">
+                  add a book
+                </Link>{' '}
+                or promote one from your{' '}
+                <Link href="/books/to-read" className="text-brass">
+                  to-read list
+                </Link>
+                .
+              </>
+            )}
+          </p>
+        }
+      />
     </div>
   );
 }

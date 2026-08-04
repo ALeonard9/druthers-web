@@ -6,8 +6,10 @@ import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionMovies, filterMovies } from '@/lib/movies';
 import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
+import { movieWatchlistDeckItems } from '@/lib/deck';
 import type { UserMovie, Summary } from '@/lib/types';
 import { WatchlistCard } from '@/components/WatchlistCard';
+import { WatchlistViewer } from '@/components/WatchlistViewer';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
 import { MOVIE_TABS } from '@/lib/sectionTabs';
@@ -66,30 +68,40 @@ export default async function MoviesWatchlistPage({
         </div>
       </div>
 
-      <FilterBar
-        initial={filterValues}
-        basePath="/movies/watchlist"
-        genreOptions={optionsWithCounts(movies.map((m) => m.movie.genre))}
-        extras={[
-          {
-            kind: 'select',
-            name: 'rated',
-            label: 'Rated',
-            options: optionsWithCounts(movies.map((m) => m.movie.rated)),
-          },
-          {
-            kind: 'number',
-            name: 'runtimeMax',
-            label: 'Max runtime (min)',
-            width: 'w-28',
-          },
-        ]}
-      />
-
-      <section>
-        <p className="mb-4 text-xs text-neutral-500">Movies you want to watch.</p>
-        {watchlist.length === 0 ? (
-          <p className="text-sm text-neutral-500">
+      <WatchlistViewer
+        items={movieWatchlistDeckItems(watchlist)}
+        label="Your watchlist"
+        filterBar={
+          <FilterBar
+            key="filter"
+            initial={filterValues}
+            basePath="/movies/watchlist"
+            genreOptions={optionsWithCounts(movies.map((m) => m.movie.genre))}
+            extras={[
+              {
+                kind: 'select',
+                name: 'rated',
+                label: 'Rated',
+                options: optionsWithCounts(movies.map((m) => m.movie.rated)),
+              },
+              {
+                kind: 'number',
+                name: 'runtimeMax',
+                label: 'Max runtime (min)',
+                width: 'w-28',
+              },
+            ]}
+          />
+        }
+        iconsContent={
+          <ul key="icons" className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {watchlist.map((m) => (
+              <WatchlistCard key={m.id} userMovie={m} />
+            ))}
+          </ul>
+        }
+        emptyMessage={
+          <p key="empty" className="text-sm text-neutral-500">
             {hasFilter ? (
               'No watchlist movies match the filter.'
             ) : (
@@ -102,14 +114,8 @@ export default async function MoviesWatchlistPage({
               </>
             )}
           </p>
-        ) : (
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {watchlist.map((m) => (
-              <WatchlistCard key={m.id} userMovie={m} />
-            ))}
-          </ul>
-        )}
-      </section>
+        }
+      />
     </div>
   );
 }

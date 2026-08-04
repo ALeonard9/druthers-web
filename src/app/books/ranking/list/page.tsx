@@ -6,17 +6,15 @@ import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { partitionBooks, filterBooks } from '@/lib/books';
 import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
-import { bookWatchlistDeckItems } from '@/lib/deck';
+import { BOOK_TABS } from '@/lib/sectionTabs';
 import type { UserBook, Summary } from '@/lib/types';
-import { BookWatchlistCard } from '@/components/BookWatchlistCard';
-import { WatchlistViewer } from '@/components/WatchlistViewer';
+import { BookRankingsBoard } from '@/components/BookRankingsBoard';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
-import { BOOK_TABS } from '@/lib/sectionTabs';
 
 export const dynamic = 'force-dynamic';
 
-export default async function BooksToReadPage({
+export default async function BooksRankingListPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -38,7 +36,9 @@ export default async function BooksToReadPage({
   }
 
   const { filters, filterValues, hasFilter } = parseFilterParams(sp);
-  const { watchlist } = partitionBooks(filterBooks(books, filters));
+  const { rankingsPlaced, rankingsUnplaced } = partitionBooks(
+    filterBooks(books, filters),
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,7 +50,8 @@ export default async function BooksToReadPage({
             My Books
           </h1>
           <p className="text-sm text-neutral-400">
-            {watchlist.length} to read
+            {rankingsPlaced.length} ranked
+            {rankingsUnplaced.length > 0 && ` · ${rankingsUnplaced.length} to rank`}
             {hasFilter && ' (filtered)'}
           </p>
         </div>
@@ -60,6 +61,12 @@ export default async function BooksToReadPage({
             initialCategory="books"
           />
           <Link
+            href="/books/ranking"
+            className="rounded border border-line px-3 py-2 text-sm text-neutral-300 hover:border-brass hover:text-paper"
+          >
+            Rank by comparison →
+          </Link>
+          <Link
             href="/books/search"
             className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
@@ -68,46 +75,48 @@ export default async function BooksToReadPage({
         </div>
       </div>
 
-      <WatchlistViewer
-        items={bookWatchlistDeckItems(watchlist)}
-        label="Your to-read list"
-        filterBar={
-          <FilterBar
-            key="filter"
-            initial={filterValues}
-            basePath="/books/to-read"
-            searchLabel="Search (title, author)"
-            searchPlaceholder="e.g. Herbert"
-            ratingMaxBound={5}
-            genreOptions={optionsWithCounts(books.map((b) => b.book.genre))}
-            extras={[
-              { kind: 'number', name: 'pagesMax', label: 'Max pages', width: 'w-24' },
-            ]}
-          />
-        }
-        iconsContent={
-          <ul key="icons" className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {watchlist.map((b) => (
-              <BookWatchlistCard key={b.id} userBook={b} />
-            ))}
-          </ul>
-        }
-        emptyMessage={
-          <p key="empty" className="text-sm text-neutral-500">
+      <FilterBar
+        initial={filterValues}
+        basePath="/books/ranking/list"
+        searchLabel="Search (title, author)"
+        searchPlaceholder="e.g. Herbert"
+        ratingMaxBound={5}
+        genreOptions={optionsWithCounts(books.map((b) => b.book.genre))}
+        extras={[
+          { kind: 'number', name: 'pagesMax', label: 'Max pages', width: 'w-24' },
+        ]}
+      />
+
+      <section>
+        <p className="mb-4 text-xs text-neutral-500">
+          Drag a “to rank” book into the list, or use Go To to jump to a spot.
+        </p>
+        {rankingsPlaced.length === 0 && rankingsUnplaced.length === 0 ? (
+          <p className="text-sm text-neutral-500">
             {hasFilter ? (
-              'No to-read books match the filter.'
+              'No ranked books match the filter.'
             ) : (
               <>
-                Nothing queued —{' '}
+                Nothing ranked yet —{' '}
                 <Link href="/books/search" className="text-brass">
-                  add one
+                  add a book
+                </Link>{' '}
+                or promote one from your{' '}
+                <Link href="/books/to-read" className="text-brass">
+                  to-read list
                 </Link>
                 .
               </>
             )}
           </p>
-        }
-      />
+        ) : (
+          <BookRankingsBoard
+            placed={rankingsPlaced}
+            unplaced={rankingsUnplaced}
+            placedCount={rankingsPlaced.length}
+          />
+        )}
+      </section>
     </div>
   );
 }

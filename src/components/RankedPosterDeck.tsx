@@ -25,6 +25,7 @@ export function RankedPosterDeck({
   placedCount,
   label = 'Your highest ranked titles',
   interactive = true,
+  showRank = true,
 }: {
   items: DeckItem[];
   placedCount: number;
@@ -32,6 +33,8 @@ export function RankedPosterDeck({
   /** False for read-only contexts (e.g. a public profile) where the front
    * card has nowhere to link — dragging through the deck still works. */
   interactive?: boolean;
+  /** False for an unranked deck (e.g. a watchlist) — hides the rank plate. */
+  showRank?: boolean;
 }) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
@@ -188,9 +191,11 @@ export function RankedPosterDeck({
                 ) : (
                   <div className="h-full w-full bg-line" />
                 )}
-                <span className="deck-plate absolute bottom-2.5 left-2.5 min-w-8 rounded px-2 py-0.5 text-center font-display text-xl font-bold tabular-nums text-ink">
-                  {m.rank}
-                </span>
+                {showRank && (
+                  <span className="deck-plate absolute bottom-2.5 left-2.5 min-w-8 rounded px-2 py-0.5 text-center font-display text-xl font-bold tabular-nums text-ink">
+                    {m.rank}
+                  </span>
+                )}
                 <div
                   className={`pointer-events-none absolute inset-0 bg-night ${
                     dragging ? '' : 'transition-opacity duration-[420ms] ease-out'

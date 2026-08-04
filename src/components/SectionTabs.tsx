@@ -13,7 +13,16 @@ export function SectionTabs({
   tabs: { href: string; label: string }[];
 }) {
   const pathname = usePathname();
-  const active = tabs.find((t) => t.href === pathname)?.href ?? tabs[0].href;
+  // Exact match first (e.g. Ranking now defaults to the duel at
+  // `/movies/ranking`); otherwise fall back to the longest href that's a
+  // path prefix, so a nested route like `/movies/ranking/list` still lights
+  // up the Ranking tab rather than defaulting to the first tab.
+  const active =
+    tabs.find((t) => t.href === pathname)?.href ??
+    [...tabs]
+      .sort((a, b) => b.href.length - a.href.length)
+      .find((t) => pathname.startsWith(`${t.href}/`))?.href ??
+    tabs[0].href;
 
   return (
     // Scrolls sideways rather than wrapping: a wrapped tab would push the

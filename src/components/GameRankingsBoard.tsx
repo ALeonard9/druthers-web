@@ -73,7 +73,7 @@ function ToRankChip({
         {item.game.title}
       </Link>
       <Link
-        href={`/games/ranking/duel?item=${item.game.id}`}
+        href={`/games/ranking?item=${item.game.id}`}
         title="Place it by comparison instead of dragging"
         className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright"
       >
@@ -302,7 +302,7 @@ export function GameRankingsBoard({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rank: null }),
     });
-    router.push(`/games/ranking/duel?item=${g.game.id}&wasRank=${g.rank}`);
+    router.push(`/games/ranking?item=${g.game.id}&wasRank=${g.rank}`);
   }
 
   function onDragEnd(e: DragEndEvent) {

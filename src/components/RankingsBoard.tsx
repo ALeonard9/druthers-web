@@ -73,7 +73,7 @@ function ToRankChip({
         {item.movie.title}
       </Link>
       <Link
-        href={`/movies/ranking/duel?item=${item.movie.id}`}
+        href={`/movies/ranking?item=${item.movie.id}`}
         title="Place it by comparison instead of dragging"
         className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright"
       >
@@ -296,7 +296,7 @@ export function RankingsBoard({
     });
     // wasRank carries the spot it just left so the duel can show "Currently
     // #N" instead of "Unranked" — the server truth is already null by now.
-    router.push(`/movies/ranking/duel?item=${m.movie.id}&wasRank=${m.rank}`);
+    router.push(`/movies/ranking?item=${m.movie.id}&wasRank=${m.rank}`);
   }
 
   function onDragEnd(e: DragEndEvent) {

@@ -75,7 +75,7 @@ function ToRankChip({
       </Link>
       <ShowStatusBadge show={item} />
       <Link
-        href={`/tv/ranking/duel?item=${item.tv_show.id}`}
+        href={`/tv/ranking?item=${item.tv_show.id}`}
         title="Place it by comparison instead of dragging"
         className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright"
       >
@@ -297,7 +297,7 @@ export function TVRankingsBoard({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rank: null }),
     });
-    router.push(`/tv/ranking/duel?item=${s.tv_show.id}&wasRank=${s.rank}`);
+    router.push(`/tv/ranking?item=${s.tv_show.id}&wasRank=${s.rank}`);
   }
 
   function onDragEnd(e: DragEndEvent) {

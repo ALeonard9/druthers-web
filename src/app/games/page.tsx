@@ -1,23 +1,30 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { partitionGames } from '@/lib/games';
-import { DECK_SIZE, gameDeckItems } from '@/lib/deck';
+import { partitionGames, filterGames } from '@/lib/games';
+import { parseFilterParams, optionsWithCounts } from '@/lib/filterParams';
+import { gameDeckItems } from '@/lib/deck';
 import { GAME_TABS } from '@/lib/sectionTabs';
 import type { UserVideoGame, Summary } from '@/lib/types';
-import { RankedPosterDeck } from '@/components/RankedPosterDeck';
+import { MyListViewer } from '@/components/MyListViewer';
+import { FilterBar } from '@/components/FilterBar';
 import { ProgressBanner } from '@/components/ProgressBanner';
 import { progressMessage } from '@/lib/progress';
 import { SectionTabs } from '@/components/SectionTabs';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default async function GamesPage() {
+export default async function GamesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
+  const sp = await searchParams;
 
   let games: UserVideoGame[] = [];
   let summary: Summary;
@@ -31,10 +38,11 @@ export default async function GamesPage() {
     throw err;
   }
 
-  // Deliberately unfiltered: this view is the top of the shelf as it stands.
-  // Filtering belongs with the list on /games/ranking.
+  const { filters, filterValues, hasFilter } = parseFilterParams(sp);
   const { rankingsPlaced } = partitionGames(games);
-  const top = gameDeckItems(rankingsPlaced.slice(0, DECK_SIZE));
+  const { rankingsPlaced: filteredPlaced } = partitionGames(
+    filterGames(games, filters),
+  );
   const banner = progressMessage(rankingsPlaced.length, 'game');
 
   return (
@@ -48,6 +56,7 @@ export default async function GamesPage() {
           </h1>
           <p className="text-sm text-neutral-400">
             {rankingsPlaced.length} ranked
+            {hasFilter && ' (filtered)'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -64,28 +73,52 @@ export default async function GamesPage() {
         </div>
       </div>
 
-      {top.length > 0 ? (
-        <>
-          {banner && <ProgressBanner message={banner} />}
-          <RankedPosterDeck
-            items={top}
-            placedCount={rankingsPlaced.length}
-            label="Your highest ranked games"
+      {banner && <ProgressBanner message={banner} />}
+
+      <MyListViewer
+        items={gameDeckItems(filteredPlaced)}
+        totalCount={rankingsPlaced.length}
+        label="Your ranked games"
+        filterBar={
+          <FilterBar
+            key="filter"
+            initial={filterValues}
+            basePath="/games"
+            searchLabel="Search (title, platform)"
+            searchPlaceholder="e.g. Zelda"
+            ratingMaxBound={100}
+            genreOptions={optionsWithCounts(games.map((g) => g.game.genre))}
+            extras={[
+              {
+                kind: 'select',
+                name: 'platform',
+                label: 'Platform',
+                options: optionsWithCounts(games.map((g) => g.game.platforms)),
+              },
+              { kind: 'checkbox', name: 'hundred', label: '100% completed' },
+            ]}
           />
-        </>
-      ) : (
-        <p className="text-sm text-neutral-500">
-          Nothing ranked yet —{' '}
-          <Link href="/games/search" className="text-brass">
-            add a game
-          </Link>{' '}
-          or promote one from your{' '}
-          <Link href="/games/backlog" className="text-brass">
-            backlog
-          </Link>
-          .
-        </p>
-      )}
+        }
+        emptyMessage={
+          <p key="empty" className="text-sm text-neutral-500">
+            {hasFilter ? (
+              'No ranked games match the filter.'
+            ) : (
+              <>
+                Nothing ranked yet —{' '}
+                <Link href="/games/search" className="text-brass">
+                  add a game
+                </Link>{' '}
+                or promote one from your{' '}
+                <Link href="/games/backlog" className="text-brass">
+                  backlog
+                </Link>
+                .
+              </>
+            )}
+          </p>
+        }
+      />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { buildShareData } from '@/lib/shareCards';
 import { HomeActivity, ActivitySkeleton } from '@/components/HomeActivity';
 import { HomeTonight, TonightSkeleton } from '@/components/HomeTonight';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { Top5Board } from '@/components/Top5Board';
+import { HomeShelfCarousel } from '@/components/HomeShelfCarousel';
 import { PublicLanding } from '@/components/PublicLanding';
 import type { Summary } from '@/lib/types';
 
@@ -97,7 +97,7 @@ export default async function HomePage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {summary.shelves.map((shelf) => (
-          <Top5Board key={shelf.category} shelf={shelf} />
+          <HomeShelfCarousel key={shelf.category} shelf={shelf} />
         ))}
       </div>
 

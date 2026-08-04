@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import { LANDING_DUEL_ITEMS, LANDING_CAROUSEL_ITEMS } from '@/lib/landingMovies';
 import { GoogleSignIn } from './GoogleSignIn';
+import { LandingDuelExample } from './LandingDuelExample';
+import { RankedPosterDeck } from './RankedPosterDeck';
 import { LandingShareCardPreview } from './LandingShareCardPreview';
 
 const DOMAINS = [
@@ -11,10 +14,11 @@ const DOMAINS = [
 
 /**
  * Public marketing landing page — what signed-out visitors see at `/`
- * instead of a bare login form (issue #27). Most likely arrival path is a
- * shared Top 5 card, so this leads with what that card is and lets the
- * "ranked, not rated" pitch and a real render of the format do the
- * convincing before asking for the sign-in.
+ * instead of a bare login form (issue #27). Walks the three-step loop (pick
+ * a domain, rank via duels, share a shelf) and demonstrates the last two
+ * steps against a small fixed set of widely recognisable movies (#134) —
+ * deliberately not any one account's real shelf, so a stranger's obscure or
+ * mismatched rankings can never be what a new visitor sees first.
  *
  * Deliberately louder than the rest of the site's restrained in-app tone —
  * this is the one page a stranger sees before they know what druthers is, so
@@ -48,27 +52,18 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
         </Link>
       </section>
 
-      {/* Ranked, not rated — reusing the framing from /about verbatim. */}
-      <section className="border-y border-line bg-panel px-6 py-20 text-center sm:px-10">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-brass">
-          Not another five-star rating
-        </p>
-        <p className="mx-auto mt-5 max-w-2xl text-xl leading-relaxed text-paper sm:text-2xl">
-          Every movie, show, book, and game here has been watched, read, or
-          played — then ranked into the order we&apos;d pick them again. Not
-          reviews, not ratings out of ten: just{' '}
-          <Link href="/about" className="text-brass hover:text-brass-bright">
-            druthers
-          </Link>
-          , on the record.
-        </p>
-      </section>
-
-      {/* Four domains */}
+      {/* Four domains + the three-step loop (web#134) */}
       <section className="flex flex-col items-center gap-10 px-4 py-24">
-        <h2 className="font-display text-3xl text-paper sm:text-4xl">
-          One shelf, four collections
-        </h2>
+        <div className="max-w-xl text-center">
+          <h2 className="font-display text-3xl text-paper sm:text-4xl">
+            One shelf, four collections
+          </h2>
+          <p className="mt-3 text-base text-neutral-300">
+            Pick a domain, rank what&apos;s on it through quick head-to-head{' '}
+            <span className="text-brass">duels</span>, then share the shelf
+            that comes out the other end.
+          </p>
+        </div>
         <div className="grid w-full max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
           {DOMAINS.map((d) => (
             <div
@@ -84,10 +79,50 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
         </div>
       </section>
 
-      {/* Top 5 share card showcase */}
+      {/* Example duel — tappable but not wired to a real ranking write (no
+          session to write against, and this isn't anyone's actual shelf). */}
       <section className="flex flex-col items-center gap-8 border-y border-line bg-panel px-4 py-24">
         <div className="max-w-lg text-center">
-          <h2 className="font-display text-3xl text-paper sm:text-4xl">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-brass">
+            Step two
+          </p>
+          <h2 className="mt-3 font-display text-3xl text-paper sm:text-4xl">
+            Rank by dueling, not by starring
+          </h2>
+        </div>
+        <LandingDuelExample a={LANDING_DUEL_ITEMS[0]} b={LANDING_DUEL_ITEMS[1]} />
+      </section>
+
+      {/* Top 5 carousel — a fixed, generally-popular set (#134), not any
+          one account's real shelf. */}
+      <section className="flex flex-col items-center gap-8 px-4 py-24">
+        <div className="max-w-lg text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-brass">
+            Step three
+          </p>
+          <h2 className="mt-3 font-display text-3xl text-paper sm:text-4xl">
+            This is what a ranked shelf looks like
+          </h2>
+        </div>
+        <div className="w-full max-w-sm">
+          <RankedPosterDeck
+            items={LANDING_CAROUSEL_ITEMS}
+            placedCount={LANDING_CAROUSEL_ITEMS.length}
+            label="A ranked shelf on druthers"
+            interactive={false}
+          />
+        </div>
+      </section>
+
+      {/* Step four — the sharing payoff: a real render of the actual card
+          format (lib/shareCardRender, same canvas ShareTop5Button uses),
+          against illustrative data rather than a live fetch. */}
+      <section className="flex flex-col items-center gap-8 border-y border-line bg-panel px-4 py-24">
+        <div className="max-w-lg text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-brass">
+            Step four
+          </p>
+          <h2 className="mt-3 font-display text-3xl text-paper sm:text-4xl">
             Rank five, get a card worth sharing
           </h2>
           <p className="mt-3 text-base text-neutral-300">
@@ -96,35 +131,8 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
             rendered right in the browser.
           </p>
         </div>
-        <div className="w-full max-w-md drop-shadow-[0_25px_60px_rgba(0,0,0,0.6)]">
+        <div className="w-full max-w-xs drop-shadow-[0_25px_60px_rgba(0,0,0,0.6)]">
           <LandingShareCardPreview />
-        </div>
-      </section>
-
-      {/* Closing CTA — a ticket stub, not a hero re-run. Same paper/ink/
-          dashed-rule/slight-rotation language /about uses for its own "ticket"
-          treatment, so the one light-on-dark moment on the page pays off the
-          "on the record" line above rather than repeating the hero's button
-          in a bigger font. */}
-      <section className="flex flex-col items-center px-4 py-28">
-        <div className="w-full max-w-sm -rotate-1 rounded-lg bg-paper px-8 py-8 text-center text-ink shadow-[0_25px_60px_rgba(0,0,0,0.55)]">
-          <div className="flex items-center justify-between border-b border-dashed border-brass-wash/40 pb-4">
-            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass-wash/70">
-              Admit one
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass-wash/70">
-              No expiration
-            </span>
-          </div>
-          <p className="mt-6 font-display text-2xl italic leading-snug">
-            Got sent a card?
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-ink/70">
-            Build your own shelf in under a minute.
-          </p>
-          <div className="mt-6 flex justify-center">
-            <GoogleSignIn clientId={googleClientId} />
-          </div>
         </div>
       </section>
     </div>

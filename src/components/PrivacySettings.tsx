@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import type { Visibility, VisibilityTier } from '@/lib/types';
+import { BASE_DOMAIN, SITE_URL } from '@/lib/shareCards';
 
 const TIER_ORDER: VisibilityTier[] = ['private', 'friends', 'public'];
 
@@ -242,7 +243,7 @@ export function PrivacySettings() {
     void save({ visibility_profile: tier }, 'visibility_profile');
   }
 
-  const profileUrl = settings.handle ? `www.druthers.io/u/${settings.handle}` : null;
+  const profileUrl = settings.handle ? `${BASE_DOMAIN}/u/${settings.handle}` : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -250,7 +251,7 @@ export function PrivacySettings() {
         <form onSubmit={saveHandle} className="flex gap-2">
           <div className="flex flex-1 items-center rounded border border-neutral-700 bg-night focus-within:border-brass">
             <span className="pl-3 font-mono text-xs text-neutral-500">
-              www.druthers.io/u/
+              {BASE_DOMAIN}/u/
             </span>
             <input
               value={handle}
@@ -317,7 +318,9 @@ export function PrivacySettings() {
             <button
               type="button"
               onClick={() => {
-                void navigator.clipboard.writeText(`https://${profileUrl}`);
+                void navigator.clipboard.writeText(
+                  settings.handle ? `${SITE_URL}/u/${settings.handle}` : ''
+                );
                 setCopied(true);
                 window.setTimeout(() => setCopied(false), 1500);
               }}

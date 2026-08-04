@@ -48,6 +48,7 @@ export function RankedPosterDeck({
   const pointerRef = useRef<{
     id: number;
     x: number;
+    y: number;
     t: number;
     captured: boolean;
   } | null>(null);
@@ -79,6 +80,7 @@ export function RankedPosterDeck({
     pointerRef.current = {
       id: e.pointerId,
       x: e.clientX,
+      y: e.clientY,
       t: e.timeStamp,
       captured: false,
     };
@@ -89,11 +91,14 @@ export function RankedPosterDeck({
     const p = pointerRef.current;
     if (!p || e.pointerId !== p.id) return;
     const dx = e.clientX - p.x;
+    const dy = e.clientY - (p.y ?? e.clientY);
+
     // Capture only once this is definitely a drag. Capturing on pointerdown
     // would retarget the following click to this container, and a plain tap on
     // a poster would never reach its own handler.
     if (!movedRef.current) {
-      if (Math.abs(dx) <= 3) return;
+      if (Math.abs(dx) <= 10 && Math.abs(dy) <= 10) return;
+      if (Math.abs(dy) > Math.abs(dx)) return;
       movedRef.current = true;
       p.captured = true;
       e.currentTarget.setPointerCapture(e.pointerId);

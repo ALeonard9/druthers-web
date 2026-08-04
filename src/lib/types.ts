@@ -358,6 +358,7 @@ export interface Follow {
 }
 
 export interface PublicShelfItem {
+  id: string;
   rank: number;
   title: string;
   year: number | null;
@@ -365,6 +366,7 @@ export interface PublicShelfItem {
 }
 
 export interface PublicWatchlistItem {
+  id: string;
   title: string;
   year: number | null;
   poster_url: string | null;

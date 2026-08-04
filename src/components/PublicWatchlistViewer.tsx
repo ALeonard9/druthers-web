@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import type { PublicWatchlistItem } from '@/lib/types';
 import { useRankedListLength } from '@/lib/rankedListLength';
 import { LengthControl } from './LengthControl';
@@ -66,12 +67,22 @@ export function PublicWatchlistViewer({
       </div>
 
       <ol className="rounded-lg border border-line bg-panel">
-        {items.map((item, i) => (
+        {items.map((item) => (
           <li
-            key={`${slug}-watchlist-${i}`}
-            className="flex items-center gap-3 border-b border-line/60 px-4 py-2.5 text-sm last:border-b-0"
+            key={item.id}
+            className="group flex items-center gap-3 border-b border-line/60 px-4 py-2.5 text-sm transition-colors last:border-b-0 hover:bg-neutral-800/50"
           >
-            <span className="flex-1 truncate text-neutral-200">{item.title}</span>
+            <Link href={`/${slug}/${item.id}`} className="block h-10 w-7 shrink-0 overflow-hidden rounded">
+              {item.poster_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.poster_url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" />
+              ) : (
+                <div className="h-full w-full bg-line" />
+              )}
+            </Link>
+            <Link href={`/${slug}/${item.id}`} className="flex-1 truncate text-neutral-200 transition-colors group-hover:text-brass-bright group-hover:underline">
+              {item.title}
+            </Link>
             {item.year && (
               <span className="shrink-0 font-mono text-xs text-neutral-500">
                 {item.year}

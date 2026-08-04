@@ -45,7 +45,8 @@ export const CATEGORY_LABELS: Record<ShareCategory, string> = {
   games: 'Video Games',
 };
 
-export const SITE_URL = 'https://www.druthers.io';
+export const BASE_DOMAIN = process.env.NEXT_PUBLIC_APP_ENV === 'dev' ? 'localhost:3000' : 'www.druthers.io';
+export const SITE_URL = process.env.NEXT_PUBLIC_APP_ENV === 'dev' ? 'http://localhost:3000' : 'https://www.druthers.io';
 
 /**
  * Public profile URL for a handle. The path is `/u/<handle>` — the canonical

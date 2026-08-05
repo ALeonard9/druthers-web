@@ -52,6 +52,9 @@ export function BookWatchlistCard({ userBook }: { userBook: UserBook }) {
         >
           {book.title}
         </Link>
+        {userBook.source_handle && (
+          <p className="font-mono text-[10px] uppercase tracking-wider text-brass/80">From @{userBook.source_handle}</p>
+        )}
         {book.authors && (
           <p className="line-clamp-1 text-xs text-neutral-500">{book.authors}</p>
         )}

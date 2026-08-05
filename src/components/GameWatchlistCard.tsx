@@ -52,6 +52,9 @@ export function GameWatchlistCard({ userGame }: { userGame: UserVideoGame }) {
         >
           {game.title}
         </Link>
+        {userGame.source_handle && (
+          <p className="font-mono text-[10px] uppercase tracking-wider text-brass/80">From @{userGame.source_handle}</p>
+        )}
         {game.platforms && (
           <p className="line-clamp-1 text-xs text-neutral-500">{game.platforms}</p>
         )}

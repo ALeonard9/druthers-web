@@ -52,6 +52,9 @@ export function WatchlistCard({ userMovie }: { userMovie: UserMovie }) {
         >
           {movie.title}
         </Link>
+        {userMovie.source_handle && (
+          <p className="font-mono text-[10px] uppercase tracking-wider text-brass/80">From @{userMovie.source_handle}</p>
+        )}
         <div className="mt-auto flex items-center justify-between pt-1">
           <button
             onClick={() => track({ on_rankings: true })}

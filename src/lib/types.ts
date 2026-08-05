@@ -31,6 +31,7 @@ export interface UserMovie {
   movie: Movie;
   created_at: string;
   updated_at: string;
+  source_handle?: string | null;
 }
 
 export interface MovieSearchResult {
@@ -101,6 +102,7 @@ export interface UserTVShow {
   tv_show: TVShow;
   created_at: string;
   updated_at: string;
+  source_handle?: string | null;
   // Present on the list endpoint: per-user progress for the status badge.
   watch_status?: WatchStatus;
   aired_count?: number;
@@ -183,6 +185,7 @@ export interface UserBook {
   book: Book;
   created_at: string;
   updated_at: string;
+  source_handle?: string | null;
 }
 
 export interface BookSearchResult {
@@ -224,6 +227,7 @@ export interface UserVideoGame {
   game: VideoGame;
   created_at: string;
   updated_at: string;
+  source_handle?: string | null;
 }
 
 export interface GameSearchResult {
@@ -398,6 +402,39 @@ export interface PublicProfile {
     relationship: ViewerRelationship;
     following: boolean;
   };
+}
+
+export interface ComparisonItem {
+  id: string;
+  title: string;
+  year: number | null;
+  poster_url: string | null;
+  your_rank?: number;
+  their_rank?: number;
+  gap?: number;
+  on_your_watchlist?: boolean;
+}
+
+export interface ComparisonDomain {
+  category: 'movies' | 'tv' | 'books' | 'games';
+  label: string;
+  rankings_visible: boolean;
+  watchlist_visible: boolean;
+  common_watchlist: ComparisonItem[];
+  recommendations: ComparisonItem[];
+  biggest_gaps: ComparisonItem[];
+  most_aligned: ComparisonItem[];
+  shared_ranked_count: number;
+  alignment_score: number | null;
+  alignment_status: 'ready' | 'not_enough_overlap' | 'hidden';
+  method: string;
+}
+
+export interface UserComparison {
+  handle: string;
+  display_name: string | null;
+  relationship: 'none' | 'friend';
+  domains: ComparisonDomain[];
 }
 
 /** One entry on a shelf's Top 5 (`/v1/users/me/summary`). */

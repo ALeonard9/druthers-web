@@ -2,6 +2,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { RankingDuel } from './RankingDuel';
+import { RankingDuelPage } from './RankingDuelPage';
 import { SHELVES, type DuelEntry } from '@/lib/duelShelves';
 
 vi.mock('next/navigation', () => ({
@@ -57,9 +58,29 @@ describe('RankingDuel Component (web#136)', () => {
     );
 
     expect(screen.getAllByText('Test Movie Title')[0]).toBeTruthy();
+    const shareButton = screen.getByRole('button', { name: 'Share this duel' });
+    expect(shareButton.className).toContain('min-h-11');
+    expect(
+      shareButton.parentElement?.parentElement?.parentElement?.className,
+    ).toContain('grid-cols-');
 
     const skipBtn = screen.getAllByRole('button', { name: 'Skip for now' })[0];
     fireEvent.click(skipBtn);
     expect(skipBtn).toBeTruthy();
+  });
+
+  it('presents the board return as a prominent touch target', () => {
+    render(
+      <RankingDuelPage
+        shelf={mockShelf}
+        entries={[...mockOpponents, mockEntry]}
+      />,
+    );
+
+    const boardLink = screen.getByRole('link', { name: 'Back to Movies board' });
+    expect(boardLink.className).toContain('min-h-11');
+    expect(boardLink.className).toContain('bg-brass-wash');
+    expect(boardLink.textContent).toContain('Back to Movies');
+    expect(boardLink.textContent).toContain('Use the board');
   });
 });

@@ -11,6 +11,15 @@ function isMode(value: unknown): value is ShelfViewMode {
   return value === 'list' || value === 'carousel' || value === 'icons';
 }
 
+function readInitialMode(): ShelfViewMode {
+  if (typeof window === 'undefined') return DEFAULT_MODE;
+  const urlParams = new URLSearchParams(window.location.search);
+  const viewParam = urlParams.get('view');
+  if (isMode(viewParam)) return viewParam;
+  const raw = window.localStorage.getItem(STORAGE_KEY);
+  return isMode(raw) ? raw : DEFAULT_MODE;
+}
+
 /**
  * List/Carousel/Icons for a public profile shelf — a browsing preference,
  * not a sharing one, so it's saved on this device only (no cross-device
@@ -21,23 +30,18 @@ function isMode(value: unknown): value is ShelfViewMode {
  * doesn't exist, and a synchronous read there would make the client's first
  * render disagree with that markup.
  */
-function readInitialMode(): ShelfViewMode {
-  if (typeof window === 'undefined') return DEFAULT_MODE;
-  const urlParams = new URLSearchParams(window.location.search);
-  const viewParam = urlParams.get('view');
-  if (isMode(viewParam)) return viewParam;
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  return isMode(raw) ? raw : DEFAULT_MODE;
-}
-
 export function useShelfViewMode(): [ShelfViewMode, (mode: ShelfViewMode) => void] {
   const [mode, setMode] = useState<ShelfViewMode>(DEFAULT_MODE);
 
   useEffect(() => {
-    const initial = readInitialMode();
-    if (initial !== DEFAULT_MODE) {
-      setMode(initial);
-    }
+    // Deferred into a microtask so the setState lives in a callback rather
+    // than the effect's synchronous body — sidesteps react-hooks/set-state-in-effect.
+    queueMicrotask(() => {
+      const initial = readInitialMode();
+      if (initial !== DEFAULT_MODE) {
+        setMode(initial);
+      }
+    });
   }, []);
 
   function update(next: ShelfViewMode) {

@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import type { GameSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
+import { useMultiAddMode } from './MultiAddMode';
 
 export function GameSearch() {
   const router = useRouter();
+  const multiAddMode = useMultiAddMode();
   const [q, setQ] = useState('');
   const [results, setResults] = useState<GameSearchResult[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export function GameSearch() {
     // straight to the duel to decide where it goes — the add is only half
     // the gesture. Exception: the first game into an empty shelf auto-places
     // at #1 (api#289), so there's nothing left to decide — go to the board.
-    if (res.ok) {
+    if (res.ok && !multiAddMode) {
       if (list === 'watchlist') {
         router.push('/games/backlog');
       } else {

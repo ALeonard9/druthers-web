@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
 import { GameSearch } from '@/components/GameSearch';
+import { MultiAddMode } from '@/components/MultiAddMode';
 
 export default async function GameSearchPage() {
   const user = await getSessionUser();
@@ -13,7 +14,9 @@ export default async function GameSearchPage() {
           Search IGDB and add a game to your backlog or rankings.
         </p>
       </div>
-      <GameSearch />
+      <MultiAddMode>
+        <GameSearch />
+      </MultiAddMode>
     </div>
   );
 }

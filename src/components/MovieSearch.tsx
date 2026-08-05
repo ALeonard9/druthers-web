@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import type { MovieSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
+import { useMultiAddMode } from './MultiAddMode';
 
 export function MovieSearch() {
   const router = useRouter();
+  const multiAddMode = useMultiAddMode();
   const [q, setQ] = useState('');
   const [results, setResults] = useState<MovieSearchResult[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export function MovieSearch() {
     // straight to the duel to decide where it goes — the add is only half
     // the gesture. Exception: the first movie into an empty shelf auto-places
     // at #1 (api#289), so there's nothing left to decide — go to the board.
-    if (res.ok) {
+    if (res.ok && !multiAddMode) {
       if (list === 'watchlist') {
         router.push('/movies/watchlist');
       } else {

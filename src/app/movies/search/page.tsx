@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
 import { MovieSearch } from '@/components/MovieSearch';
+import { MultiAddMode } from '@/components/MultiAddMode';
 
 export default async function MovieSearchPage() {
   const user = await getSessionUser();
@@ -13,7 +14,9 @@ export default async function MovieSearchPage() {
           Search the catalog and add a title to your list.
         </p>
       </div>
-      <MovieSearch />
+      <MultiAddMode>
+        <MovieSearch />
+      </MultiAddMode>
     </div>
   );
 }

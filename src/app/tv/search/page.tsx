@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
 import { TVSearch } from '@/components/TVSearch';
+import { MultiAddMode } from '@/components/MultiAddMode';
 
 export default async function TVSearchPage() {
   const user = await getSessionUser();
@@ -13,7 +14,9 @@ export default async function TVSearchPage() {
           Search TVMaze and add a show to your list.
         </p>
       </div>
-      <TVSearch />
+      <MultiAddMode>
+        <TVSearch />
+      </MultiAddMode>
     </div>
   );
 }

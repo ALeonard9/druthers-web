@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
 import { SHELVES, catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import { TrackedBadge } from './TrackedBadge';
+import { useMultiAddMode } from './MultiAddMode';
 
 const DOMAIN_PAGE = {
   movies: '/movies',
@@ -31,6 +32,7 @@ export function AddFromSearchButton({
   rank?: number | null;
 }) {
   const router = useRouter();
+  const multiAddMode = useMultiAddMode();
   const [state, setState] = useState<'idle' | 'added' | 'error'>('idle');
   const [pending, startTransition] = useTransition();
 
@@ -55,7 +57,7 @@ export function AddFromSearchButton({
           } else {
             router.push(duelHrefFor(domain, catalogIdFrom(domain, tracker)));
           }
-        } else {
+        } else if (!multiAddMode) {
           router.push(DOMAIN_PAGE[domain]);
         }
       } else {

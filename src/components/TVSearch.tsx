@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import type { TVShowSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
+import { useMultiAddMode } from './MultiAddMode';
 
 export function TVSearch() {
   const router = useRouter();
+  const multiAddMode = useMultiAddMode();
   const [q, setQ] = useState('');
   const [results, setResults] = useState<TVShowSearchResult[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export function TVSearch() {
     // straight to the duel to decide where it goes — the add is only half
     // the gesture. Exception: the first show into an empty shelf auto-places
     // at #1 (api#289), so there's nothing left to decide — go to the board.
-    if (res.ok) {
+    if (res.ok && !multiAddMode) {
       if (list === 'watchlist') {
         router.push('/tv/watchlist');
       } else {

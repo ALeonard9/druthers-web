@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
 import { BookSearch } from '@/components/BookSearch';
+import { MultiAddMode } from '@/components/MultiAddMode';
 
 export default async function BookSearchPage() {
   const user = await getSessionUser();
@@ -13,7 +14,9 @@ export default async function BookSearchPage() {
           Search Open Library and add a book to your list.
         </p>
       </div>
-      <BookSearch />
+      <MultiAddMode>
+        <BookSearch />
+      </MultiAddMode>
     </div>
   );
 }

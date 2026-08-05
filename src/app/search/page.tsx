@@ -4,6 +4,7 @@ import { getSessionUser } from '@/lib/session';
 import { bestScore, rankResults } from '@/lib/similarity';
 import type { GlobalSearch } from '@/lib/types';
 import { AddFromSearchButton } from '@/components/AddFromSearchButton';
+import { MultiAddMode } from '@/components/MultiAddMode';
 
 export const dynamic = 'force-dynamic';
 
@@ -143,7 +144,7 @@ export default async function SearchPage({
       )}
 
       {ranked && (
-        <div className="flex flex-col gap-4">
+        <MultiAddMode>
           {[
             {
               name: 'Movies',
@@ -167,7 +168,7 @@ export default async function SearchPage({
                       <AddFromSearchButton
                         domain="movies"
                         payload={{
-                          imdb: m.imdb,
+                          tmdb: m.tmdb,
                           title: m.title,
                           poster_url: m.poster_url,
                         }}
@@ -309,7 +310,7 @@ export default async function SearchPage({
             .map((s) => (
               <div key={s.name}>{s.node}</div>
             ))}
-        </div>
+        </MultiAddMode>
       )}
     </div>
   );

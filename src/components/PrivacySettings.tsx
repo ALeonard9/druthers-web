@@ -60,14 +60,14 @@ const DOMAINS: {
     label: 'Books',
     field: 'visibility_books',
     watchlistField: 'visibility_watchlist_books',
-    queueLabel: 'To-Read',
+    queueLabel: 'Read List',
   },
   {
     key: 'games',
     label: 'Games',
     field: 'visibility_games',
     watchlistField: 'visibility_watchlist_games',
-    queueLabel: 'Backlog',
+    queueLabel: 'Play List',
   },
 ];
 

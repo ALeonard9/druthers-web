@@ -88,10 +88,10 @@ function ToRankChip({
       </button>
       <button
         onClick={() => onMoveToBacklog(item)}
-        title="Move back to the backlog"
+        title="Move back to the Play List"
         className="rounded px-2 py-1 text-xs text-neutral-400 hover:text-white"
       >
-        → Backlog
+        → Play List
       </button>
     </div>
   );

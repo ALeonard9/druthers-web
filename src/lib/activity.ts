@@ -38,12 +38,13 @@ const DONE_VERB: Record<ActivityItem['category'], string> = {
 };
 
 const WATCHLIST_LABEL: Record<ActivityItem['category'], string> = {
-  movie: 'Added to watchlist',
-  tv_show: 'Added to watchlist',
-  tv_episode: 'Added to watchlist',
-  game: 'Added to backlog',
-  book: 'Added to to-read',
+  movie: 'Added to Watchlist',
+  tv_show: 'Added to Watchlist',
+  tv_episode: 'Added to Watchlist',
+  game: 'Added to Play List',
+  book: 'Added to Read List',
 };
+
 
 /** Human label for the action taken, e.g. "Ranked #3", "Watched", "Added to watchlist". */
 export function describeActivity(item: ActivityItem): string {

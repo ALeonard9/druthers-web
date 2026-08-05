@@ -50,7 +50,7 @@ export default async function BooksToReadPage({
             My Books
           </h1>
           <p className="text-sm text-neutral-400">
-            {watchlist.length} to read
+            {watchlist.length} on Read List
             {hasFilter && ' (filtered)'}
           </p>
         </div>
@@ -70,7 +70,7 @@ export default async function BooksToReadPage({
 
       <WatchlistViewer
         items={bookWatchlistDeckItems(watchlist)}
-        label="Your to-read list"
+        label="Your Read List"
         filterBar={
           <FilterBar
             key="filter"
@@ -95,7 +95,7 @@ export default async function BooksToReadPage({
         emptyMessage={
           <p key="empty" className="text-sm text-neutral-500">
             {hasFilter ? (
-              'No to-read books match the filter.'
+              'No books on your Read List match the filter.'
             ) : (
               <>
                 Nothing queued —{' '}

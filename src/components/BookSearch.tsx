@@ -124,7 +124,7 @@ export function BookSearch() {
                     <TrackedBadge onRankings rank={b.rank} />
                   ) : (
                     <>
-                      {b.on_watchlist && <TrackedBadge onRankings={false} rank={null} />}
+                      {b.on_watchlist && <TrackedBadge onRankings={false} rank={null} domain="books" />}
                       <button
                         onClick={() => add(b, 'watchlist')}
                         disabled={state === 'adding' || !b.isbn || b.on_watchlist}
@@ -133,8 +133,8 @@ export function BookSearch() {
                         {state === 'adding'
                           ? 'Adding…'
                           : b.on_watchlist
-                            ? 'On Watchlist'
-                            : '+ To-read'}
+                            ? 'On Read List'
+                            : '+ Read List'}
                       </button>
                       <button
                         onClick={() => add(b, 'rankings')}

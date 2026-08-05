@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { fetchPublicProfile } from '@/lib/publicProfile';
 import { PublicWatchlistViewer } from '@/components/PublicWatchlistViewer';
 
+import { getWatchlistLabels } from '@/lib/domainLabels';
+
 export const dynamic = 'force-dynamic';
 
 interface Props {
@@ -12,8 +14,9 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle, category } = await params;
+  const label = getWatchlistLabels(category).singular.toLowerCase();
   return {
-    title: `@${handle}’s ${category} watchlist — Druthers`,
+    title: `@${handle}’s ${category} ${label} — Druthers`,
     description: `What @${handle} wants to get to next, in ${category}.`,
   };
 }
@@ -27,6 +30,7 @@ export default async function PublicWatchlistPage({ params }: Props) {
   if (!shelf || !shelf.watchlist || shelf.watchlist.length === 0) notFound();
 
   const totalCount = shelf.watchlist_count ?? shelf.watchlist.length;
+  const watchlistLabel = getWatchlistLabels(shelf.slug).singular.toLowerCase();
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,7 +42,7 @@ export default async function PublicWatchlistPage({ params }: Props) {
           ← {shelf.category}
         </Link>
         <h1 className="mt-1 font-display text-3xl font-medium tracking-tight text-paper">
-          {shelf.category} watchlist
+          {shelf.category} {watchlistLabel}
         </h1>
         <p className="text-sm text-neutral-400">{totalCount} up next</p>
       </div>

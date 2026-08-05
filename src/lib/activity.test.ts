@@ -45,7 +45,10 @@ describe('describeActivity', () => {
   it('uses a per-category verb for watchlist_added', () => {
     expect(
       describeActivity(item({ entity_id: 'a', category: 'game', action: 'watchlist_added' })),
-    ).toBe('Added to backlog');
+    ).toBe('Added to Play List');
+    expect(
+      describeActivity(item({ entity_id: 'a', category: 'book', action: 'watchlist_added' })),
+    ).toBe('Added to Read List');
   });
 
   it('labels a watched episode', () => {

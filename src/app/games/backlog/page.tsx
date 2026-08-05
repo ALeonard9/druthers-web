@@ -50,7 +50,7 @@ export default async function GamesBacklogPage({
             My Games
           </h1>
           <p className="text-sm text-neutral-400">
-            {watchlist.length} on backlog
+            {watchlist.length} on Play List
             {hasFilter && ' (filtered)'}
           </p>
         </div>
@@ -70,7 +70,7 @@ export default async function GamesBacklogPage({
 
       <WatchlistViewer
         items={gameWatchlistDeckItems(watchlist)}
-        label="Your backlog"
+        label="Your Play List"
         filterBar={
           <FilterBar
             key="filter"
@@ -101,7 +101,7 @@ export default async function GamesBacklogPage({
         emptyMessage={
           <p key="empty" className="text-sm text-neutral-500">
             {hasFilter ? (
-              'No backlog games match the filter.'
+              'No games on your Play List match the filter.'
             ) : (
               <>
                 Nothing queued —{' '}

@@ -29,7 +29,7 @@ const movieDomain: ComparisonDomain = {
   shared_ranked_count: 8,
   alignment_score: 84,
   alignment_status: 'ready',
-  method: 'We adjust for different list sizes and give extra weight to favorites near the top.',
+  method: 'Each gap is the absolute difference between your two rank positions. Alignment scales the average gap against the longer shelf.',
 };
 
 const hiddenDomain: ComparisonDomain = {
@@ -60,6 +60,8 @@ describe('ComparisonView (web#126)', () => {
     render(<ComparisonView initial={comparison} />);
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('You × @brandon');
     expect(screen.getByText('84%')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'How alignment is calculated' })).toBeTruthy();
+    expect(screen.getAllByText(movieDomain.method).length).toBe(2);
     expect(screen.getByText('Their Watchlist isn’t visible to you.')).toBeTruthy();
     expect(screen.getByText('@brandon hasn’t shared this shelf with you.')).toBeTruthy();
     expect(screen.getAllByText('Heat').length).toBeGreaterThan(0);

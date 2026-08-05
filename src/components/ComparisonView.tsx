@@ -139,6 +139,26 @@ function Section({ title, note, children }: { title: string; note?: string; chil
   );
 }
 
+function AlignmentHelp({ method }: { method: string }) {
+  return (
+    <span className="group relative inline-flex">
+      <button
+        type="button"
+        aria-label="How alignment is calculated"
+        className="flex h-4 w-4 items-center justify-center rounded-full border border-neutral-600 font-sans text-[10px] normal-case tracking-normal text-neutral-500 transition-colors hover:border-brass/70 hover:text-brass focus-visible:border-brass focus-visible:text-brass focus-visible:outline-none"
+      >
+        ?
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute right-0 top-full z-20 mt-2 w-64 rounded-lg border border-brass/30 bg-night px-3 py-2 text-left font-sans text-xs normal-case leading-5 tracking-normal text-neutral-300 opacity-0 shadow-xl shadow-black/40 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+      >
+        {method}
+      </span>
+    </span>
+  );
+}
+
 function DomainPanel({
   domain,
   handle,
@@ -164,9 +184,14 @@ function DomainPanel({
           <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-brass">Shelf comparison</p>
           <h2 className="font-display text-2xl text-paper">{domain.label}</h2>
         </div>
-        <div className="min-w-24 border-l border-brass/30 pl-4 text-right">
+        <div className="relative z-10 min-w-24 border-l border-brass/30 pl-4 text-right">
           {domain.alignment_status === 'ready' ? (
-            <><p className="font-display text-3xl text-brass">{domain.alignment_score}%</p><p className="font-mono text-[9px] uppercase tracking-wider text-neutral-500">aligned</p></>
+            <>
+              <p className="font-display text-3xl text-brass">{domain.alignment_score}%</p>
+              <p className="flex items-center justify-end gap-1.5 font-mono text-[9px] uppercase tracking-wider text-neutral-500">
+                aligned <AlignmentHelp method={domain.method} />
+              </p>
+            </>
           ) : (
             <><p className="font-display text-xl text-neutral-300">{domain.shared_ranked_count}/5</p><p className="font-mono text-[9px] uppercase tracking-wider text-neutral-500">to score</p></>
           )}

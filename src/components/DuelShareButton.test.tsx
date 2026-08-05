@@ -1,6 +1,6 @@
 /** @vitest-environment happy-dom */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DuelShareButton, duelComposerUrl } from './DuelShareButton';
 import type { DuelShareCard } from '@/lib/duelShareCardRender';
 
@@ -34,6 +34,25 @@ describe('DuelShareButton', () => {
     expect(screen.getByText('Format this duel')).toBeTruthy();
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('uses the Facebook composer fallback in an installed PWA', () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as MediaQueryList);
+    Object.defineProperty(navigator, 'canShare', {
+      configurable: true,
+      value: vi.fn().mockReturnValue(true),
+    });
+
+    render(<DuelShareButton card={card} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Share this duel' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Share on Facebook' }));
+
+    expect(screen.getByRole('button', { name: 'Copy image & open Facebook' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Share image…' })).toBeNull();
   });
 });
 

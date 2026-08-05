@@ -28,23 +28,28 @@ export function RankingDuelPage({
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-3">
-      {/* Kept to two compact rows: every pixel here is one the posters don't
-          get, and the whole point is to see the question without scrolling. */}
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <div className="flex items-baseline gap-3">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-4">
           <h1 className="font-display text-2xl font-medium tracking-tight text-paper">
             Rank by comparison
           </h1>
-          <span className="text-xs text-neutral-500">
+          <span className="shrink-0 pt-1 text-right text-xs leading-relaxed text-neutral-500">
             {ranked.length} placed
             {queue.length > 0 && ` · ${queue.length} to judge`}
           </span>
         </div>
         <Link
           href={shelf.boardHref}
-          className="text-xs text-neutral-400 hover:text-brass"
+          aria-label={`Back to ${shelf.label} board`}
+          className="group inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-brass/45 bg-brass-wash px-3 py-2 text-sm font-medium text-paper transition-colors hover:border-brass hover:bg-brass/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass sm:w-fit"
         >
-          ← Back to {shelf.label} · prefer dragging? Use the board →
+          <span className="inline-flex items-center gap-2">
+            <span aria-hidden="true" className="text-brass transition-transform group-hover:-translate-x-0.5">←</span>
+            Back to {shelf.label}
+          </span>
+          <span className="border-l border-brass/30 pl-3 text-xs font-normal text-brass">
+            Use the board
+          </span>
         </Link>
       </div>
 

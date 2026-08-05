@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { FacebookIcon, isStandalonePwa, ShareIcon, XIcon } from './ShareTop5Button';
+import {
+  FacebookIcon,
+  isStandalonePwa,
+  ShareIcon,
+  shouldUseNativeFileShare,
+  XIcon,
+} from './ShareTop5Button';
 import {
   duelShareFilename,
   renderDuelShareCard,
@@ -93,7 +99,7 @@ export function DuelShareButton({ card }: { card: DuelShareCard }) {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-1.5 rounded border border-line px-2.5 py-1.5 text-xs text-neutral-400 hover:border-brass hover:text-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-brass"
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-xs text-neutral-300 hover:border-brass hover:text-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-brass"
       >
         <ShareIcon />
         Share duel
@@ -181,10 +187,22 @@ function DuelFormatter({
   async function post() {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const useNativeFileShare = shouldUseNativeFileShare(platform, canNativeShareFiles);
+    // Open platform composers in the original click turn. iOS PWA/Safari will
+    // block a popup if canvas export is awaited first.
+    if (!useNativeFileShare) {
+      window.open(
+        duelComposerUrl(platform),
+        '_blank',
+        platform === 'facebook'
+          ? 'noopener,noreferrer,width=720,height=720'
+          : 'noopener,noreferrer',
+      );
+    }
     const blob = await canvasBlob(canvas);
     const filename = duelShareFilename(format, Boolean(card.winnerId));
     const file = new File([blob], filename, { type: 'image/png' });
-    if (canNativeShareFiles) {
+    if (useNativeFileShare) {
       try {
         await navigator.share({ files: [file], title: 'A druthers duel' });
       } catch {
@@ -201,15 +219,6 @@ function DuelFormatter({
       } catch {
         // Fall through to the download guidance below.
       }
-    }
-    if (platform === 'facebook') {
-      window.open(
-        duelComposerUrl('facebook'),
-        '_blank',
-        'noopener,noreferrer,width=720,height=720',
-      );
-    } else if (platform === 'x') {
-      window.open(duelComposerUrl('x'), '_blank', 'noopener,noreferrer');
     }
     if (copyPromise) {
       try {
@@ -256,12 +265,12 @@ function DuelFormatter({
           <canvas ref={canvasRef} aria-label="Duel card preview" className="h-auto max-h-[58vh] w-auto max-w-full" />
         </div>
         <button type="button" onClick={() => void post()} className="mt-4 rounded-lg bg-brass px-4 py-3 text-sm font-semibold text-ink hover:bg-brass-bright">
-          {canNativeShareFiles
+          {shouldUseNativeFileShare(platform, canNativeShareFiles)
             ? 'Share image…'
             : `Copy image & open ${LABEL[platform]}`}
         </button>
         <p className="mt-2 text-center text-[11px] text-neutral-500">
-          {canNativeShareFiles
+          {shouldUseNativeFileShare(platform, canNativeShareFiles)
             ? `Choose ${LABEL[platform]} from the native share sheet.`
             : `Then press ⌘V in ${LABEL[platform]} to attach it.`}
         </p>

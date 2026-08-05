@@ -285,15 +285,17 @@ export function RankingDuel({
         <>
           <Progress session={session} remaining={queue.length} />
 
-          <div className="relative text-center">
-            <h2 className="font-display text-lg font-medium tracking-tight text-paper">
-              Which would you rather?
-            </h2>
-            <p className="mt-0.5 hidden text-xs text-neutral-500 sm:block">
-              Pick the one you&apos;d take. Every answer halves what&apos;s left
-              to ask.
-            </p>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <div className="min-w-0 text-left sm:text-center">
+              <h2 className="font-display text-lg font-medium tracking-tight text-paper">
+                Which would you rather?
+              </h2>
+              <p className="mt-0.5 hidden text-xs text-neutral-500 sm:block">
+                Pick the one you&apos;d take. Every answer halves what&apos;s left
+                to ask.
+              </p>
+            </div>
+            <div className="shrink-0">
               <DuelShareButton card={{ left: pair.candidate, right: pair.opponent }} />
             </div>
           </div>

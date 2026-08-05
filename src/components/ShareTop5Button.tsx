@@ -57,6 +57,15 @@ export function isStandalonePwa(): boolean {
   return (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) || iosNavigator.standalone === true;
 }
 
+export function shouldUseNativeFileShare(
+  platform: SharePlatform,
+  canShareFiles: boolean,
+): boolean {
+  // Facebook's iOS PWA target is unreliable/absent. Its explicit composer is
+  // the dependable route; the rendered image is copied or downloaded beside it.
+  return platform !== 'facebook' && canShareFiles;
+}
+
 export function ShareTop5Button({
   data,
   initialCategory,
@@ -154,6 +163,33 @@ export function ShareTop5Button({
     window.setTimeout(() => setCopied(false), 2000);
   }, [publicDestinationUrl]);
 
+  const sendMessage = useCallback(async () => {
+    const payload = messageSharePayload({
+      category: initialCategory,
+      kind,
+      ownerHandle: window.location.pathname.startsWith('/u/')
+        ? data.handle ?? undefined
+        : undefined,
+      url: publicDestinationUrl,
+    });
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share(payload);
+        setOpen(false);
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          setNotice('The message share sheet could not open. Copy the URL instead.');
+        }
+      }
+      return;
+    }
+
+    window.location.assign(
+      `sms:?&body=${encodeURIComponent(`${payload.text}\n${payload.url}`)}`,
+    );
+    setOpen(false);
+  }, [data.handle, initialCategory, kind, publicDestinationUrl]);
+
   const formatFor = useCallback(
     (nextPlatform: SharePlatform) => {
       if (data.shelves.length === 0) {
@@ -216,6 +252,9 @@ export function ShareTop5Button({
               {copied ? 'Copied URL ✓' : 'Copy URL'}
             </MenuAction>
             <div className="my-1 border-t border-line" />
+            <MenuAction icon={<MessageIcon />} onClick={() => void sendMessage()}>
+              Send message
+            </MenuAction>
             <MenuAction icon={<FacebookIcon />} onClick={() => formatFor('facebook')}>
               Share on Facebook
             </MenuAction>
@@ -256,6 +295,15 @@ function LinkIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
       <path d="m9.5 14.5 5-5M7.3 17.7l-1 1a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0M16.7 6.3l1-1a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function MessageIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+      <path d="M5.5 4.5h13A2.5 2.5 0 0 1 21 7v7a2.5 2.5 0 0 1-2.5 2.5H11L6 20v-3.5h-.5A2.5 2.5 0 0 1 3 14V7a2.5 2.5 0 0 1 2.5-2.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M7.5 9.5h9M7.5 12.5h6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }
@@ -344,6 +392,7 @@ function ShareModal({
     : format === 'grid'
       ? 'Share all my shelves'
       : 'Share my Top 5';
+  const useNativeFileShare = shouldUseNativeFileShare(platform, canNativeShareFiles);
 
   useEffect(() => {
     let cancelled = false;
@@ -404,7 +453,7 @@ function ShareModal({
     const postText = `${dialogTitle
       .replace(/^Share my /, 'My ')
       .replace(/^Share /, '')} on druthers`;
-    if (canNativeShareFiles) {
+    if (useNativeFileShare) {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const blob = await toBlob(canvas);
@@ -462,7 +511,7 @@ function ShareModal({
       return;
     }
 
-  }, [canNativeShareFiles, destinationUrl, dialogTitle, filename, platform]);
+  }, [destinationUrl, dialogTitle, filename, platform, useNativeFileShare]);
 
   return createPortal(
     <div
@@ -565,13 +614,13 @@ function ShareModal({
             onClick={share}
             className="rounded-lg bg-brass px-4 py-3 text-sm font-semibold text-ink hover:bg-brass-bright"
           >
-            {canNativeShareFiles
+            {useNativeFileShare
               ? 'Share image…'
               : platform === 'facebook'
               ? 'Copy image & open Facebook'
               : 'Open X composer'}
           </button>
-          {canNativeShareFiles ? (
+          {useNativeFileShare ? (
             <p className="text-center text-[11px] text-neutral-500">
               Choose {PLATFORM_LABEL[platform]} from the iOS share sheet.
             </p>
@@ -621,4 +670,44 @@ export function shareDialogTitle(
     games: 'Share my play list',
   };
   return kind === 'watchlist' ? watchlist[category] : ranked[category];
+}
+
+export function messageSharePayload({
+  category,
+  kind,
+  ownerHandle,
+  url,
+}: {
+  category?: ShareCategory;
+  kind: 'ranked' | 'watchlist';
+  ownerHandle?: string;
+  url: string;
+}): { title: string; text: string; url: string } {
+  const rankedSubjects: Record<ShareCategory, string> = {
+    movies: 'My movies',
+    tv: 'My TV',
+    books: 'My books',
+    games: 'My games',
+  };
+  const watchlistSubjects: Record<ShareCategory, string> = {
+    movies: 'My movie watchlist',
+    tv: 'My TV watchlist',
+    books: 'My reading list',
+    games: 'My game backlog',
+  };
+  const owner = ownerHandle ? `@${ownerHandle}’s` : 'My';
+  const subject = category
+    ? ownerHandle
+      ? kind === 'watchlist'
+        ? watchlistSubjects[category].replace(/^My/, owner)
+        : rankedSubjects[category].replace(/^My/, owner)
+      : kind === 'watchlist'
+        ? watchlistSubjects[category]
+        : rankedSubjects[category]
+    : `${owner} Druthers profile`;
+  return {
+    title: subject,
+    text: `${subject} on Druthers`,
+    url: publicShareUrl(url),
+  };
 }

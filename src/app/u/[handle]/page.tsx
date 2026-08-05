@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { fetchPublicProfile } from '@/lib/publicProfile';
 import { PublicShelfCarousel } from '@/components/PublicShelfCarousel';
 import { FollowButton } from '@/components/FollowButton';
-import { CopyProfileLinkButton } from '@/components/CopyProfileLinkButton';
+import { ShareTop5Button } from '@/components/ShareTop5Button';
+import { buildPublicShareData, buildShareDestination } from '@/lib/shareCards';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `@${handle} — Druthers`,
     description: `@${handle}’s druthers: their favorites, ranked.`,
+    openGraph: {
+      title: `@${handle}’s druthers`,
+      description: `@${handle}’s favorites, ranked.`,
+      url: `/u/${handle}`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `@${handle}’s druthers`,
+      description: `@${handle}’s favorites, ranked.`,
+    },
   };
 }
 
@@ -71,7 +82,19 @@ export default async function PublicProfilePage({ params }: Props) {
               Sign in to follow
             </a>
           )}
-          <CopyProfileLinkButton handle={profile.handle} />
+          <ShareTop5Button
+            data={buildPublicShareData(profile)}
+            visibilityField="visibility_profile"
+            destination={
+              profile.viewer.relationship === 'self'
+                ? undefined
+                : buildShareDestination({
+                    handle: profile.handle,
+                    visibility:
+                      profile.viewer.relationship === 'friend' ? 'friends' : 'public',
+                  })
+            }
+          />
         </div>
       </div>
 

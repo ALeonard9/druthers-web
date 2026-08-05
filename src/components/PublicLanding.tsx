@@ -4,6 +4,8 @@ import { GoogleSignIn } from './GoogleSignIn';
 import { LandingDuelExample } from './LandingDuelExample';
 import { RankedPosterDeck } from './RankedPosterDeck';
 import { LandingShareCardPreview } from './LandingShareCardPreview';
+import { ShareTop5Button } from './ShareTop5Button';
+import { SITE_URL, type ShareData } from '@/lib/shareCards';
 
 const DOMAINS = [
   { label: 'Movies', icon: '🎬', accent: 'from-brass/20' },
@@ -11,6 +13,25 @@ const DOMAINS = [
   { label: 'Books', icon: '📚', accent: 'from-plum/20' },
   { label: 'Games', icon: '🎮', accent: 'from-brass/20' },
 ] as const;
+
+const LANDING_SHARE_DATA: ShareData = {
+  handle: null,
+  url: SITE_URL,
+  profilePublic: false,
+  shelves: [
+    {
+      category: 'movies',
+      label: 'Movies',
+      rankedCount: LANDING_CAROUSEL_ITEMS.length,
+      top: LANDING_CAROUSEL_ITEMS.map((item) => ({
+        title: item.title,
+        year: Number(item.subtitle),
+        posterUrl: item.posterUrl,
+      })),
+    },
+  ],
+  totalRanked: LANDING_CAROUSEL_ITEMS.length,
+};
 
 /**
  * Public marketing landing page — what signed-out visitors see at `/`
@@ -34,6 +55,18 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
           className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[32rem] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,var(--color-brass-wash),transparent)]"
           aria-hidden
         />
+        <div className="absolute right-4 top-4 sm:right-8 sm:top-8">
+          <ShareTop5Button
+            data={LANDING_SHARE_DATA}
+            destination={{
+              url: SITE_URL,
+              label: 'druthers.io',
+              visibility: 'public',
+              warning: null,
+              settingsHref: null,
+            }}
+          />
+        </div>
         <h1 className="font-display text-6xl font-medium tracking-tight text-paper sm:text-8xl">
           <span className="mr-1 not-italic text-brass">’</span>druthers
         </h1>

@@ -1,4 +1,4 @@
-import type { Summary } from './types';
+import type { PublicProfile, Summary, Visibility, VisibilityTier } from './types';
 
 /**
  * Data plumbing for the shareable Top 5 cards (see the "Top 5 Share Cards"
@@ -10,6 +10,7 @@ export type ShareCategory = 'movies' | 'tv' | 'books' | 'games';
 export interface ShareEntry {
   title: string;
   year: number | null;
+  posterUrl?: string | null;
 }
 
 export interface ShareShelf {
@@ -38,6 +39,18 @@ export interface ShareData {
   totalRanked: number;
 }
 
+export interface ShareDestination {
+  /** Absolute production/dev URL used by server-rendered cards. */
+  url: string;
+  /** What the recipient is being sent to, for menu copy. */
+  label: string;
+  visibility: VisibilityTier;
+  /** A warning shown before a restricted link is copied or posted. */
+  warning: string | null;
+  /** Restricted content can always point here so its owner can open it up. */
+  settingsHref: string | null;
+}
+
 export const CATEGORY_LABELS: Record<ShareCategory, string> = {
   movies: 'Movies',
   tv: 'TV',
@@ -45,8 +58,15 @@ export const CATEGORY_LABELS: Record<ShareCategory, string> = {
   games: 'Video Games',
 };
 
+export const PUBLIC_SITE_URL = 'https://www.druthers.io';
 export const BASE_DOMAIN = process.env.NEXT_PUBLIC_APP_ENV === 'dev' ? 'localhost:3000' : 'www.druthers.io';
-export const SITE_URL = process.env.NEXT_PUBLIC_APP_ENV === 'dev' ? 'http://localhost:3000' : 'https://www.druthers.io';
+export const SITE_URL = process.env.NEXT_PUBLIC_APP_ENV === 'dev' ? 'http://localhost:3000' : PUBLIC_SITE_URL;
+
+/** A social share must never leak an unopenable localhost URL. */
+export function publicShareUrl(url: string): string {
+  const parsed = new URL(url, PUBLIC_SITE_URL);
+  return `${PUBLIC_SITE_URL}${parsed.pathname}${parsed.search}${parsed.hash}`;
+}
 
 /**
  * Public profile URL for a handle. The path is `/u/<handle>` — the canonical
@@ -56,11 +76,80 @@ export function profileUrl(handle: string): string {
   return `${SITE_URL}/u/${handle}`;
 }
 
+export function contentUrl(
+  handle: string,
+  category?: ShareCategory,
+  kind: 'ranked' | 'watchlist' = 'ranked',
+): string {
+  const shelf = category ? `/${category}` : '';
+  const list = category && kind === 'watchlist' ? '/watchlist' : '';
+  return `${profileUrl(handle)}${shelf}${list}`;
+}
+
+/**
+ * One privacy-aware destination rule for every share surface (#123).
+ * Public and friends content keeps its most-specific canonical URL; private
+ * content falls back to the front door rather than copying an owner-only URL.
+ */
+export function buildShareDestination({
+  handle,
+  visibility,
+  category,
+  kind = 'ranked',
+}: {
+  handle: string | null;
+  visibility: VisibilityTier;
+  category?: ShareCategory;
+  kind?: 'ranked' | 'watchlist';
+}): ShareDestination {
+  if (!handle || visibility === 'private') {
+    return {
+      url: SITE_URL,
+      label: 'druthers.io',
+      visibility: 'private',
+      warning: handle
+        ? 'Only you can see this. Shared links will open druthers.io until you make it visible.'
+        : 'Claim a handle and choose who can see this before sharing its page.',
+      settingsHref: '/settings#sharing',
+    };
+  }
+
+  const label = category
+    ? `your ${CATEGORY_LABELS[category]} ${kind === 'watchlist' ? 'list' : 'rankings'}`
+    : 'your profile';
+  return {
+    url: contentUrl(handle, category, kind),
+    label,
+    visibility,
+    warning:
+      visibility === 'friends'
+        ? 'Only signed-in friends you’ve accepted can open this link.'
+        : null,
+    settingsHref: visibility === 'friends' ? '/settings#sharing' : null,
+  };
+}
+
+export function shareVisibility(
+  visibility: Visibility,
+  category: ShareCategory,
+  kind: 'ranked' | 'watchlist',
+): VisibilityTier {
+  const field =
+    kind === 'watchlist'
+      ? (`visibility_watchlist_${category}` as const)
+      : (`visibility_${category}` as const);
+  return visibility[field];
+}
+
 export function buildShareData(summary: Summary): ShareData {
   const shelves: ShareShelf[] = summary.shelves.map((s) => ({
     category: s.category,
     label: CATEGORY_LABELS[s.category] ?? s.label,
-    top: s.top.map((e) => ({ title: e.title, year: e.year })),
+    top: s.top.map((e) => ({
+      title: e.title,
+      year: e.year,
+      posterUrl: e.poster_url,
+    })),
     rankedCount: s.ranked_count,
   }));
 
@@ -73,5 +162,27 @@ export function buildShareData(summary: Summary): ShareData {
     // A shelf with nothing ranked has nothing to share.
     shelves: shelves.filter((s) => s.top.length > 0),
     totalRanked: shelves.reduce((n, s) => n + s.rankedCount, 0),
+  };
+}
+
+export function buildPublicShareData(profile: PublicProfile): ShareData {
+  const shelves: ShareShelf[] = profile.shelves
+    .map((shelf) => ({
+      category: shelf.slug as ShareCategory,
+      label: shelf.category,
+      rankedCount: shelf.ranked_count,
+      top: shelf.items.slice(0, 5).map((item) => ({
+        title: item.title,
+        year: item.year,
+        posterUrl: item.poster_url,
+      })),
+    }))
+    .filter((shelf) => shelf.top.length > 0);
+  return {
+    handle: profile.handle,
+    url: profileUrl(profile.handle),
+    profilePublic: true,
+    shelves,
+    totalRanked: profile.total_ranked,
   };
 }

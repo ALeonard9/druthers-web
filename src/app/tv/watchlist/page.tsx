@@ -56,7 +56,11 @@ export default async function TVWatchlistPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ShareTop5Button data={buildShareData(summary)} initialCategory="tv" />
+          <ShareTop5Button
+            data={buildShareData(summary)}
+            initialCategory="tv"
+            kind="watchlist"
+          />
           <Link
             href="/tv/search"
             className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"

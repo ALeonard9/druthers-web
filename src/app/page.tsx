@@ -25,6 +25,17 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Druthers — your favorites, ranked',
     description:
       'Movies, TV, books, and games — watched, read, played, then ranked into the order you’d pick them again. Not ratings out of ten: druthers.',
+    openGraph: {
+      title: 'Druthers — your favorites, ranked',
+      description:
+        'Movies, TV, books, and games — ranked into the order you’d pick them again.',
+      url: '/',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Druthers — your favorites, ranked',
+      description: 'Movies, TV, books, and games — ranked by your real choices.',
+    },
   };
 }
 

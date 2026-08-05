@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Visibility, VisibilityTier } from '@/lib/types';
 import { BASE_DOMAIN, SITE_URL } from '@/lib/shareCards';
+import { impliedDefaultTier, fieldsFollowingDefault } from '@/lib/privacyDefaults';
 
 const TIER_ORDER: VisibilityTier[] = ['private', 'friends', 'public'];
 
@@ -35,25 +36,38 @@ const DOMAINS: {
   label: string;
   field: ShelfField;
   watchlistField: ShelfField;
+  // The queue list's display name — "Watchlist" only actually fits Movies
+  // and TV; Books and Games have their own established terms elsewhere in
+  // the app (BookDetail's "to-read", GameDetail's "backlog").
+  queueLabel: string;
 }[] = [
   {
     key: 'movies',
     label: 'Movies',
     field: 'visibility_movies',
     watchlistField: 'visibility_watchlist_movies',
+    queueLabel: 'Watchlist',
   },
-  { key: 'tv', label: 'TV', field: 'visibility_tv', watchlistField: 'visibility_watchlist_tv' },
+  {
+    key: 'tv',
+    label: 'TV',
+    field: 'visibility_tv',
+    watchlistField: 'visibility_watchlist_tv',
+    queueLabel: 'Watchlist',
+  },
   {
     key: 'books',
     label: 'Books',
     field: 'visibility_books',
     watchlistField: 'visibility_watchlist_books',
+    queueLabel: 'To-Read',
   },
   {
     key: 'games',
     label: 'Games',
     field: 'visibility_games',
     watchlistField: 'visibility_watchlist_games',
+    queueLabel: 'Backlog',
   },
 ];
 
@@ -66,8 +80,8 @@ function floorTier(settings: Visibility): { tier: VisibilityTier; source: string
   for (const d of DOMAINS) {
     for (const [field, suffix] of [
       [d.field, ''],
-      [d.watchlistField, ' watchlist'],
-    ] as const) {
+      [d.watchlistField, ` ${d.queueLabel.toLowerCase()}`],
+    ] as [ShelfField, string][]) {
       const candidate = settings[field];
       if (moreOpen(candidate, tier)) {
         tier = candidate;
@@ -76,6 +90,20 @@ function floorTier(settings: Visibility): { tier: VisibilityTier; source: string
     }
   }
   return { tier, source };
+}
+
+function PencilIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className="h-3.5 w-3.5"
+      aria-hidden="true"
+    >
+      <path d="M13.586 3.586a2 2 0 1 1 2.828 2.828l-8.5 8.5a2 2 0 0 1-.878.507l-3 .857a.5.5 0 0 1-.618-.618l.857-3a2 2 0 0 1 .507-.878l8.5-8.5Z" />
+    </svg>
+  );
 }
 
 function TierPills({
@@ -116,7 +144,10 @@ function TierPills({
   );
 }
 
-type PendingRaise = { field: ShelfField; tier: VisibilityTier };
+// `origin` distinguishes a single-shelf raise (its own ShelfField) from the
+// bulk Default Sharing raise ('default'), so the confirmation notice knows
+// where to render and `fields` always lists what a confirm will touch.
+type PendingRaise = { origin: 'default' | ShelfField; fields: ShelfField[]; tier: VisibilityTier };
 
 // Rebuilt for #274/#119: nine tiers (private/friends/public) instead of eight
 // on/off switches. The profile control is pulled out above the four domain
@@ -129,6 +160,9 @@ export function PrivacySettings() {
   const [handleSaved, setHandleSaved] = useState(false);
   const [handleNotice, setHandleNotice] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedShelfLink, setCopiedShelfLink] = useState<ShelfField | null>(null);
+  const [editingHandle, setEditingHandle] = useState(false);
+  const handleInputRef = useRef<HTMLInputElement>(null);
 
   const [savingField, setSavingField] = useState<string | null>(null);
   const [tierError, setTierError] = useState<string | null>(null);
@@ -154,6 +188,12 @@ export function PrivacySettings() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (editingHandle) {
+      handleInputRef.current?.focus();
+    }
+  }, [editingHandle]);
 
   async function save(patch: Partial<Visibility>, field: string) {
     setSavingField(field);
@@ -195,6 +235,7 @@ export function PrivacySettings() {
       setSettings(body);
       setHandle(body.handle ?? '');
       setHandleSaved(true);
+      setEditingHandle(false);
       window.setTimeout(() => setHandleSaved(false), 2000);
     } finally {
       setHandleBusy(false);
@@ -213,7 +254,7 @@ export function PrivacySettings() {
       return;
     }
     if (moreOpen(tier, settings.visibility_profile)) {
-      setPendingRaise({ field, tier });
+      setPendingRaise({ origin: field, fields: [field], tier });
       return;
     }
     setPendingRaise(null);
@@ -222,9 +263,33 @@ export function PrivacySettings() {
 
   function confirmRaise() {
     if (!pendingRaise) return;
-    const { field, tier } = pendingRaise;
+    const { fields, tier } = pendingRaise;
     setPendingRaise(null);
-    void save({ [field]: tier, visibility_profile: tier }, field);
+    const patch: Partial<Visibility> = { visibility_profile: tier };
+    for (const field of fields) {
+      patch[field] = tier;
+    }
+    void save(patch, fields.length === 1 ? fields[0] : 'default');
+  }
+
+  function requestDefaultTier(tier: VisibilityTier) {
+    if (!settings) return;
+    setHandleNotice(false);
+    if (!settings.handle && tier !== 'private') {
+      setHandleNotice(true);
+      return;
+    }
+    const fields = fieldsFollowingDefault(settings, impliedDefaultTier(settings));
+    if (moreOpen(tier, settings.visibility_profile)) {
+      setPendingRaise({ origin: 'default', fields, tier });
+      return;
+    }
+    setPendingRaise(null);
+    const patch: Partial<Visibility> = {};
+    for (const field of fields) {
+      patch[field] = tier;
+    }
+    void save(patch, 'default');
   }
 
   function requestProfileTier(tier: VisibilityTier) {
@@ -243,32 +308,79 @@ export function PrivacySettings() {
     void save({ visibility_profile: tier }, 'visibility_profile');
   }
 
-  const profileUrl = settings.handle ? `${BASE_DOMAIN}/u/${settings.handle}` : null;
+  function copyShelfLink(field: ShelfField, url: string) {
+    void navigator.clipboard.writeText(url);
+    setCopiedShelfLink(field);
+    window.setTimeout(() => setCopiedShelfLink((cur) => (cur === field ? null : cur)), 1500);
+  }
 
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-lg border border-line bg-panel p-4">
-        <form onSubmit={saveHandle} className="flex gap-2">
-          <div className="flex flex-1 items-center rounded border border-neutral-700 bg-night focus-within:border-brass">
-            <span className="pl-3 font-mono text-xs text-neutral-500">
-              {BASE_DOMAIN}/u/
-            </span>
-            <input
-              value={handle}
-              onChange={(e) => setHandle(e.target.value)}
-              placeholder="your-handle"
-              maxLength={30}
-              className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm outline-none placeholder:text-neutral-600"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={handleBusy || (handle.trim() || null) === settings.handle}
-            className="shrink-0 rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
-          >
-            {handleSaved ? 'Saved' : 'Save handle'}
-          </button>
-        </form>
+        {settings.handle && !editingHandle ? (
+          <p className="flex items-center gap-2 text-sm">
+            <a
+              href={`/u/${settings.handle}`}
+              title="Click to copy · Cmd/Ctrl-click to open"
+              onClick={(e) => {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) {
+                  return;
+                }
+                e.preventDefault();
+                void navigator.clipboard.writeText(`${SITE_URL}/u/${settings.handle}`);
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 1500);
+              }}
+              className="font-mono text-brass hover:text-brass-bright"
+            >
+              {copied ? 'Copied' : `${BASE_DOMAIN}/u/${settings.handle}`}
+            </a>
+            <button
+              type="button"
+              title="Edit handle"
+              onClick={() => setEditingHandle(true)}
+              className="text-neutral-400 hover:text-paper"
+            >
+              <PencilIcon />
+            </button>
+          </p>
+        ) : (
+          <form onSubmit={saveHandle} className="flex gap-2">
+            <div className="flex flex-1 items-center rounded border border-neutral-700 bg-night focus-within:border-brass">
+              <span className="pl-3 font-mono text-xs text-neutral-500">
+                {BASE_DOMAIN}/u/
+              </span>
+              <input
+                ref={handleInputRef}
+                value={handle}
+                onChange={(e) => setHandle(e.target.value)}
+                placeholder="your-handle"
+                maxLength={30}
+                className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm outline-none placeholder:text-neutral-600"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={handleBusy || (handle.trim() || null) === settings.handle}
+              className="shrink-0 rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
+            >
+              {handleSaved ? 'Saved' : 'Save handle'}
+            </button>
+            {settings.handle && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingHandle(false);
+                  setHandle(settings.handle ?? '');
+                  setHandleError(null);
+                }}
+                className="shrink-0 rounded px-2 py-2 text-sm text-neutral-400 hover:text-paper"
+              >
+                Cancel
+              </button>
+            )}
+          </form>
+        )}
         {handleError && <p className="mt-2 text-xs text-red-400">{handleError}</p>}
         {!settings.handle && (
           <p className="mt-2 text-xs text-neutral-500">
@@ -283,7 +395,10 @@ export function PrivacySettings() {
         )}
 
         <div className="mt-4 flex items-center gap-3 border-t border-line pt-3">
-          <span className="flex-1 text-sm text-neutral-200">
+          <span
+            className="flex-1 text-sm text-neutral-200"
+            title="Controls who can view your profile page. A shelf can never be more open than your profile — raising a shelf above it raises the profile too."
+          >
             Profile
             {savingField === 'visibility_profile' && (
               <span className="ml-2 text-xs text-neutral-500">Saving…</span>
@@ -310,36 +425,77 @@ export function PrivacySettings() {
             </button>
           </p>
         )}
-        {profileUrl && (
-          <p className="mt-2 flex items-center gap-2 text-xs text-neutral-500">
-            <a href={`/u/${settings.handle}`} className="text-brass hover:text-brass-bright">
-              {profileUrl}
-            </a>
-            <button
-              type="button"
-              onClick={() => {
-                void navigator.clipboard.writeText(
-                  settings.handle ? `${SITE_URL}/u/${settings.handle}` : ''
-                );
-                setCopied(true);
-                window.setTimeout(() => setCopied(false), 1500);
-              }}
-              className="text-neutral-400 hover:text-paper"
-            >
-              {copied ? 'Copied' : 'Copy link'}
-            </button>
-          </p>
-        )}
         {tierError && <p className="mt-2 text-xs text-red-400">{tierError}</p>}
       </div>
 
-      <ul className="divide-y divide-line/60 rounded-lg border border-line bg-panel">
+      <div className="rounded-lg border border-line bg-panel p-4">
+        <div className="flex items-center gap-3">
+          <span
+            className="flex-1 text-sm text-neutral-200"
+            title="Applies a tier to every shelf that isn't already set differently below. Shelves you've customized in Advanced Sharing Options are left alone."
+          >
+            Default Sharing
+            {savingField === 'default' && (
+              <span className="ml-2 text-xs text-neutral-500">Saving…</span>
+            )}
+          </span>
+          <TierPills
+            ariaLabel="Default privacy for all shelves"
+            value={impliedDefaultTier(settings)}
+            busy={savingField === 'default'}
+            onSelect={requestDefaultTier}
+          />
+        </div>
+        {pendingRaise?.origin === 'default' && (
+          <p className="mt-2 flex items-center gap-2 rounded bg-brass-wash px-2 py-1.5 text-xs text-brass-bright ring-1 ring-brass/40">
+            <span className="flex-1">
+              This also raises your profile to {TIER_LABEL[pendingRaise.tier]}.
+            </span>
+            <button
+              type="button"
+              onClick={() => setPendingRaise(null)}
+              className="text-neutral-300 hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmRaise}
+              className="rounded bg-brass px-2 py-0.5 font-medium text-ink hover:bg-brass-bright"
+            >
+              Raise profile & save
+            </button>
+          </p>
+        )}
+      </div>
+
+      <details className="rounded-lg border border-line bg-panel">
+        <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-neutral-200 hover:text-brass-bright">
+          Advanced Sharing Options
+        </summary>
+        <ul className="divide-y divide-line/60 border-t border-line">
         {DOMAINS.map((d) => (
           <li key={d.key} className="px-4 py-3">
             <p className="mb-1.5 text-sm font-medium text-neutral-200">{d.label}</p>
             <div className="flex items-center gap-3 py-1">
-              <span className="flex-1 text-xs text-neutral-400">
-                Ranked list
+              <span
+                className="flex-1 text-xs text-neutral-400"
+                title={`Controls who can see your ${d.label} ranked list.`}
+              >
+                {settings[d.field] !== 'private' && settings.handle ? (
+                  <button
+                    type="button"
+                    title="Click to copy a direct link to this shelf"
+                    onClick={() =>
+                      copyShelfLink(d.field, `${SITE_URL}/u/${settings.handle}/${d.key}`)
+                    }
+                    className="hover:text-brass-bright"
+                  >
+                    {copiedShelfLink === d.field ? 'Copied' : 'Ranked list'}
+                  </button>
+                ) : (
+                  'Ranked list'
+                )}
                 {savingField === d.field && (
                   <span className="ml-2 text-neutral-500">Saving…</span>
                 )}
@@ -351,7 +507,7 @@ export function PrivacySettings() {
                 onSelect={(tier) => requestShelfTier(d.field, tier)}
               />
             </div>
-            {pendingRaise?.field === d.field && (
+            {pendingRaise?.origin === d.field && (
               <p className="mt-1 flex items-center gap-2 rounded bg-brass-wash px-2 py-1.5 text-xs text-brass-bright ring-1 ring-brass/40">
                 <span className="flex-1">
                   This also raises your profile to {TIER_LABEL[pendingRaise.tier]}.
@@ -373,20 +529,39 @@ export function PrivacySettings() {
               </p>
             )}
             <div className="flex items-center gap-3 py-1 pl-3">
-              <span className="flex-1 text-xs text-neutral-500">
-                Watchlist
+              <span
+                className="flex-1 text-xs text-neutral-500"
+                title={`Controls who can see your ${d.label} ${d.queueLabel.toLowerCase()}.`}
+              >
+                {settings[d.watchlistField] !== 'private' && settings.handle ? (
+                  <button
+                    type="button"
+                    title={`Click to copy a direct link to this ${d.queueLabel.toLowerCase()}`}
+                    onClick={() =>
+                      copyShelfLink(
+                        d.watchlistField,
+                        `${SITE_URL}/u/${settings.handle}/${d.key}/watchlist`
+                      )
+                    }
+                    className="hover:text-brass-bright"
+                  >
+                    {copiedShelfLink === d.watchlistField ? 'Copied' : d.queueLabel}
+                  </button>
+                ) : (
+                  d.queueLabel
+                )}
                 {savingField === d.watchlistField && (
                   <span className="ml-2 text-neutral-600">Saving…</span>
                 )}
               </span>
               <TierPills
-                ariaLabel={`${d.label} watchlist visibility`}
+                ariaLabel={`${d.label} ${d.queueLabel.toLowerCase()} visibility`}
                 value={settings[d.watchlistField]}
                 busy={savingField === d.watchlistField}
                 onSelect={(tier) => requestShelfTier(d.watchlistField, tier)}
               />
             </div>
-            {pendingRaise?.field === d.watchlistField && (
+            {pendingRaise?.origin === d.watchlistField && (
               <p className="mt-1 flex items-center gap-2 rounded bg-brass-wash px-2 py-1.5 text-xs text-brass-bright ring-1 ring-brass/40">
                 <span className="flex-1">
                   This also raises your profile to {TIER_LABEL[pendingRaise.tier]}.
@@ -409,7 +584,8 @@ export function PrivacySettings() {
             )}
           </li>
         ))}
-      </ul>
+        </ul>
+      </details>
 
       <p className="text-xs text-neutral-500">
         <span className="text-neutral-400">Private</span> — only you.{' '}

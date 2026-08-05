@@ -22,8 +22,8 @@ jobs:
         run: npm run lint
       - name: Typecheck
         run: npm run typecheck
-      - name: Unit tests
-        run: npm run test
+      - name: Unit & Component tests with Coverage Ratchet
+        run: npx vitest run --coverage
       - name: Build
         run: npm run build
         env:

@@ -30,13 +30,13 @@ repos:
         entry: npm run lint
         language: system
         pass_filenames: false
-        types: [ts, tsx]
+        types_or: [ts, tsx]
       - id: typecheck
         name: typecheck
         entry: npm run typecheck
         language: system
         pass_filenames: false
-        types: [ts, tsx]
+        types_or: [ts, tsx]
       # Tests run at PRE-PUSH (not per-commit) and only for what changed
       # (vitest `related` runs the tests that import the changed files).
       # CI runs the full suite.

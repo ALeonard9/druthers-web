@@ -135,7 +135,9 @@ export function RankedPosterDeck({
   function onCardClick(i: number) {
     if (movedRef.current) return;
     if (i === nearest) {
-      if (interactive) router.push(items[i].href);
+      if ((interactive || items[i].isSeeAll) && items[i].href) {
+        router.push(items[i].href);
+      }
     } else settle(i);
   }
 
@@ -184,7 +186,26 @@ export function RankedPosterDeck({
               }}
             >
               <div className="relative aspect-[2/3] overflow-hidden rounded-md border border-line bg-panel shadow-[0_18px_34px_-16px_rgba(0,0,0,0.95)]">
-                {m.posterUrl ? (
+                {m.isSeeAll ? (
+                  <div className="group/seeall flex h-full w-full flex-col items-center justify-between border-2 border-brass/70 bg-gradient-to-b from-neutral-900 via-neutral-950 to-black p-3 text-center shadow-lg transition-all duration-300 hover:border-brass hover:bg-neutral-900">
+                    <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-brass/80">
+                      Full Shelf
+                    </span>
+
+                    <div className="flex flex-col items-center gap-1.5">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brass font-display text-xl font-bold text-ink shadow-md shadow-brass/30 transition-transform duration-300 group-hover/seeall:scale-110">
+                        →
+                      </div>
+                      <span className="font-display text-sm font-semibold tracking-tight text-paper group-hover/seeall:text-brass-bright">
+                        See All
+                      </span>
+                    </div>
+
+                    <span className="rounded-full bg-brass-wash px-2 py-0.5 font-mono text-[10px] font-medium text-brass">
+                      Click to open
+                    </span>
+                  </div>
+                ) : m.posterUrl ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={m.posterUrl}
@@ -196,7 +217,7 @@ export function RankedPosterDeck({
                 ) : (
                   <div className="h-full w-full bg-line" />
                 )}
-                {showRank && (
+                {showRank && !m.isSeeAll && (
                   <span className="deck-plate absolute bottom-2.5 left-2.5 min-w-8 rounded px-2 py-0.5 text-center font-display text-xl font-bold tabular-nums text-ink">
                     {m.rank}
                   </span>
@@ -213,13 +234,22 @@ export function RankedPosterDeck({
         })}
       </div>
 
-      <div key={front.id} className="deck-caption mt-5 text-center">
+      <div key={front.id} className="deck-caption mt-5 flex flex-col items-center text-center">
         <p className="font-display text-xl font-medium tracking-tight text-paper">
           {front.title}
         </p>
         <p className="mt-1 text-sm text-neutral-400 tabular-nums">
           {front.subtitle}
         </p>
+        {front.isSeeAll && (
+          <button
+            type="button"
+            onClick={() => router.push(front.href)}
+            className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-brass px-4 py-1.5 font-display text-xs font-bold text-ink shadow-md shadow-brass/20 transition-all hover:bg-brass-bright hover:scale-105"
+          >
+            Open Full List →
+          </button>
+        )}
       </div>
 
       <div className="mt-4 flex flex-col items-center gap-2">

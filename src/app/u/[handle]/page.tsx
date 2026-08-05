@@ -41,7 +41,7 @@ export default async function PublicProfilePage({ params }: Props) {
             @{profile.handle}
           </p>
           <h1 className="mt-1 font-display text-2xl text-paper">
-            {profile.display_name ?? `@${profile.handle}`}’s Top 5
+            {profile.handle ? `@${profile.handle}` : (profile.display_name ?? 'User')}’s Top 5
           </h1>
           <p className="text-sm text-neutral-500">
             {nothingRanked

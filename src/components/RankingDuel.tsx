@@ -30,7 +30,9 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
+import { DuelShareButton } from '@/components/DuelShareButton';
 import type { DuelEntry, ShelfConfig } from '@/lib/duelShelves';
+import type { DuelShareCard } from '@/lib/duelShareCardRender';
 import {
   answer as answerSession,
   currentPair,
@@ -155,6 +157,7 @@ export function RankingDuel({
   const [committing, setCommitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [placements, setPlacements] = useState<Placement[]>([]);
+  const [lastVerdict, setLastVerdict] = useState<DuelShareCard | null>(null);
 
   const stageRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
@@ -180,7 +183,11 @@ export function RankingDuel({
    * order the server now holds, without a round trip to re-read it.
    */
   const commit = useCallback(
-    async (entry: DuelEntry, index: number) => {
+    async (
+      entry: DuelEntry,
+      index: number,
+      verdict?: Omit<DuelShareCard, 'rank'>,
+    ) => {
       setCommitting(true);
       setError(null);
       // The API's rank *is* the 1-based position in the list ("Rank =
@@ -201,6 +208,7 @@ export function RankingDuel({
           return next.map((e, i) => ({ ...e, rank: i + 1 }));
         });
         setPlacements((prev) => [{ title: entry.title, rank: position }, ...prev]);
+        if (verdict) setLastVerdict({ ...verdict, rank: position });
         setQueue((prev) => prev.filter((e) => e.id !== entry.id));
         setAnswers(null);
         playPop();
@@ -220,9 +228,16 @@ export function RankingDuel({
       if (!session || committing) return;
       const next = answerSession(session, choice);
       setAnswers(next);
-      if (isComplete(next)) void commit(next.candidate, insertionIndex(next));
+      if (isComplete(next) && pair) {
+        const winner = choice === 'candidate' ? pair.candidate : pair.opponent;
+        void commit(next.candidate, insertionIndex(next), {
+          left: pair.candidate,
+          right: pair.opponent,
+          winnerId: winner.id,
+        });
+      }
     },
-    [session, committing, commit],
+    [session, committing, commit, pair],
   );
 
   const settle = useCallback(() => {
@@ -270,7 +285,7 @@ export function RankingDuel({
         <>
           <Progress session={session} remaining={queue.length} />
 
-          <div className="text-center">
+          <div className="relative text-center">
             <h2 className="font-display text-lg font-medium tracking-tight text-paper">
               Which would you rather?
             </h2>
@@ -278,6 +293,9 @@ export function RankingDuel({
               Pick the one you&apos;d take. Every answer halves what&apos;s left
               to ask.
             </p>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+              <DuelShareButton card={{ left: pair.candidate, right: pair.opponent }} />
+            </div>
           </div>
 
           <div
@@ -344,7 +362,12 @@ export function RankingDuel({
         />
       )}
 
-      {placements.length > 0 && <Trail shelf={shelf} placements={placements} />}
+      {placements.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Trail shelf={shelf} placements={placements} />
+          {lastVerdict && <DuelShareButton card={lastVerdict} />}
+        </div>
+      )}
     </div>
   );
 }

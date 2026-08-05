@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildShareDestination,
   buildShareData,
+  contentUrl,
   profileUrl,
+  publicShareUrl,
   SITE_URL,
   type ShareCategory,
 } from './shareCards';
@@ -43,6 +46,54 @@ function summary(over: Partial<Summary> = {}): Summary {
 describe('profileUrl', () => {
   it('uses the /u/ path the web actually serves', () => {
     expect(profileUrl('avery')).toBe('https://www.druthers.io/u/avery');
+  });
+});
+
+describe('publicShareUrl', () => {
+  it('converts a local destination into its publicly crawlable canonical URL', () => {
+    expect(publicShareUrl('http://localhost:3000/u/avery/games')).toBe(
+      'https://www.druthers.io/u/avery/games',
+    );
+  });
+});
+
+describe('privacy-aware share destinations', () => {
+  it('uses the most-specific public watchlist URL', () => {
+    expect(contentUrl('avery', 'tv', 'watchlist')).toBe(
+      'https://www.druthers.io/u/avery/tv/watchlist',
+    );
+    expect(
+      buildShareDestination({
+        handle: 'avery',
+        visibility: 'public',
+        category: 'tv',
+        kind: 'watchlist',
+      }),
+    ).toMatchObject({
+      url: 'https://www.druthers.io/u/avery/tv/watchlist',
+      warning: null,
+    });
+  });
+
+  it('keeps a friends-only URL but warns the sender', () => {
+    const destination = buildShareDestination({
+      handle: 'avery',
+      visibility: 'friends',
+      category: 'books',
+    });
+    expect(destination.url).toBe('https://www.druthers.io/u/avery/books');
+    expect(destination.warning).toContain('signed-in friends');
+    expect(destination.settingsHref).toBe('/settings#sharing');
+  });
+
+  it('falls private content back to the landing page', () => {
+    const destination = buildShareDestination({
+      handle: 'avery',
+      visibility: 'private',
+      category: 'games',
+    });
+    expect(destination.url).toBe(SITE_URL);
+    expect(destination.warning).toContain('Only you');
   });
 });
 

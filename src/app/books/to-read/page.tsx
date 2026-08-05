@@ -58,6 +58,7 @@ export default async function BooksToReadPage({
           <ShareTop5Button
             data={buildShareData(summary)}
             initialCategory="books"
+            kind="watchlist"
           />
           <Link
             href="/books/search"

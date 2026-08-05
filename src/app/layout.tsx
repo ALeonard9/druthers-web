@@ -6,6 +6,7 @@ import { TopBar } from '@/components/TopBar';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { RefreshHomeOnReturn } from '@/components/RefreshHomeOnReturn';
 import { getSessionUser } from '@/lib/session';
+import { SITE_URL } from '@/lib/shareCards';
 
 // Display face: bookish, characterful — wordmark, page titles, rank numerals.
 const fraunces = Fraunces({
@@ -33,8 +34,20 @@ const getTitle = () => {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: getTitle(),
   description: 'Your favorites — watched, read, played, and ranked.',
+  openGraph: {
+    type: 'website',
+    siteName: 'Druthers',
+    title: 'Druthers — your favorites, ranked',
+    description: 'Your favorites — watched, read, played, and ranked.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Druthers — your favorites, ranked',
+    description: 'Your favorites — watched, read, played, and ranked.',
+  },
   appleWebApp: {
     title: 'Druthers',
     statusBarStyle: 'black-translucent',

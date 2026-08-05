@@ -1,7 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ShareCategory, ShareData } from '@/lib/shareCards';
+import { createPortal } from 'react-dom';
+import Link from 'next/link';
+import {
+  buildShareDestination,
+  publicShareUrl,
+  shareVisibility,
+  type ShareCategory,
+  type ShareData,
+  type ShareDestination,
+} from '@/lib/shareCards';
+import type { Visibility } from '@/lib/types';
 import {
   ensureFontsLoaded,
   renderShareCard,
@@ -20,11 +30,17 @@ const FORMAT_OPTIONS: {
   hint: string;
   needsAll?: boolean;
 }[] = [
-  { format: 'square', label: 'Post 1:1', hint: 'Instagram / Facebook' },
-  { format: 'story', label: 'Story 9:16', hint: 'IG Stories / TikTok' },
+  { format: 'square', label: 'Post 1:1', hint: 'square image' },
+  { format: 'story', label: 'Story 9:16', hint: 'vertical image' },
   { format: 'wide', label: 'Wide', hint: 'X / link preview' },
   { format: 'grid', label: 'Every shelf', hint: 'all categories', needsAll: true },
 ];
+
+type SharePlatform = 'facebook' | 'x';
+const PLATFORM_LABEL: Record<SharePlatform, string> = {
+  facebook: 'Facebook',
+  x: 'X',
+};
 
 function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
@@ -35,49 +51,272 @@ function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   });
 }
 
+export function isStandalonePwa(): boolean {
+  if (typeof window === 'undefined') return false;
+  const iosNavigator = navigator as Navigator & { standalone?: boolean };
+  return (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) || iosNavigator.standalone === true;
+}
+
 export function ShareTop5Button({
   data,
   initialCategory,
   className,
+  destination,
+  kind = 'ranked',
+  visibilityField,
 }: {
   data: ShareData;
   initialCategory?: ShareCategory;
   className?: string;
+  destination?: ShareDestination;
+  kind?: 'ranked' | 'watchlist';
+  visibilityField?: keyof Visibility;
 }) {
   const [open, setOpen] = useState(false);
+  const [cardOpen, setCardOpen] = useState(false);
+  const [platform, setPlatform] = useState<SharePlatform>('facebook');
+  const [copied, setCopied] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const [contextDestination, setContextDestination] =
+    useState<ShareDestination | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const resolvedDestination =
+    destination ??
+    contextDestination ??
+    buildShareDestination({
+      handle: data.handle,
+      visibility: data.profilePublic ? 'public' : 'private',
+    });
+  const publicDestinationUrl = publicShareUrl(resolvedDestination.url);
 
-  if (data.shelves.length === 0) return null;
+  useEffect(() => {
+    if (destination || (!initialCategory && !visibilityField)) return;
+    let cancelled = false;
+    fetch('/api/visibility').then(async (response) => {
+      if (cancelled || !response.ok) return;
+      const visibility: Visibility = await response.json();
+      setContextDestination(
+        buildShareDestination({
+          handle: visibility.handle,
+          visibility: visibilityField
+            ? (visibility[visibilityField] as 'public' | 'friends' | 'private')
+            : shareVisibility(visibility, initialCategory!, kind),
+          category: initialCategory,
+          kind,
+        }),
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [destination, initialCategory, kind, visibilityField]);
+
+  useEffect(() => {
+    if (!open) return;
+    const placeMenu = () => {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const width = Math.min(288, window.innerWidth - 16);
+      setMenuPosition({
+        top: rect.bottom + 8,
+        left: Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8)),
+      });
+    };
+    placeMenu();
+    menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    const onPointer = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!menuRef.current?.contains(target) && !triggerRef.current?.contains(target)) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('pointerdown', onPointer);
+    window.addEventListener('resize', placeMenu);
+    window.addEventListener('scroll', placeMenu, true);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('pointerdown', onPointer);
+      window.removeEventListener('resize', placeMenu);
+      window.removeEventListener('scroll', placeMenu, true);
+    };
+  }, [open]);
+
+  const copyUrl = useCallback(async () => {
+    await navigator.clipboard.writeText(publicDestinationUrl);
+    setCopied(true);
+    setNotice(null);
+    window.setTimeout(() => setCopied(false), 2000);
+  }, [publicDestinationUrl]);
+
+  const formatFor = useCallback(
+    (nextPlatform: SharePlatform) => {
+      if (data.shelves.length === 0) {
+        setNotice('This page has no visual card to format yet.');
+        return;
+      }
+      setPlatform(nextPlatform);
+      setOpen(false);
+      setCardOpen(true);
+    },
+    [data.shelves.length],
+  );
 
   return (
-    <>
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen((value) => !value)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Share"
         className={
           className ??
-          'rounded border border-line px-3 py-2 text-sm text-neutral-300 transition-colors hover:border-brass hover:text-paper'
+          'inline-flex items-center gap-2 rounded border border-line px-3 py-2 text-sm text-neutral-300 transition-colors hover:border-brass hover:text-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-brass'
         }
       >
-        Share Top 5
+        <ShareIcon />
+        <span>Share</span>
       </button>
-      {open && (
+      {open && menuPosition && createPortal(
+        <div
+          ref={menuRef}
+          role="menu"
+          aria-label="Share options"
+          style={{ top: menuPosition.top, left: menuPosition.left }}
+          className="fixed z-[1200] w-72 max-w-[calc(100vw-1rem)] overflow-hidden rounded-xl border border-line bg-panel shadow-[0_20px_50px_rgba(0,0,0,0.55)]"
+        >
+          <div className="border-b border-line px-4 py-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">
+              Share {resolvedDestination.label}
+            </p>
+            {resolvedDestination.warning && (
+              <div className="mt-2 rounded-lg border border-brass/30 bg-brass-wash px-3 py-2 text-xs leading-relaxed text-neutral-300">
+                {resolvedDestination.warning}{' '}
+                {resolvedDestination.settingsHref && (
+                  <Link
+                    href={resolvedDestination.settingsHref}
+                    className="font-medium text-brass hover:text-brass-bright"
+                    onClick={() => setOpen(false)}
+                  >
+                    Sharing settings →
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="p-2">
+            <MenuAction icon={<LinkIcon />} featured onClick={() => void copyUrl()}>
+              {copied ? 'Copied URL ✓' : 'Copy URL'}
+            </MenuAction>
+            <div className="my-1 border-t border-line" />
+            <MenuAction icon={<FacebookIcon />} onClick={() => formatFor('facebook')}>
+              Share on Facebook
+            </MenuAction>
+            <MenuAction icon={<XIcon />} onClick={() => formatFor('x')}>Share on X</MenuAction>
+          </div>
+          {notice && (
+            <p role="status" className="border-t border-line px-4 py-3 text-xs text-brass">
+              {notice}
+            </p>
+          )}
+        </div>,
+        document.body,
+      )}
+      {cardOpen && (
         <ShareModal
-          data={data}
+          data={{ ...data, url: publicDestinationUrl }}
           initialCategory={initialCategory}
-          onClose={() => setOpen(false)}
+          kind={kind}
+          platform={platform}
+          destinationUrl={publicDestinationUrl}
+          onClose={() => setCardOpen(false)}
         />
       )}
-    </>
+    </div>
+  );
+}
+
+export function ShareIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+      <path d="M12 3v11m0-11 4 4m-4-4L8 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 10H5.8A1.8 1.8 0 0 0 4 11.8v6.4A1.8 1.8 0 0 0 5.8 20h12.4a1.8 1.8 0 0 0 1.8-1.8v-6.4a1.8 1.8 0 0 0-1.8-1.8H17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+      <path d="m9.5 14.5 5-5M7.3 17.7l-1 1a3.5 3.5 0 0 1-5-5l4-4a3.5 3.5 0 0 1 5 0M16.7 6.3l1-1a3.5 3.5 0 0 1 5 5l-4 4a3.5 3.5 0 0 1-5 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function FacebookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+      <path d="M13.6 22v-8h2.7l.4-3.1h-3.1v-2c0-.9.3-1.5 1.6-1.5h1.7V4.6c-.3 0-1.3-.1-2.5-.1-2.4 0-4.1 1.5-4.1 4.2v2.2H7.5V14h2.8v8h3.3Z" />
+    </svg>
+  );
+}
+
+export function XIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="currentColor" aria-hidden="true">
+      <path d="M18.9 3h2.8l-6.1 7 7.2 11h-5.6l-4.4-5.7L7.7 21H4.9l6.6-7.5L4.6 3h5.8l4 5.3L18.9 3Zm-1 16h1.5L9.5 4.9H7.8L17.9 19Z" />
+    </svg>
+  );
+}
+
+function MenuAction({
+  children,
+  icon,
+  onClick,
+  featured = false,
+}: {
+  children: React.ReactNode;
+  icon: React.ReactNode;
+  onClick: () => void;
+  featured?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      onClick={onClick}
+      className={`flex w-full items-center gap-3 rounded-lg px-3 text-left text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brass ${
+        featured
+          ? 'mb-1 bg-brass py-3 font-semibold text-ink hover:bg-brass-bright'
+          : 'py-2.5 text-neutral-200 hover:bg-brass-wash hover:text-paper'
+      }`}
+    >
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center text-current">{icon}</span>
+      {children}
+    </button>
   );
 }
 
 function ShareModal({
   data,
   initialCategory,
+  kind,
+  platform,
+  destinationUrl,
   onClose,
 }: {
   data: ShareData;
   initialCategory?: ShareCategory;
+  kind: 'ranked' | 'watchlist';
+  platform: SharePlatform;
+  destinationUrl: string;
   onClose: () => void;
 }) {
   const shelves = data.shelves;
@@ -87,20 +326,24 @@ function ShareModal({
       : shelves[0].category,
   );
   const [format, setFormat] = useState<ShareFormat>('square');
+  const [imageCopied, setImageCopied] = useState(false);
+  const [imageNotice, setImageNotice] = useState<string | null>(null);
+  const [canNativeShareFiles] = useState(() => {
+    if (!isStandalonePwa() || typeof navigator.canShare !== 'function') return false;
+    return navigator.canShare({
+      files: [new File([''], 'druthers.png', { type: 'image/png' })],
+    });
+  });
   // The modal only mounts on click, so navigator exists — safe to detect
   // synchronously. canShare({files}) is the mobile share-sheet capability.
-  const [canShareFiles] = useState(
-    () =>
-      typeof navigator !== 'undefined' &&
-      typeof navigator.canShare === 'function' &&
-      navigator.canShare({
-        files: [new File([''], 'x.png', { type: 'image/png' })],
-      }),
-  );
-  const [copied, setCopied] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const shelf = shelves.find((s) => s.category === category) ?? shelves[0];
+  const dialogTitle = initialCategory
+    ? shareDialogTitle(category, kind)
+    : format === 'grid'
+      ? 'Share all my shelves'
+      : 'Share my Top 5';
 
   useEffect(() => {
     let cancelled = false;
@@ -139,36 +382,89 @@ function ShareModal({
     URL.revokeObjectURL(url);
   }, [filename]);
 
-  const share = useCallback(async () => {
+  const copyImage = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const blob = await toBlob(canvas);
-    const file = new File([blob], filename, { type: 'image/png' });
-    try {
-      await navigator.share({
-        files: [file],
-        title: 'My Top 5 on druthers',
-      });
-    } catch {
-      // User dismissed the sheet — not an error.
+    if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
+      setImageNotice('Image copying is not supported in this browser. Download it instead.');
+      return;
     }
-  }, [filename]);
+    try {
+      const blob = await toBlob(canvas);
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      setImageCopied(true);
+      setImageNotice(null);
+      window.setTimeout(() => setImageCopied(false), 2000);
+    } catch {
+      setImageNotice('Could not copy the image. Download it instead.');
+    }
+  }, []);
 
-  const copyLink = useCallback(async () => {
-    // data.url is always the production URL (the share *card* should read
-    // druthers.io even when generated locally) — but the copy-link action
-    // is for pasting somewhere and opening, so it needs to point at
-    // whatever's actually serving this page in dev/QA.
-    const url =
-      process.env.NEXT_PUBLIC_APP_ENV === 'prod'
-        ? data.url
-        : `${window.location.origin}${new URL(data.url).pathname}`;
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
-  }, [data.url]);
+  const share = useCallback(async () => {
+    const postText = `${dialogTitle
+      .replace(/^Share my /, 'My ')
+      .replace(/^Share /, '')} on druthers`;
+    if (canNativeShareFiles) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const blob = await toBlob(canvas);
+      const file = new File([blob], filename, { type: 'image/png' });
+      try {
+        await navigator.share({
+          files: [file],
+          title: dialogTitle,
+          text: `${postText}\n${destinationUrl}`,
+        });
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          setImageNotice('The share sheet could not open. Copy or download the image instead.');
+        }
+      }
+      return;
+    }
+    if (platform === 'facebook') {
+      const canvas = canvasRef.current;
+      let copyPromise: Promise<void> | null = null;
+      if (canvas && navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+        try {
+          copyPromise = navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': toBlob(canvas) }),
+          ]);
+        } catch {
+          // The composer still opens; the inline notice offers Download as fallback.
+        }
+      }
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(destinationUrl)}`,
+        '_blank',
+        'noopener,noreferrer,width=720,height=720',
+      );
+      if (!copyPromise) {
+        setImageNotice('Facebook opened, but this browser could not copy the image. Download it instead.');
+        return;
+      }
+      try {
+        await copyPromise;
+        setImageCopied(true);
+        setImageNotice('Image copied — press ⌘V in Facebook to attach it.');
+        window.setTimeout(() => setImageCopied(false), 2000);
+      } catch {
+        setImageNotice('Facebook opened, but the image could not be copied. Download it instead.');
+      }
+      return;
+    }
+    if (platform === 'x') {
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}&url=${encodeURIComponent(destinationUrl)}`,
+        '_blank',
+        'noopener,noreferrer,width=720,height=520',
+      );
+      return;
+    }
 
-  return (
+  }, [canNativeShareFiles, destinationUrl, dialogTitle, filename, platform]);
+
+  return createPortal(
     <div
       className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/70 p-4"
       onClick={onClose}
@@ -177,12 +473,17 @@ function ShareModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Share your Top 5"
+        aria-label={dialogTitle}
         onClick={(e) => e.stopPropagation()}
         className="flex max-h-full w-full max-w-md flex-col overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-[0_24px_60px_rgba(0,0,0,0.5)]"
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg text-paper">Share your Top 5</h2>
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">
+              Share on {PLATFORM_LABEL[platform]}
+            </p>
+            <h2 className="font-display text-lg text-paper">{dialogTitle}</h2>
+          </div>
           <button
             type="button"
             onClick={onClose}
@@ -258,40 +559,66 @@ function ShareModal({
           />
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2.5">
-          {canShareFiles && (
+        <div className="mt-4 grid gap-2.5">
+          <button
+            type="button"
+            onClick={share}
+            className="rounded-lg bg-brass px-4 py-3 text-sm font-semibold text-ink hover:bg-brass-bright"
+          >
+            {canNativeShareFiles
+              ? 'Share image…'
+              : platform === 'facebook'
+              ? 'Copy image & open Facebook'
+              : 'Open X composer'}
+          </button>
+          {canNativeShareFiles ? (
+            <p className="text-center text-[11px] text-neutral-500">
+              Choose {PLATFORM_LABEL[platform]} from the iOS share sheet.
+            </p>
+          ) : platform === 'facebook' && (
+            <p className="text-center text-[11px] text-neutral-500">
+              Then press ⌘V in Facebook to attach the formatted image.
+            </p>
+          )}
+          <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
-              onClick={share}
-              className="col-span-2 rounded-lg bg-brass px-4 py-3 text-sm font-semibold text-ink hover:bg-brass-bright"
+              onClick={() => void copyImage()}
+              className="rounded-lg border border-line px-3 py-2.5 text-[13px] text-paper hover:border-brass"
             >
-              Share to…
+              {imageCopied ? 'Image copied ✓' : 'Copy image'}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={download}
-            className={`rounded-lg border border-line px-3 py-2.5 text-[13px] text-paper hover:border-brass ${
-              canShareFiles ? '' : 'col-span-2 sm:col-span-1'
-            }`}
-          >
-            Download image
-          </button>
-          <button
-            type="button"
-            onClick={copyLink}
-            className="rounded-lg border border-line px-3 py-2.5 text-[13px] text-paper hover:border-brass"
-          >
-            {copied ? 'Copied!' : 'Copy link'}
-          </button>
+            <button
+              type="button"
+              onClick={download}
+              className="rounded-lg border border-line px-3 py-2.5 text-[13px] text-paper hover:border-brass"
+            >
+              Download image
+            </button>
+          </div>
         </div>
-        {canShareFiles && (
-          <p className="mt-3 text-center text-[11px] text-neutral-500">
-            “Share to…” opens the native share sheet — Instagram, TikTok,
-            Messages.
-          </p>
-        )}
+        {imageNotice && <p role="status" className="mt-3 text-center text-xs text-brass">{imageNotice}</p>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
+}
+
+export function shareDialogTitle(
+  category: ShareCategory,
+  kind: 'ranked' | 'watchlist',
+): string {
+  const ranked: Record<ShareCategory, string> = {
+    movies: 'Share my movies',
+    tv: 'Share my TV',
+    books: 'Share my books',
+    games: 'Share my games',
+  };
+  const watchlist: Record<ShareCategory, string> = {
+    movies: 'Share my movie watchlist',
+    tv: 'Share my TV watchlist',
+    books: 'Share my read list',
+    games: 'Share my play list',
+  };
+  return kind === 'watchlist' ? watchlist[category] : ranked[category];
 }

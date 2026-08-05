@@ -58,6 +58,7 @@ export default async function GamesBacklogPage({
           <ShareTop5Button
             data={buildShareData(summary)}
             initialCategory="games"
+            kind="watchlist"
           />
           <Link
             href="/games/search"

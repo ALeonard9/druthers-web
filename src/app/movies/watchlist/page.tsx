@@ -58,6 +58,7 @@ export default async function MoviesWatchlistPage({
           <ShareTop5Button
             data={buildShareData(summary)}
             initialCategory="movies"
+            kind="watchlist"
           />
           <Link
             href="/movies/search"

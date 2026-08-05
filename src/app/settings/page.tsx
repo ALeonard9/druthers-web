@@ -29,7 +29,7 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <section className="flex flex-col gap-3">
+      <section id="sharing" className="flex scroll-mt-24 flex-col gap-3">
         <div>
           <h2 className="font-display text-lg text-paper">Sharing</h2>
           <p className="text-sm text-neutral-400">

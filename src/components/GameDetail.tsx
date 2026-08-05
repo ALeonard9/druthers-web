@@ -174,7 +174,7 @@ export function GameDetail({
                 : 'bg-green-600 text-white hover:bg-green-500'
             }`}
           >
-            {onBacklog ? 'On backlog ✓' : '+ Backlog'}
+            {onBacklog ? 'On Play List ✓' : '+ Play List'}
           </button>
 
           {onRankings ? (

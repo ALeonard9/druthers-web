@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { fetchPublicProfile } from '@/lib/publicProfile';
 import { PublicShelfRankedViewer } from '@/components/PublicShelfRankedViewer';
 
+import { getWatchlistLabels } from '@/lib/domainLabels';
+
 export const dynamic = 'force-dynamic';
 
 interface Props {
@@ -26,6 +28,8 @@ export default async function PublicShelfPage({ params }: Props) {
   const shelf = profile.shelves.find((s) => s.slug === category);
   if (!shelf) notFound();
 
+  const watchlistLabel = getWatchlistLabels(shelf.slug).singular;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -45,7 +49,7 @@ export default async function PublicShelfPage({ params }: Props) {
               href={`/u/${profile.handle}/${shelf.slug}/watchlist`}
               className="text-sm text-brass hover:text-brass-bright"
             >
-              Watchlist →
+              {watchlistLabel} →
             </Link>
           )}
         </div>

@@ -128,7 +128,7 @@ export function GameSearch() {
                     <TrackedBadge onRankings rank={g.rank} />
                   ) : (
                     <>
-                      {g.on_watchlist && <TrackedBadge onRankings={false} rank={null} />}
+                      {g.on_watchlist && <TrackedBadge onRankings={false} rank={null} domain="games" />}
                       <button
                         onClick={() => add(g, 'watchlist')}
                         disabled={state === 'adding' || g.igdb == null || g.on_watchlist}
@@ -137,8 +137,8 @@ export function GameSearch() {
                         {state === 'adding'
                           ? 'Adding…'
                           : g.on_watchlist
-                            ? 'On Watchlist'
-                            : '+ Backlog'}
+                            ? 'On Play List'
+                            : '+ Play List'}
                       </button>
                       <button
                         onClick={() => add(g, 'rankings')}

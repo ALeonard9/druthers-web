@@ -12,6 +12,8 @@ import Link from 'next/link';
  * backfill_rank_base re-based them).
  */
 
+import { getWatchlistLabels } from '@/lib/domainLabels';
+
 interface Top5BoardEntry {
   // Absent on a public profile's entries — those never expose an id to link
   // through to (#274 strips it), so the row renders unlinked there.
@@ -49,6 +51,7 @@ export function Top5Board({
   emptyMessage?: ReactNode;
 }) {
   const resolvedHref = href ?? HREF[shelf.category] ?? '#';
+  const watchlistLabel = getWatchlistLabels(shelf.category).singular;
 
   return (
     <section className="flex flex-col rounded-lg border border-line bg-panel">
@@ -69,11 +72,12 @@ export function Top5Board({
               href={watchlistHref}
               className="font-mono text-[11px] uppercase tracking-wide text-brass hover:text-brass-bright"
             >
-              Watchlist →
+              {watchlistLabel} →
             </Link>
           )}
         </div>
       </div>
+
 
       {shelf.top.length === 0 ? (
         <p className="flex-1 px-4 py-6 text-sm text-neutral-500">

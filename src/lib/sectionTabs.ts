@@ -21,11 +21,11 @@ export const TV_TABS = [
 export const BOOK_TABS = [
   { href: '/books', label: 'My Favorite Books' },
   { href: '/books/ranking', label: 'Ranking' },
-  { href: '/books/to-read', label: 'To read' },
+  { href: '/books/to-read', label: 'Read List' },
 ];
 
 export const GAME_TABS = [
   { href: '/games', label: 'My Favorite Games' },
   { href: '/games/ranking', label: 'Ranking' },
-  { href: '/games/backlog', label: 'Backlog' },
+  { href: '/games/backlog', label: 'Play List' },
 ];

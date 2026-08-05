@@ -88,10 +88,10 @@ function ToRankChip({
       </button>
       <button
         onClick={() => onMoveToWatchlist(item)}
-        title="Move back to the to-read list"
+        title="Move back to the Read List"
         className="rounded px-2 py-1 text-xs text-neutral-400 hover:text-white"
       >
-        → To-read
+        → Read List
       </button>
     </div>
   );

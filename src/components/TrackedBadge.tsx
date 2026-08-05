@@ -1,12 +1,13 @@
-// Badge shown on a search result the user already tracks (web#31), instead
-// of the "add" action. Ranked takes precedence over watchlist-only, matching
-// the one-home rule (a tracked item is on exactly one of the two lists).
+import { getWatchlistLabels, type MediaDomain } from '@/lib/domainLabels';
+
 export function TrackedBadge({
   onRankings,
   rank,
+  domain,
 }: {
   onRankings: boolean;
   rank: number | null;
+  domain?: MediaDomain | string;
 }) {
   if (onRankings) {
     return (
@@ -15,9 +16,10 @@ export function TrackedBadge({
       </span>
     );
   }
+  const watchlistBadge = domain ? getWatchlistLabels(domain).on_badge : 'On Watchlist';
   return (
     <span className="shrink-0 rounded bg-moss-wash px-2 py-1 text-center text-xs font-medium text-moss">
-      ✓ On Watchlist
+      ✓ {watchlistBadge}
     </span>
   );
 }

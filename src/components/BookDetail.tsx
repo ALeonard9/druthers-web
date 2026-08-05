@@ -154,7 +154,7 @@ export function BookDetail({
                 : 'bg-green-600 text-white hover:bg-green-500'
             }`}
           >
-            {onWatchlist ? 'On to-read list ✓' : '+ To-read'}
+            {onWatchlist ? 'On Read List ✓' : '+ Read List'}
           </button>
 
           {onRankings ? (

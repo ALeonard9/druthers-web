@@ -28,8 +28,23 @@ export function PublicShelfCarousel({
 }) {
   // `slug` is the domain (e.g. "movies", "tv") in the public profile context
   const base = `/${shelf.slug}`;
-  const items = toDeckItems(shelf, base);
   const href = `/u/${handle}/${shelf.slug}`;
+
+  // Limit public profile carousel display to top 5 items (web#162)
+  const slicedShelf = { ...shelf, items: shelf.items.slice(0, 5) };
+  const items = toDeckItems(slicedShelf, base);
+
+  if (shelf.ranked_count > 5 || shelf.items.length > 5) {
+    items.push({
+      id: `${shelf.slug}-see-all`,
+      rank: 0,
+      title: 'See All',
+      subtitle: `View all ${shelf.ranked_count} ${shelf.category.toLowerCase()}`,
+      posterUrl: null,
+      href,
+      isSeeAll: true,
+    });
+  }
 
   return (
     <section className="flex flex-col rounded-lg border border-line bg-panel">

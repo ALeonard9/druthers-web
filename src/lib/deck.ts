@@ -28,6 +28,8 @@ export interface DeckItem {
   posterUrl: string | null;
   /** Detail page the front poster opens. */
   href: string;
+  /** True for the 6th "See All" card on public profile carousels. */
+  isSeeAll?: boolean;
 }
 
 /** First entry of a comma-separated list ("Action, Crime" → "Action"). */

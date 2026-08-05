@@ -61,9 +61,14 @@ export function WatchlistViewer({
               </Link>
               <Link
                 href={item.href}
-                className="flex-1 truncate text-neutral-200 hover:underline"
+                className="min-w-0 flex-1 text-neutral-200 hover:underline"
               >
-                {item.title}
+                <span className="block truncate">{item.title}</span>
+                {item.sourceHandle && (
+                  <span className="block font-mono text-[9px] uppercase tracking-wider text-brass/80">
+                    From @{item.sourceHandle}
+                  </span>
+                )}
               </Link>
               {item.subtitle && (
                 <span className="shrink-0 font-mono text-xs text-neutral-500">

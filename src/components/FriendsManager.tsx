@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import type { Follow, Friend, FriendRequest, PendingFriendRequests, RelatedUser } from '@/lib/types';
 
 function displayName(user: RelatedUser): string {
@@ -305,6 +306,14 @@ export function FriendsManager() {
                     <span className="min-w-0 flex-1 truncate text-sm text-paper">
                       {displayName(friend.user)}
                     </span>
+                    {friend.user.handle && (
+                      <Link
+                        href={`/u/${friend.user.handle}/compare`}
+                        className="shrink-0 rounded border border-line px-2 py-1 text-xs text-neutral-300 hover:border-brass hover:text-brass"
+                      >
+                        Compare
+                      </Link>
+                    )}
                     <button
                       type="button"
                       onClick={() => setConfirmUnfriend(friend.id)}
@@ -338,6 +347,14 @@ export function FriendsManager() {
                 <span className="min-w-0 flex-1 truncate text-sm text-paper">
                   {displayName(follow.user)}
                 </span>
+                {follow.user.handle && (
+                  <Link
+                    href={`/u/${follow.user.handle}/compare`}
+                    className="shrink-0 rounded border border-line px-2 py-1 text-xs text-neutral-300 hover:border-brass hover:text-brass"
+                  >
+                    Compare
+                  </Link>
+                )}
                 <button
                   type="button"
                   disabled={busyId === follow.id}

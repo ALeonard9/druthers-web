@@ -54,6 +54,9 @@ export function TVWatchlistCard({ userShow }: { userShow: UserTVShow }) {
         >
           {show.title}
         </Link>
+        {userShow.source_handle && (
+          <p className="font-mono text-[10px] uppercase tracking-wider text-brass/80">From @{userShow.source_handle}</p>
+        )}
         <div className="flex items-center gap-2">
           <ShowStatusBadge show={userShow} />
           {show.status && (

@@ -28,6 +28,8 @@ export interface DeckItem {
   posterUrl: string | null;
   /** Detail page the front poster opens. */
   href: string;
+  /** First visible profile that inspired this tracker row. */
+  sourceHandle?: string | null;
   /** True for the 6th "See All" card on public profile carousels. */
   isSeeAll?: boolean;
 }
@@ -131,6 +133,7 @@ export function movieWatchlistDeckItems(rows: UserMovie[]): DeckItem[] {
     subtitle: subtitle(r.movie.year, first(r.movie.genre)),
     posterUrl: r.movie.poster_url,
     href: `/movies/${r.movie.id}`,
+    sourceHandle: r.source_handle,
   }));
 }
 
@@ -141,6 +144,7 @@ export function tvWatchlistDeckItems(rows: UserTVShow[]): DeckItem[] {
     subtitle: subtitle(r.tv_show.year, first(r.tv_show.genre)),
     posterUrl: r.tv_show.poster_url,
     href: `/tv/${r.tv_show.id}`,
+    sourceHandle: r.source_handle,
   }));
 }
 
@@ -151,6 +155,7 @@ export function bookWatchlistDeckItems(rows: UserBook[]): DeckItem[] {
     subtitle: subtitle(r.book.year, first(r.book.authors)),
     posterUrl: r.book.poster_url,
     href: `/books/${r.book.id}`,
+    sourceHandle: r.source_handle,
   }));
 }
 
@@ -161,5 +166,6 @@ export function gameWatchlistDeckItems(rows: UserVideoGame[]): DeckItem[] {
     subtitle: subtitle(r.game.year, first(r.game.genre)),
     posterUrl: r.game.poster_url,
     href: `/games/${r.game.id}`,
+    sourceHandle: r.source_handle,
   }));
 }

@@ -241,6 +241,11 @@ export function RankedPosterDeck({
         <p className="mt-1 text-sm text-neutral-400 tabular-nums">
           {front.subtitle}
         </p>
+        {front.sourceHandle && (
+          <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-brass/80">
+            From @{front.sourceHandle}
+          </p>
+        )}
         {front.isSeeAll && (
           <button
             type="button"

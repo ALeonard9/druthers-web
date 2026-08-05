@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { fetchPublicProfile } from '@/lib/publicProfile';
 import { PublicShelfCarousel } from '@/components/PublicShelfCarousel';
 import { FollowButton } from '@/components/FollowButton';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { buildPublicShareData, buildShareDestination } from '@/lib/shareCards';
+import { PrivateProfileNotice } from '@/components/PrivateProfileNotice';
+import { getSessionUser } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,8 +40,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // disagree with the endpoint about who gets to see what.
 export default async function PublicProfilePage({ params }: Props) {
   const { handle } = await params;
-  const profile = await fetchPublicProfile(handle);
-  if (!profile) notFound();
+  const [profile, sessionUser] = await Promise.all([
+    fetchPublicProfile(handle),
+    getSessionUser(),
+  ]);
+  if (!profile) return <PrivateProfileNotice handle={handle} signedIn={Boolean(sessionUser)} />;
 
   const nothingRanked = profile.total_ranked === 0;
   const shelfWord = profile.shelves.length === 1 ? 'shelf' : 'shelves';
@@ -81,6 +86,14 @@ export default async function PublicProfilePage({ params }: Props) {
             >
               Sign in to follow
             </a>
+          )}
+          {(profile.viewer.relationship === 'friend' || profile.viewer.relationship === 'none') && (
+            <Link
+              href={`/u/${profile.handle}/compare`}
+              className="rounded border border-brass/60 bg-brass-wash px-3 py-1.5 text-sm text-brass hover:border-brass hover:text-brass-bright"
+            >
+              Compare
+            </Link>
           )}
           <ShareTop5Button
             data={buildPublicShareData(profile)}

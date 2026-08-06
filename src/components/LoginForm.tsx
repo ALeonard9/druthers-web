@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export function LoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -25,8 +23,7 @@ export function LoginForm() {
         setError(data.error ?? 'Sign in failed');
         return;
       }
-      router.push('/');
-      router.refresh();
+      window.location.href = '/';
     } finally {
       setLoading(false);
     }

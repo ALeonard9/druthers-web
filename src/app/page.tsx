@@ -30,11 +30,20 @@ export async function generateMetadata(): Promise<Metadata> {
       description:
         'Movies, TV, books, and games — ranked into the order you’d pick them again.',
       url: '/',
+      images: [
+        {
+          url: '/opengraph-image',
+          width: 1200,
+          height: 630,
+          alt: 'Druthers — your favorites, ranked',
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: 'Druthers — your favorites, ranked',
       description: 'Movies, TV, books, and games — ranked by your real choices.',
+      images: ['/opengraph-image'],
     },
   };
 }

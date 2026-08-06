@@ -42,8 +42,7 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
           body: JSON.stringify({ credential: resp.credential }),
         });
         if (res.ok) {
-          router.push('/');
-          router.refresh();
+          window.location.href = '/';
           return;
         }
         const data = await res.json().catch(() => null);

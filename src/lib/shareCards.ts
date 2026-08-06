@@ -59,8 +59,32 @@ export const CATEGORY_LABELS: Record<ShareCategory, string> = {
 };
 
 export const PUBLIC_SITE_URL = 'https://www.druthers.io';
-export const BASE_DOMAIN = process.env.NEXT_PUBLIC_APP_ENV === 'dev' ? 'localhost:3000' : 'www.druthers.io';
-export const SITE_URL = process.env.NEXT_PUBLIC_APP_ENV === 'dev' ? 'http://localhost:3000' : PUBLIC_SITE_URL;
+
+export function getSiteUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  if (process.env.NEXT_PUBLIC_APP_ENV === 'dev') {
+    return 'http://localhost:3000';
+  }
+  return PUBLIC_SITE_URL;
+}
+
+export function getBaseDomain(): string {
+  const urlStr = getSiteUrl();
+  try {
+    const parsed = new URL(urlStr);
+    return parsed.host;
+  } catch {
+    return 'www.druthers.io';
+  }
+}
+
+export const BASE_DOMAIN = getBaseDomain();
+export const SITE_URL = getSiteUrl();
 
 /** A social share must never leak an unopenable localhost URL. */
 export function publicShareUrl(url: string): string {
@@ -73,7 +97,7 @@ export function publicShareUrl(url: string): string {
  * form the API documents on DbUser.handle and the only one the web serves.
  */
 export function profileUrl(handle: string): string {
-  return `${SITE_URL}/u/${handle}`;
+  return `${getSiteUrl()}/u/${handle}`;
 }
 
 export function contentUrl(
@@ -104,8 +128,8 @@ export function buildShareDestination({
 }): ShareDestination {
   if (!handle || visibility === 'private') {
     return {
-      url: SITE_URL,
-      label: 'druthers.io',
+      url: getSiteUrl(),
+      label: getBaseDomain(),
       visibility: 'private',
       warning: handle
         ? 'Only you can see this. Shared links will open druthers.io until you make it visible.'

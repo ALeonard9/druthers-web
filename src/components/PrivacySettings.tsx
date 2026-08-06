@@ -318,7 +318,7 @@ export function PrivacySettings() {
     <div className="flex flex-col gap-4">
       <div className="rounded-lg border border-line bg-panel p-4">
         {settings.handle && !editingHandle ? (
-          <p className="flex items-center gap-2 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <a
               href={`/u/${settings.handle}`}
               title="Click to copy · Cmd/Ctrl-click to open"
@@ -339,11 +339,12 @@ export function PrivacySettings() {
               type="button"
               title="Edit handle"
               onClick={() => setEditingHandle(true)}
-              className="text-neutral-400 hover:text-paper"
+              className="inline-flex items-center gap-1.5 rounded border border-line bg-line/50 px-2.5 py-1 text-xs font-medium text-neutral-300 hover:border-brass hover:text-paper"
             >
               <PencilIcon />
+              <span>Edit handle</span>
             </button>
-          </p>
+          </div>
         ) : (
           <form onSubmit={saveHandle} className="flex flex-col sm:flex-row gap-2">
             <div className="flex flex-1 min-w-0 items-center overflow-hidden rounded border border-neutral-700 bg-night focus-within:border-brass">

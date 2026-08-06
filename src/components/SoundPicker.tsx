@@ -26,7 +26,7 @@ export function SoundPicker() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div suppressHydrationWarning className="flex flex-col gap-3">
       <div className="flex items-center gap-3 rounded-lg border border-line bg-panel p-4">
         <span className="flex-1 text-sm text-neutral-200">
           {selected.name}

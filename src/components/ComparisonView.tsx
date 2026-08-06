@@ -32,24 +32,54 @@ function Poster({ item }: { item: ComparisonItem }) {
   );
 }
 
-function ItemLine({ item }: { item: ComparisonItem }) {
+function ItemLine({ item, category }: { item: ComparisonItem; category: ComparisonDomain['category'] }) {
+  const itemHref = `/${category}/${item.id}`;
   return (
     <li className="flex min-w-0 items-center gap-3 border-b border-line/60 py-2.5 last:border-b-0">
-      <div className="h-12 w-8 shrink-0 overflow-hidden rounded bg-line"><Poster item={item} /></div>
-      <span className="min-w-0 flex-1 truncate text-sm text-neutral-200">{item.title}</span>
+      <Link href={itemHref} className="h-12 w-8 shrink-0 overflow-hidden rounded bg-line hover:opacity-80 transition-opacity">
+        <Poster item={item} />
+      </Link>
+      <Link href={itemHref} className="min-w-0 flex-1 truncate text-sm text-neutral-200 hover:text-brass transition-colors">
+        {item.title}
+      </Link>
       {item.year && <span className="font-mono text-[10px] text-neutral-600">{item.year}</span>}
     </li>
   );
 }
 
-function RankLine({ item, handle }: { item: ComparisonItem; handle: string }) {
+function RankLine({
+  item,
+  category,
+  handle,
+  showRerank = false,
+}: {
+  item: ComparisonItem;
+  category: ComparisonDomain['category'];
+  handle: string;
+  showRerank?: boolean;
+}) {
+  const itemHref = `/${category}/${item.id}`;
+  const rerankHref = `/${category}/ranking?item=${item.id}`;
   return (
-    <li className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] items-center gap-3 border-b border-line/60 py-2.5 last:border-b-0">
-      <span className="rounded bg-brass-wash py-1 text-center font-mono text-xs text-brass">#{item.your_rank}</span>
-      <span className="min-w-0 truncate text-center text-sm text-neutral-200">{item.title}</span>
-      <span className="rounded bg-neutral-800 py-1 text-center font-mono text-xs text-neutral-300">#{item.their_rank}</span>
-      <span className="col-start-1 text-center font-mono text-[9px] uppercase tracking-wider text-neutral-600">You</span>
-      <span className="col-start-3 text-center font-mono text-[9px] uppercase tracking-wider text-neutral-600">@{handle}</span>
+    <li className="flex flex-col gap-1 border-b border-line/60 py-2.5 last:border-b-0">
+      <div className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] items-center gap-3">
+        <span className="rounded bg-brass-wash py-1 text-center font-mono text-xs text-brass">#{item.your_rank}</span>
+        <Link href={itemHref} className="min-w-0 truncate text-center text-sm font-medium text-neutral-200 hover:text-brass transition-colors">
+          {item.title}
+        </Link>
+        <span className="rounded bg-neutral-800 py-1 text-center font-mono text-xs text-neutral-300">#{item.their_rank}</span>
+      </div>
+      <div className="flex items-center justify-between px-1">
+        <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-600">You vs @{handle}</span>
+        {showRerank && (
+          <Link
+            href={rerankHref}
+            className="rounded border border-line px-2 py-0.5 text-[10px] font-medium text-brass hover:border-brass hover:bg-brass-wash transition-colors"
+          >
+            Re-rank
+          </Link>
+        )}
+      </div>
     </li>
   );
 }
@@ -87,11 +117,17 @@ function Recommendation({
     onSaved(item.id, destination);
   }
 
+  const itemHref = `/${domain.category}/${item.id}`;
+
   return (
     <li className="flex min-w-0 gap-3 rounded-lg border border-line bg-night/50 p-3">
-      <div className="h-24 w-16 shrink-0 overflow-hidden rounded bg-line"><Poster item={item} /></div>
+      <Link href={itemHref} className="h-24 w-16 shrink-0 overflow-hidden rounded bg-line hover:opacity-80 transition-opacity">
+        <Poster item={item} />
+      </Link>
       <div className="flex min-w-0 flex-1 flex-col">
-        <p className="line-clamp-2 text-sm font-medium text-paper">{item.title}</p>
+        <Link href={itemHref} className="line-clamp-2 text-sm font-medium text-paper hover:text-brass transition-colors">
+          {item.title}
+        </Link>
         <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-neutral-500">
           @{handle} ranks it #{item.their_rank}
         </p>
@@ -206,7 +242,7 @@ function DomainPanel({
             ) : domain.common_watchlist.length === 0 ? (
               <p className="text-sm text-neutral-500">No overlap here yet.</p>
             ) : (
-              <ul>{domain.common_watchlist.map((item) => <ItemLine key={item.id} item={item} />)}</ul>
+              <ul>{domain.common_watchlist.map((item) => <ItemLine key={item.id} item={item} category={domain.category} />)}</ul>
             )}
           </Section>
 
@@ -225,10 +261,10 @@ function DomainPanel({
 
         <div className="flex flex-col gap-6">
           <Section title="Your biggest gaps" note="Where the debate starts">
-            {domain.biggest_gaps.length === 0 ? <p className="text-sm text-neutral-500">Rank more of the same titles to compare.</p> : <ul>{domain.biggest_gaps.map((item) => <RankLine key={item.id} item={item} handle={handle} />)}</ul>}
+            {domain.biggest_gaps.length === 0 ? <p className="text-sm text-neutral-500">Rank more of the same titles to compare.</p> : <ul>{domain.biggest_gaps.map((item) => <RankLine key={item.id} item={item} category={domain.category} handle={handle} showRerank={true} />)}</ul>}
           </Section>
           <Section title="Most aligned" note="Your closest calls">
-            {domain.most_aligned.length === 0 ? <p className="text-sm text-neutral-500">Not enough shared rankings yet.</p> : <ul>{domain.most_aligned.map((item) => <RankLine key={item.id} item={item} handle={handle} />)}</ul>}
+            {domain.most_aligned.length === 0 ? <p className="text-sm text-neutral-500">Not enough shared rankings yet.</p> : <ul>{domain.most_aligned.map((item) => <RankLine key={item.id} item={item} category={domain.category} handle={handle} />)}</ul>}
           </Section>
           <p className="border-t border-line pt-3 text-xs leading-5 text-neutral-600">{domain.method}</p>
         </div>

@@ -49,6 +49,7 @@ import {
 interface Placement {
   title: string;
   rank: number;
+  imageUrl?: string | null;
 }
 
 /**
@@ -207,7 +208,7 @@ export function RankingDuel({
           // Everything below the insertion shifted down by one.
           return next.map((e, i) => ({ ...e, rank: i + 1 }));
         });
-        setPlacements((prev) => [{ title: entry.title, rank: position }, ...prev]);
+        setPlacements((prev) => [{ title: entry.title, rank: position, imageUrl: entry.imageUrl }, ...prev]);
         if (verdict) setLastVerdict({ ...verdict, rank: position });
         setQueue((prev) => prev.filter((e) => e.id !== entry.id));
         setAnswers(null);
@@ -682,7 +683,31 @@ function Done({
 }) {
   const finished = placements.length > 0;
   return (
-    <div className="flex flex-col items-center gap-4 rounded-xl border border-line bg-panel/60 px-6 py-16 text-center">
+    <div className="flex flex-col items-center gap-6 rounded-xl border border-line bg-panel/60 px-6 py-12 text-center">
+      {finished && (
+        <div className="flex flex-wrap justify-center gap-4">
+          {placements.map((p, idx) => (
+            <div key={`${p.title}-${idx}`} className="flex flex-col items-center gap-2">
+              <div className="relative h-32 w-24 overflow-hidden rounded-lg border border-line bg-line shadow-md">
+                {p.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.imageUrl} alt={p.title} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center p-2 text-center text-xs text-neutral-400">
+                    {p.title}
+                  </div>
+                )}
+                <span className="absolute bottom-1 right-1 rounded bg-brass px-1.5 py-0.5 font-mono text-xs font-semibold text-ink shadow">
+                  #{p.rank}
+                </span>
+              </div>
+              <span className="max-w-24 truncate text-xs text-paper" title={p.title}>
+                {p.title}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
       <p className="font-display text-2xl font-medium text-paper">
         {finished
           ? `Placed ${placements.length} ${placements.length === 1 ? shelf.noun : `${shelf.noun}s`}.`

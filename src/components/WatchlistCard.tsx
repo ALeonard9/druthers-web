@@ -4,12 +4,16 @@ import { useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { duelHrefFor } from '@/lib/duelShelves';
+import { isUnreleased, isRankable, formatReleaseDate } from '@/lib/movies';
 import type { UserMovie } from '@/lib/types';
 
 export function WatchlistCard({ userMovie }: { userMovie: UserMovie }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const { movie } = userMovie;
+
+  const unreleased = isUnreleased(movie.release_date);
+  const rankable = isRankable(movie.release_date);
 
   function track(body: Record<string, unknown>) {
     startTransition(async () => {
@@ -52,18 +56,27 @@ export function WatchlistCard({ userMovie }: { userMovie: UserMovie }) {
         >
           {movie.title}
         </Link>
+        {unreleased && (
+          <span className="inline-block rounded border border-sky-800/50 bg-sky-950/60 px-2 py-0.5 font-mono text-[10px] text-sky-400">
+            Release: {formatReleaseDate(movie.release_date)}
+          </span>
+        )}
         {userMovie.source_handle && (
           <p className="font-mono text-[10px] uppercase tracking-wider text-brass/80">From @{userMovie.source_handle}</p>
         )}
         <div className="mt-auto flex items-center justify-between pt-1">
-          <button
-            onClick={() => track({ on_rankings: true })}
-            disabled={pending || userMovie.on_rankings}
-            className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
-            title="Add to your ranked list"
-          >
-            {userMovie.on_rankings ? 'In Rankings' : '→ Rankings'}
-          </button>
+          {rankable ? (
+            <button
+              onClick={() => track({ on_rankings: true })}
+              disabled={pending || userMovie.on_rankings}
+              className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
+              title="Add to your ranked list"
+            >
+              {userMovie.on_rankings ? 'In Rankings' : '→ Rankings'}
+            </button>
+          ) : (
+            <span className="text-xs text-neutral-500 italic">Not rankable yet</span>
+          )}
           <button
             onClick={() => track({ on_watchlist: false })}
             disabled={pending}

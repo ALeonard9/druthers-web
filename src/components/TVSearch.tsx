@@ -127,18 +127,17 @@ export function TVSearch() {
                     <TrackedBadge onRankings rank={s.rank} />
                   ) : (
                     <>
-                      {s.on_watchlist && <TrackedBadge onRankings={false} rank={null} />}
-                      <button
-                        onClick={() => add(s, 'watchlist')}
-                        disabled={state === 'adding' || s.tvmaze == null || s.on_watchlist}
-                        className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
-                      >
-                        {state === 'adding'
-                          ? 'Adding…'
-                          : s.on_watchlist
-                            ? 'On Watchlist'
-                            : '+ Watchlist'}
-                      </button>
+                      {s.on_watchlist ? (
+                        <TrackedBadge onRankings={false} rank={null} />
+                      ) : (
+                        <button
+                          onClick={() => add(s, 'watchlist')}
+                          disabled={state === 'adding' || s.tvmaze == null}
+                          className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
+                        >
+                          {state === 'adding' ? 'Adding…' : '+ Watchlist'}
+                        </button>
+                      )}
                       <button
                         onClick={() => add(s, 'rankings')}
                         disabled={state === 'adding' || s.tvmaze == null}

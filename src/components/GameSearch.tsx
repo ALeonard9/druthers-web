@@ -130,18 +130,17 @@ export function GameSearch() {
                     <TrackedBadge onRankings rank={g.rank} />
                   ) : (
                     <>
-                      {g.on_watchlist && <TrackedBadge onRankings={false} rank={null} domain="games" />}
-                      <button
-                        onClick={() => add(g, 'watchlist')}
-                        disabled={state === 'adding' || g.igdb == null || g.on_watchlist}
-                        className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
-                      >
-                        {state === 'adding'
-                          ? 'Adding…'
-                          : g.on_watchlist
-                            ? 'On Play List'
-                            : '+ Play List'}
-                      </button>
+                      {g.on_watchlist ? (
+                        <TrackedBadge onRankings={false} rank={null} domain="games" />
+                      ) : (
+                        <button
+                          onClick={() => add(g, 'watchlist')}
+                          disabled={state === 'adding' || g.igdb == null}
+                          className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
+                        >
+                          {state === 'adding' ? 'Adding…' : '+ Play List'}
+                        </button>
+                      )}
                       <button
                         onClick={() => add(g, 'rankings')}
                         disabled={state === 'adding' || g.igdb == null}

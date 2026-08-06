@@ -345,9 +345,9 @@ export function PrivacySettings() {
             </button>
           </p>
         ) : (
-          <form onSubmit={saveHandle} className="flex gap-2">
-            <div className="flex flex-1 items-center rounded border border-neutral-700 bg-night focus-within:border-brass">
-              <span className="pl-3 font-mono text-xs text-neutral-500">
+          <form onSubmit={saveHandle} className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-1 min-w-0 items-center overflow-hidden rounded border border-neutral-700 bg-night focus-within:border-brass">
+              <span className="pl-3 shrink-0 font-mono text-xs text-neutral-500">
                 {BASE_DOMAIN}/u/
               </span>
               <input
@@ -359,26 +359,28 @@ export function PrivacySettings() {
                 className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm outline-none placeholder:text-neutral-600"
               />
             </div>
-            <button
-              type="submit"
-              disabled={handleBusy || (handle.trim() || null) === settings.handle}
-              className="shrink-0 rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
-            >
-              {handleSaved ? 'Saved' : 'Save handle'}
-            </button>
-            {settings.handle && (
+            <div className="flex items-center gap-2 shrink-0">
               <button
-                type="button"
-                onClick={() => {
-                  setEditingHandle(false);
-                  setHandle(settings.handle ?? '');
-                  setHandleError(null);
-                }}
-                className="shrink-0 rounded px-2 py-2 text-sm text-neutral-400 hover:text-paper"
+                type="submit"
+                disabled={handleBusy || (handle.trim() || null) === settings.handle}
+                className="flex-1 sm:flex-none rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
               >
-                Cancel
+                {handleSaved ? 'Saved' : 'Save handle'}
               </button>
-            )}
+              {settings.handle && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingHandle(false);
+                    setHandle(settings.handle ?? '');
+                    setHandleError(null);
+                  }}
+                  className="rounded px-2 py-2 text-sm text-neutral-400 hover:text-paper"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         )}
         {handleError && <p className="mt-2 text-xs text-red-400">{handleError}</p>}

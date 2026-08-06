@@ -25,8 +25,7 @@ export function LoginForm() {
         setError(data.error ?? 'Sign in failed');
         return;
       }
-      router.push('/');
-      router.refresh();
+      window.location.href = '/';
     } finally {
       setLoading(false);
     }

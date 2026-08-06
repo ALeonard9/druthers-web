@@ -42,11 +42,20 @@ export const metadata: Metadata = {
     siteName: 'Druthers',
     title: 'Druthers — your favorites, ranked',
     description: 'Your favorites — watched, read, played, and ranked.',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Druthers — your favorites, ranked',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Druthers — your favorites, ranked',
     description: 'Your favorites — watched, read, played, and ranked.',
+    images: ['/opengraph-image'],
   },
   appleWebApp: {
     title: 'Druthers',

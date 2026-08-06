@@ -24,6 +24,7 @@ const cases = [
       imdb: null,
       title: 'The Matrix',
       year: '1999',
+      release_date: '1999-03-30',
       poster_url: null,
       type: 'movie',
       popularity: 10,

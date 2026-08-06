@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { partitionMovies, byRank, filterMovies } from './movies';
+import { partitionMovies, byRank, filterMovies, isUnreleased, isRankable } from './movies';
 import type { UserMovie } from './types';
 
 function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
@@ -27,7 +27,27 @@ function um(partial: Partial<UserMovie> & { id: string }): UserMovie {
   } as UserMovie;
 }
 
+describe('isUnreleased and isRankable', () => {
+  const now = new Date(2026, 7, 5); // Aug 5, 2026
+
+  it('identifies unreleased movies correctly', () => {
+    expect(isUnreleased('2026-08-10', now)).toBe(true);
+    expect(isUnreleased('2026-08-01', now)).toBe(false);
+    expect(isUnreleased(null, now)).toBe(false);
+  });
+
+  it('enforces 7-day rankable window prior to release', () => {
+    // Release Aug 20 is > 7 days away -> not rankable
+    expect(isRankable('2026-08-20', now)).toBe(false);
+    // Release Aug 10 is 5 days away -> rankable (within 7 day window)
+    expect(isRankable('2026-08-10', now)).toBe(true);
+    // Already released -> rankable
+    expect(isRankable('2026-08-01', now)).toBe(true);
+  });
+});
+
 describe('partitionMovies', () => {
+
   it('splits watchlist, placed rankings, and the to-rank bucket', () => {
     const movies = [
       um({ id: '1', on_rankings: true, rank: 1 }),

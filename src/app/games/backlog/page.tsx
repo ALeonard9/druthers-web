@@ -61,7 +61,7 @@ export default async function GamesBacklogPage({
             kind="watchlist"
           />
           <Link
-            href="/games/search"
+            href="/games/search?from=watchlist"
             className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
             + Add a game
@@ -106,7 +106,7 @@ export default async function GamesBacklogPage({
             ) : (
               <>
                 Nothing queued —{' '}
-                <Link href="/games/search" className="text-brass">
+                <Link href="/games/search?from=watchlist" className="text-brass">
                   add one
                 </Link>
                 .

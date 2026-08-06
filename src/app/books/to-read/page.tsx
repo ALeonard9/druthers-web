@@ -61,7 +61,7 @@ export default async function BooksToReadPage({
             kind="watchlist"
           />
           <Link
-            href="/books/search"
+            href="/books/search?from=watchlist"
             className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
             + Add a book
@@ -100,7 +100,7 @@ export default async function BooksToReadPage({
             ) : (
               <>
                 Nothing queued —{' '}
-                <Link href="/books/search" className="text-brass">
+                <Link href="/books/search?from=watchlist" className="text-brass">
                   add one
                 </Link>
                 .

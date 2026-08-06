@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
+import { isRankable, isUnreleased, formatReleaseDate } from '@/lib/movies';
 import type { MovieSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
 import { useMultiAddMode } from './MultiAddMode';
@@ -96,6 +97,8 @@ export function MovieSearch() {
       <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {results.map((m) => {
           const state = added[m.tmdb];
+          const unreleased = isUnreleased(m.release_date);
+          const rankable = isRankable(m.release_date);
           return (
             <li
               key={m.tmdb}
@@ -118,6 +121,11 @@ export function MovieSearch() {
               <div className="flex flex-1 flex-col gap-2 p-3">
                 <p className="line-clamp-2 text-sm font-medium">{m.title}</p>
                 <p className="text-xs text-neutral-500">{m.year}</p>
+                {unreleased && (
+                  <span className="inline-block rounded border border-sky-800/50 bg-sky-950/60 px-2 py-0.5 font-mono text-[10px] text-sky-400">
+                    Release: {formatReleaseDate(m.release_date)}
+                  </span>
+                )}
                 <div className="mt-auto flex flex-col gap-1">
                   {state === 'done' ? (
                     <span className="rounded bg-neutral-700 px-2 py-1 text-center text-xs text-neutral-200">
@@ -127,25 +135,28 @@ export function MovieSearch() {
                     <TrackedBadge onRankings rank={m.rank} />
                   ) : (
                     <>
-                      {m.on_watchlist && <TrackedBadge onRankings={false} rank={null} />}
-                      <button
-                        onClick={() => add(m, 'watchlist')}
-                        disabled={state === 'adding' || m.on_watchlist}
-                        className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
-                      >
-                        {state === 'adding'
-                          ? 'Adding…'
-                          : m.on_watchlist
-                            ? 'On Watchlist'
-                            : '+ Watchlist'}
-                      </button>
-                      <button
-                        onClick={() => add(m, 'rankings')}
-                        disabled={state === 'adding'}
-                        className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-60"
-                      >
-                        {m.on_watchlist ? '→ Move to Rankings' : '+ Rankings'}
-                      </button>
+                      {m.on_watchlist ? (
+                        <TrackedBadge onRankings={false} rank={null} />
+                      ) : (
+                        <button
+                          onClick={() => add(m, 'watchlist')}
+                          disabled={state === 'adding'}
+                          className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
+                        >
+                          {state === 'adding' ? 'Adding…' : '+ Watchlist'}
+                        </button>
+                      )}
+                      {rankable ? (
+                        <button
+                          onClick={() => add(m, 'rankings')}
+                          disabled={state === 'adding'}
+                          className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-60"
+                        >
+                          {m.on_watchlist ? '→ Move to Rankings' : '+ Rankings'}
+                        </button>
+                      ) : (
+                        <span className="text-center text-xs text-neutral-500 italic">Not rankable yet</span>
+                      )}
                     </>
                   )}
                 </div>

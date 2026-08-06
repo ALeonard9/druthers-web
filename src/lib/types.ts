@@ -40,6 +40,7 @@ export interface MovieSearchResult {
   imdb: string | null;
   title: string;
   year: string | null;
+  release_date: string | null;
   poster_url: string | null;
   type: string | null;
   popularity: number | null;

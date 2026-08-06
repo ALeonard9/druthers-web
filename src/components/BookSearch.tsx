@@ -126,18 +126,17 @@ export function BookSearch() {
                     <TrackedBadge onRankings rank={b.rank} />
                   ) : (
                     <>
-                      {b.on_watchlist && <TrackedBadge onRankings={false} rank={null} domain="books" />}
-                      <button
-                        onClick={() => add(b, 'watchlist')}
-                        disabled={state === 'adding' || !b.isbn || b.on_watchlist}
-                        className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
-                      >
-                        {state === 'adding'
-                          ? 'Adding…'
-                          : b.on_watchlist
-                            ? 'On Read List'
-                            : '+ Read List'}
-                      </button>
+                      {b.on_watchlist ? (
+                        <TrackedBadge onRankings={false} rank={null} domain="books" />
+                      ) : (
+                        <button
+                          onClick={() => add(b, 'watchlist')}
+                          disabled={state === 'adding' || !b.isbn}
+                          className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-60"
+                        >
+                          {state === 'adding' ? 'Adding…' : '+ Read List'}
+                        </button>
+                      )}
                       <button
                         onClick={() => add(b, 'rankings')}
                         disabled={state === 'adding' || !b.isbn}

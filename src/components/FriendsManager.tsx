@@ -221,7 +221,13 @@ export function FriendsManager() {
               {requests.incoming.map((req) => (
                 <li key={req.id} className="flex items-center gap-3 px-4 py-2.5">
                   <span className="min-w-0 flex-1 truncate text-sm text-paper">
-                    {displayName(req.user)}
+                    {req.user.handle ? (
+                      <Link href={`/u/${req.user.handle}`} className="hover:text-brass font-medium">
+                        {displayName(req.user)}
+                      </Link>
+                    ) : (
+                      displayName(req.user)
+                    )}
                     <span className="ml-2 text-xs text-neutral-500">wants to be friends</span>
                   </span>
                   <button
@@ -249,7 +255,13 @@ export function FriendsManager() {
               {requests.outgoing.map((req) => (
                 <li key={req.id} className="flex items-center gap-3 px-4 py-2.5">
                   <span className="min-w-0 flex-1 truncate text-sm text-neutral-300">
-                    {displayName(req.user)}
+                    {req.user.handle ? (
+                      <Link href={`/u/${req.user.handle}`} className="hover:text-brass font-medium">
+                        {displayName(req.user)}
+                      </Link>
+                    ) : (
+                      displayName(req.user)
+                    )}
                     <span className="ml-2 text-xs text-neutral-500">request sent — waiting</span>
                   </span>
                   <button
@@ -304,7 +316,13 @@ export function FriendsManager() {
                 ) : (
                   <div className="flex items-center gap-3">
                     <span className="min-w-0 flex-1 truncate text-sm text-paper">
-                      {displayName(friend.user)}
+                      {friend.user.handle ? (
+                        <Link href={`/u/${friend.user.handle}`} className="hover:text-brass font-medium">
+                          {displayName(friend.user)}
+                        </Link>
+                      ) : (
+                        displayName(friend.user)
+                      )}
                     </span>
                     {friend.user.handle && (
                       <Link
@@ -345,7 +363,13 @@ export function FriendsManager() {
             {following.map((follow) => (
               <li key={follow.id} className="flex items-center gap-3 px-4 py-2.5">
                 <span className="min-w-0 flex-1 truncate text-sm text-paper">
-                  {displayName(follow.user)}
+                  {follow.user.handle ? (
+                    <Link href={`/u/${follow.user.handle}`} className="hover:text-brass font-medium">
+                      {displayName(follow.user)}
+                    </Link>
+                  ) : (
+                    displayName(follow.user)
+                  )}
                 </span>
                 {follow.user.handle && (
                   <Link
@@ -383,7 +407,13 @@ export function FriendsManager() {
           <ul className="divide-y divide-line/60 rounded-lg border border-line bg-panel">
             {followers.map((follow) => (
               <li key={follow.id} className="px-4 py-2.5 text-sm text-paper">
-                {displayName(follow.user)}
+                {follow.user.handle ? (
+                  <Link href={`/u/${follow.user.handle}`} className="hover:text-brass font-medium">
+                    {displayName(follow.user)}
+                  </Link>
+                ) : (
+                  displayName(follow.user)
+                )}
               </li>
             ))}
           </ul>

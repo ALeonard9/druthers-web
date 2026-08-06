@@ -61,7 +61,7 @@ export default async function MoviesWatchlistPage({
             kind="watchlist"
           />
           <Link
-            href="/movies/search"
+            href="/movies/search?from=watchlist"
             className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
             + Add a movie
@@ -108,7 +108,7 @@ export default async function MoviesWatchlistPage({
             ) : (
               <>
                 Nothing queued —{' '}
-                <Link href="/movies/search" className="text-brass">
+                <Link href="/movies/search?from=watchlist" className="text-brass">
                   add one
                 </Link>
                 .

@@ -62,7 +62,7 @@ export default async function TVWatchlistPage({
             kind="watchlist"
           />
           <Link
-            href="/tv/search"
+            href="/tv/search?from=watchlist"
             className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
             + Add a show
@@ -98,7 +98,7 @@ export default async function TVWatchlistPage({
             ) : (
               <>
                 Nothing queued —{' '}
-                <Link href="/tv/search" className="text-brass">
+                <Link href="/tv/search?from=watchlist" className="text-brass">
                   add one
                 </Link>
                 .

@@ -73,3 +73,44 @@ export function partitionMovies(movies: UserMovie[]): {
     .sort((a, b) => a.movie.title.localeCompare(b.movie.title));
   return { watchlist, rankingsPlaced, rankingsUnplaced };
 }
+
+export const RELEASE_WINDOW_DAYS = 7;
+
+export function getReleaseDate(releaseDateStr?: string | null): Date | null {
+  if (!releaseDateStr) return null;
+  // Parse date string (e.g. YYYY-MM-DD) carefully to avoid UTC offset shifting the day
+  const parts = releaseDateStr.split('-');
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+      return new Date(year, month, day);
+    }
+  }
+  const d = new Date(releaseDateStr);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+export function isUnreleased(releaseDateStr?: string | null, now = new Date()): boolean {
+  const d = getReleaseDate(releaseDateStr);
+  if (!d) return false;
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return d.getTime() > startOfToday.getTime();
+}
+
+export function isRankable(releaseDateStr?: string | null, now = new Date()): boolean {
+  const d = getReleaseDate(releaseDateStr);
+  if (!d) return true;
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (d.getTime() <= startOfToday.getTime()) return true;
+  const windowStart = new Date(d);
+  windowStart.setDate(windowStart.getDate() - RELEASE_WINDOW_DAYS);
+  return startOfToday.getTime() >= windowStart.getTime();
+}
+
+export function formatReleaseDate(releaseDateStr?: string | null): string {
+  const d = getReleaseDate(releaseDateStr);
+  if (!d) return 'Unreleased';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { duelHrefFor } from '@/lib/duelShelves';
 import { isUnreleased, isRankable, formatReleaseDate } from '@/lib/movies';
 import type { UserMovie } from '@/lib/types';
+import { SwipeableRow } from './SwipeableRow';
 
 export function WatchlistCard({ userMovie }: { userMovie: UserMovie }) {
   const router = useRouter();
@@ -33,21 +34,32 @@ export function WatchlistCard({ userMovie }: { userMovie: UserMovie }) {
   }
 
   return (
-    <li className="flex flex-col overflow-hidden rounded-lg border border-line bg-panel">
-      <Link href={`/movies/${movie.id}`} className="aspect-[2/3] block bg-line">
-        {movie.poster_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={movie.poster_url}
-            alt={movie.title}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center p-2 text-center text-xs text-neutral-500">
-            {movie.title}
+    <li className="block">
+      <SwipeableRow
+        onFullSwipeRight={() => track({ on_watchlist: false })}
+        rightActionWidth={80}
+        fullSwipeThreshold={120}
+        className="flex h-full flex-col overflow-hidden rounded-lg border border-line bg-panel"
+        rightActions={
+          <div className="flex h-full w-20 flex-col items-center justify-center bg-red-600/90 text-white shadow-inner">
+            <span className="text-xs font-medium">Remove</span>
           </div>
-        )}
-      </Link>
+        }
+      >
+        <Link href={`/movies/${movie.id}`} className="aspect-[2/3] block bg-line">
+          {movie.poster_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={movie.poster_url}
+              alt={movie.title}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center p-2 text-center text-xs text-neutral-500">
+              {movie.title}
+            </div>
+          )}
+        </Link>
       <div className="flex flex-1 flex-col gap-2 p-3">
         <Link
           href={`/movies/${movie.id}`}
@@ -77,15 +89,9 @@ export function WatchlistCard({ userMovie }: { userMovie: UserMovie }) {
           ) : (
             <span className="text-xs text-neutral-500 italic">Not rankable yet</span>
           )}
-          <button
-            onClick={() => track({ on_watchlist: false })}
-            disabled={pending}
-            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400 disabled:opacity-50"
-          >
-            Remove
-          </button>
         </div>
       </div>
+      </SwipeableRow>
     </li>
   );
 }

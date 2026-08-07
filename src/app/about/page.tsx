@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { ReplayTutorialButton } from '@/components/Tutorial';
 
 export const metadata: Metadata = {
   title: 'Why “druthers” — Druthers',
@@ -62,6 +63,7 @@ export default function AboutPage() {
               https://www.themoviedb.org/about/logos-attribution
             */}
             <span className="flex items-center gap-2.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/tmdb.svg"
                 alt="TMDB"
@@ -136,6 +138,7 @@ export default function AboutPage() {
           or affiliated with any of these services.
         </p>
       </section>
+      <ReplayTutorialButton />
       <Link
         href="/"
         className="self-center text-sm text-neutral-400 transition-colors hover:text-paper"

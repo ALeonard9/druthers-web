@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { duelHrefFor } from '@/lib/duelShelves';
 import type { UserBook } from '@/lib/types';
+import { SwipeableRow } from './SwipeableRow';
 
 export function BookWatchlistCard({ userBook }: { userBook: UserBook }) {
   const router = useRouter();
@@ -29,21 +30,32 @@ export function BookWatchlistCard({ userBook }: { userBook: UserBook }) {
   }
 
   return (
-    <li className="flex flex-col overflow-hidden rounded-lg border border-line bg-panel">
-      <Link href={`/books/${book.id}`} className="aspect-[2/3] block bg-line">
-        {book.poster_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={book.poster_url}
-            alt={book.title}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center p-2 text-center text-xs text-neutral-500">
-            {book.title}
+    <li className="block">
+      <SwipeableRow
+        onFullSwipeRight={() => track({ on_watchlist: false })}
+        rightActionWidth={80}
+        fullSwipeThreshold={120}
+        className="flex h-full flex-col overflow-hidden rounded-lg border border-line bg-panel"
+        rightActions={
+          <div className="flex h-full w-20 flex-col items-center justify-center bg-red-600/90 text-white shadow-inner">
+            <span className="text-xs font-medium">Remove</span>
           </div>
-        )}
-      </Link>
+        }
+      >
+        <Link href={`/books/${book.id}`} className="aspect-[2/3] block bg-line">
+          {book.poster_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={book.poster_url}
+              alt={book.title}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center p-2 text-center text-xs text-neutral-500">
+              {book.title}
+            </div>
+          )}
+        </Link>
       <div className="flex flex-1 flex-col gap-2 p-3">
         <Link
           href={`/books/${book.id}`}
@@ -67,15 +79,9 @@ export function BookWatchlistCard({ userBook }: { userBook: UserBook }) {
           >
             {userBook.on_rankings ? 'In Rankings' : '→ Rankings'}
           </button>
-          <button
-            onClick={() => track({ on_watchlist: false })}
-            disabled={pending}
-            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400 disabled:opacity-50"
-          >
-            Remove
-          </button>
         </div>
       </div>
+      </SwipeableRow>
     </li>
   );
 }

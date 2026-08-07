@@ -27,6 +27,7 @@ import { pagerWindow } from '@/lib/pagerWindow';
 import { useRankedListLength } from '@/lib/rankedListLength';
 import { useIncrementalReveal } from '@/lib/useIncrementalReveal';
 import { LengthControl } from './LengthControl';
+import { SwipeableRow } from './SwipeableRow';
 
 function Poster({ url, className }: { url: string | null; className: string }) {
   if (!url) return <div className={`${className} bg-line`} />;
@@ -55,46 +56,51 @@ function ToRankChip({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 rounded-lg border border-neutral-700 bg-panel p-2"
+      className="block"
     >
-      <button
-        {...attributes}
-        {...listeners}
-        aria-label="Drag into the ranked list"
-        title="Drag into the ranked list"
-        className="cursor-grab px-1 text-neutral-500 hover:text-neutral-300 active:cursor-grabbing"
+      <SwipeableRow
+        onFullSwipeRight={() => onMoveToWatchlist(item)}
+        rightActionWidth={90}
+        fullSwipeThreshold={140}
+        className="flex items-center gap-2 rounded-lg border border-neutral-700 bg-panel p-2"
+        rightActions={
+          <div className="flex h-full w-[90px] flex-col items-center justify-center rounded-r-lg bg-neutral-700 text-neutral-200 shadow-inner">
+            <span className="text-xs font-medium">Watchlist</span>
+          </div>
+        }
       >
-        ⠿
-      </button>
-      <Poster url={item.tv_show.poster_url} className="h-10 w-7 rounded" />
-      <Link
-        href={`/tv/${item.tv_show.id}`}
-        className="flex-1 truncate text-sm text-neutral-200 hover:text-brass-bright hover:underline"
-      >
-        {item.tv_show.title}
-      </Link>
-      <ShowStatusBadge show={item} />
-      <Link
-        href={`/tv/ranking?item=${item.tv_show.id}`}
-        title="Place it by comparison instead of dragging"
-        className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright"
-      >
-        Place it →
-      </Link>
-      <button
-        onClick={() => onPlaceTop(item)}
-        title="Place at #1 without dragging"
-        className="rounded bg-brass-wash px-2 py-1 font-display text-xs font-medium text-brass hover:bg-brass hover:text-ink"
-      >
-        → #1
-      </button>
-      <button
-        onClick={() => onMoveToWatchlist(item)}
-        title="Move back to Watchlist"
-        className="rounded px-2 py-1 text-xs text-neutral-400 hover:text-white"
-      >
-        → Watchlist
-      </button>
+        <button
+          {...attributes}
+          {...listeners}
+          aria-label="Drag into the ranked list"
+          title="Drag into the ranked list"
+          className="cursor-grab px-1 text-neutral-500 hover:text-neutral-300 active:cursor-grabbing"
+        >
+          ⠿
+        </button>
+        <Poster url={item.tv_show.poster_url} className="h-10 w-7 rounded" />
+        <Link
+          href={`/tv/${item.tv_show.id}`}
+          className="flex-1 truncate text-sm text-neutral-200 hover:text-brass-bright hover:underline"
+        >
+          {item.tv_show.title}
+        </Link>
+        <ShowStatusBadge show={item} />
+        <Link
+          href={`/tv/ranking?item=${item.tv_show.id}`}
+          title="Place it by comparison instead of dragging"
+          className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright"
+        >
+          Place it →
+        </Link>
+        <button
+          onClick={() => onPlaceTop(item)}
+          title="Place at #1 without dragging"
+          className="rounded bg-brass-wash px-2 py-1 font-display text-xs font-medium text-brass hover:bg-brass hover:text-ink"
+        >
+          → #1
+        </button>
+      </SwipeableRow>
     </div>
   );
 }
@@ -121,16 +127,10 @@ function DropToTop({ label }: { label: string }) {
 // A ranked row — sortable (drag to move) and a drop target for to-rank chips.
 function RankedRow({
   item,
-  confirming,
-  onAskRemove,
-  onCancelRemove,
   onConfirmRemove,
   onRerank,
 }: {
   item: UserTVShow;
-  confirming: boolean;
-  onAskRemove: (s: UserTVShow) => void;
-  onCancelRemove: () => void;
   onConfirmRemove: (s: UserTVShow) => void;
   onRerank: (s: UserTVShow) => void;
 }) {
@@ -145,63 +145,47 @@ function RankedRow({
     <li
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 rounded-lg border border-line bg-panel p-2"
+      className="block"
     >
-      <button
-        {...attributes}
-        {...listeners}
-        aria-label="Drag to reorder"
-        className="cursor-grab px-1 text-neutral-500 hover:text-neutral-300 active:cursor-grabbing"
+      <SwipeableRow
+        onFullSwipeRight={() => onConfirmRemove(item)}
+        rightActionWidth={80}
+        fullSwipeThreshold={120}
+        className="flex items-center gap-3 rounded-lg border border-line bg-panel p-2"
+        rightActions={
+          <div className="flex h-full w-20 flex-col items-center justify-center rounded-r-lg bg-red-600/90 text-white shadow-inner">
+            <span className="text-xs font-medium">Remove</span>
+          </div>
+        }
       >
-        ⠿
-      </button>
-      <span className="inline-flex h-7 min-w-[2.75rem] items-center justify-center rounded bg-brass-wash px-2 font-display text-base font-medium text-brass">
-        {item.rank}
-      </span>
-      <Poster url={item.tv_show.poster_url} className="h-12 w-8 rounded" />
-      <Link
-        href={`/tv/${item.tv_show.id}`}
-        className="flex-1 truncate text-sm text-neutral-200 hover:text-brass-bright hover:underline"
-      >
-        {item.tv_show.title}
-        {item.tv_show.year ? ` (${item.tv_show.year})` : ''}
-      </Link>
-      <ShowStatusBadge show={item} />
-      {confirming ? (
-        <span className="flex shrink-0 items-center gap-2 rounded bg-red-950/70 px-2 py-1 text-xs text-red-200 ring-1 ring-red-800">
-          <span className="hidden sm:inline">
-            Remove #{item.rank}? Shows below move up.
-          </span>
-          <button
-            onClick={onCancelRemove}
-            className="rounded px-2 py-0.5 text-neutral-300 hover:text-white"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => onConfirmRemove(item)}
-            className="rounded bg-red-600 px-2 py-0.5 font-medium text-white hover:bg-red-500"
-          >
-            Remove
-          </button>
+        <button
+          {...attributes}
+          {...listeners}
+          aria-label="Drag to reorder"
+          className="cursor-grab px-1 text-neutral-500 hover:text-neutral-300 active:cursor-grabbing"
+        >
+          ⠿
+        </button>
+        <span className="inline-flex h-7 min-w-[2.75rem] items-center justify-center rounded bg-brass-wash px-2 font-display text-base font-medium text-brass">
+          {item.rank}
         </span>
-      ) : (
-        <>
-          <button
-            onClick={() => onRerank(item)}
-            title="Pull it back out and re-judge its position by comparison"
-            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-brass"
-          >
-            Rerank
-          </button>
-          <button
-            onClick={() => onAskRemove(item)}
-            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400"
-          >
-            Remove
-          </button>
-        </>
-      )}
+        <Poster url={item.tv_show.poster_url} className="h-12 w-8 rounded" />
+        <Link
+          href={`/tv/${item.tv_show.id}`}
+          className="flex-1 truncate text-sm text-neutral-200 hover:text-brass-bright hover:underline"
+        >
+          {item.tv_show.title}
+          {item.tv_show.year ? ` (${item.tv_show.year})` : ''}
+        </Link>
+        <ShowStatusBadge show={item} />
+        <button
+          onClick={() => onRerank(item)}
+          title="Pull it back out and re-judge its position by comparison"
+          className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-brass"
+        >
+          Rerank
+        </button>
+      </SwipeableRow>
     </li>
   );
 }
@@ -232,7 +216,6 @@ export function TVRankingsBoard({
   }
   const [goto, setGoto] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
@@ -268,25 +251,16 @@ export function TVRankingsBoard({
     router.refresh();
   }
 
-  // Removal is confirmed inline in the row (see RankedRow), not via window.confirm.
-  async function remove(s: UserTVShow) {
-    setConfirmingId(null);
+  async function track(s: UserTVShow, body: object) {
     await fetch(`/api/tv/${s.tv_show.id}/track`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ on_rankings: false }),
+      body: JSON.stringify(body),
     });
     router.refresh();
   }
 
-  async function moveToWatchlist(s: UserTVShow) {
-    await fetch(`/api/tv/${s.tv_show.id}/track`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ on_rankings: false, on_watchlist: true }),
-    });
-    router.refresh();
-  }
+
 
   // Clears the position (closing the gap it leaves) without leaving
   // Rankings, so it re-enters the "to rank" queue and completed_at is
@@ -339,7 +313,7 @@ export function TVRankingsBoard({
               <ToRankChip
                 key={s.tv_show.id}
                 item={s}
-                onMoveToWatchlist={moveToWatchlist}
+                onMoveToWatchlist={(s) => track(s, { on_rankings: false, on_watchlist: true })}
                 onPlaceTop={(m) => placeAt(m.tv_show.id, 1)}
               />
             ))}
@@ -418,10 +392,7 @@ export function TVRankingsBoard({
                 <RankedRow
                   key={s.tv_show.id}
                   item={s}
-                  confirming={confirmingId === s.tv_show.id}
-                  onAskRemove={(x) => setConfirmingId(x.tv_show.id)}
-                  onCancelRemove={() => setConfirmingId(null)}
-                  onConfirmRemove={remove}
+                  onConfirmRemove={(item) => track(item, { on_rankings: false })}
                   onRerank={rerank}
                 />
               ))}

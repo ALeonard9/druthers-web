@@ -61,9 +61,18 @@ export async function embedPosters(data: OgCardData): Promise<OgCardData> {
         const response = await fetch(item.posterUrl);
         if (!response.ok) return { ...item, posterUrl: null };
         const type = response.headers.get('content-type') ?? 'image/jpeg';
-        const bytes = Buffer.from(await response.arrayBuffer()).toString('base64');
-        return { ...item, posterUrl: `data:${type};base64,${bytes}` };
-      } catch {
+
+        const buffer = await response.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const b64 = btoa(binary);
+
+        return { ...item, posterUrl: `data:${type};base64,${b64}` };
+      } catch (e) {
+        console.error('Failed to embed poster:', e);
         return { ...item, posterUrl: null };
       }
     }),

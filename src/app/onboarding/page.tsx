@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
     throw err;
   }
 
-  if (summary.onboarding_completed) {
+  if (!summary.needs_onboarding) {
     redirect('/');
   }
 

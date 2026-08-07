@@ -4,16 +4,17 @@ import { useState, useEffect } from 'react';
 
 const TUTORIAL_KEY = 'druthers_tutorial_seen';
 
-export function useTutorial() {
+export function useTutorial(hasItems: boolean) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    if (hasItems) return;
     if (typeof window !== 'undefined') {
       const seen = localStorage.getItem(TUTORIAL_KEY);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (!seen) setShow(true);
     }
-  }, []);
+  }, [hasItems]);
 
   function dismiss() {
     localStorage.setItem(TUTORIAL_KEY, 'true');
@@ -111,8 +112,8 @@ export function TutorialModal({ onDismiss }: { onDismiss: () => void }) {
   );
 }
 
-export function TutorialLauncher() {
-  const { show, dismiss } = useTutorial();
+export function TutorialLauncher({ hasItems }: { hasItems: boolean }) {
+  const { show, dismiss } = useTutorial(hasItems);
 
   if (!show) return null;
 

@@ -79,7 +79,7 @@ export default async function HomePage() {
     throw err;
   }
 
-  if (!summary.onboarding_completed) {
+  if (summary.needs_onboarding) {
     redirect('/onboarding');
   }
 

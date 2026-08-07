@@ -468,4 +468,6 @@ export interface Summary {
   shelves: SummaryShelf[];
   total_ranked: number;
   onboarding_completed: boolean;
+  /** Whether the onboarding wizard should show: unfinished AND zero items added. */
+  needs_onboarding: boolean;
 }

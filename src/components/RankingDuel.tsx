@@ -529,22 +529,19 @@ function Contender({
           </div>
         ) : undefined
       }
-    <button
-      onClick={() => {
-        if (!didLongPressRef.current) {
-          onPick();
-        }
-        didLongPressRef.current = false;
-      }}
-      onMouseDown={startPress}
-      onMouseUp={cancelPress}
-      onMouseLeave={cancelPress}
-      onTouchStart={startPress}
-      onTouchEnd={cancelPress}
-      className="group flex h-full min-h-0 flex-col items-center gap-2 rounded-xl border border-line bg-panel p-3 text-center transition-colors hover:border-brass hover:bg-brass-wash/40 focus:outline-none focus-visible:border-brass focus-visible:ring-2 focus-visible:ring-brass"
     >
       <button
-        onClick={onPick}
+        onClick={() => {
+          if (!didLongPressRef.current) {
+            onPick();
+          }
+          didLongPressRef.current = false;
+        }}
+        onMouseDown={startPress}
+        onMouseUp={cancelPress}
+        onMouseLeave={cancelPress}
+        onTouchStart={startPress}
+        onTouchEnd={cancelPress}
         className="group flex h-full min-h-0 w-full flex-col items-center gap-2 rounded-xl border border-line bg-panel p-3 text-center transition-colors hover:border-brass hover:bg-brass-wash/40 focus:outline-none focus-visible:border-brass focus-visible:ring-2 focus-visible:ring-brass"
       >
         {/* Sized off the viewport, not the column, so the question, both posters

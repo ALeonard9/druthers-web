@@ -89,6 +89,13 @@ export function WatchlistCard({ userMovie }: { userMovie: UserMovie }) {
           ) : (
             <span className="text-xs text-neutral-500 italic">Not rankable yet</span>
           )}
+          <button
+            onClick={() => track({ on_watchlist: false })}
+            disabled={pending}
+            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400 disabled:opacity-50"
+          >
+            Remove
+          </button>
         </div>
       </div>
       </SwipeableRow>

@@ -278,6 +278,8 @@ export function RankingDuel({
     return () => window.removeEventListener('keydown', onKey);
   }, [pair, answer, settle]);
 
+  const [confirmingRemoveEntry, setConfirmingRemoveEntry] = useState<DuelEntry | null>(null);
+
   if (!candidate) {
     if (onQueueEmpty) {
       return (
@@ -307,6 +309,41 @@ export function RankingDuel({
 
   return (
     <div className="flex flex-col gap-3">
+      {confirmingRemoveEntry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+          <div className="flex max-w-sm flex-col gap-4 rounded-xl border border-red-800 bg-panel p-5 text-center shadow-xl">
+            <h3 className="font-display text-lg font-medium text-paper">
+              Remove “{confirmingRemoveEntry.title}”?
+            </h3>
+            <p className="text-xs text-neutral-400">
+              This will remove it from duel considerations for this shelf.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setConfirmingRemoveEntry(null)}
+                className="rounded px-3 py-1.5 text-xs text-neutral-300 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const toRemove = confirmingRemoveEntry;
+                  setConfirmingRemoveEntry(null);
+                  if (toRemove.id === candidate?.id) {
+                    skip();
+                  } else {
+                    setRanked((prev) => prev.filter((e) => e.id !== toRemove.id));
+                    setAnswers(null);
+                  }
+                }}
+                className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-500"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {session && pair ? (
         <>
@@ -346,6 +383,7 @@ export function RankingDuel({
               hint="←"
               onPick={() => answer('candidate')}
               onRemove={() => removeCandidate(pair.candidate)}
+              onLongPress={() => setConfirmingRemoveEntry(pair.candidate)}
             />
             <Contender
               entry={pair.opponent}
@@ -353,6 +391,7 @@ export function RankingDuel({
               hint="→"
               onPick={() => answer('opponent')}
               onRemove={() => removeCandidate(pair.opponent)}
+              onLongPress={() => setConfirmingRemoveEntry(pair.opponent)}
             />
           </div>
 
@@ -448,13 +487,35 @@ function Contender({
   hint,
   onPick,
   onRemove,
+  onLongPress,
 }: {
   entry: DuelEntry;
   badge: string | null;
   hint: string;
   onPick: () => void;
   onRemove?: () => void;
+  onLongPress?: () => void;
 }) {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didLongPressRef = useRef(false);
+
+  function startPress() {
+    didLongPressRef.current = false;
+    if (!onLongPress) return;
+    timerRef.current = setTimeout(() => {
+      didLongPressRef.current = true;
+      onLongPress();
+      timerRef.current = null;
+    }, 600);
+  }
+
+  function cancelPress() {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }
+
   return (
     <SwipeableRow
       onFullSwipeRight={onRemove}
@@ -468,6 +529,19 @@ function Contender({
           </div>
         ) : undefined
       }
+    <button
+      onClick={() => {
+        if (!didLongPressRef.current) {
+          onPick();
+        }
+        didLongPressRef.current = false;
+      }}
+      onMouseDown={startPress}
+      onMouseUp={cancelPress}
+      onMouseLeave={cancelPress}
+      onTouchStart={startPress}
+      onTouchEnd={cancelPress}
+      className="group flex h-full min-h-0 flex-col items-center gap-2 rounded-xl border border-line bg-panel p-3 text-center transition-colors hover:border-brass hover:bg-brass-wash/40 focus:outline-none focus-visible:border-brass focus-visible:ring-2 focus-visible:ring-brass"
     >
       <button
         onClick={onPick}

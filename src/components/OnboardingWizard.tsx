@@ -217,6 +217,10 @@ function DomainRankingStep({ domainKey, onComplete }: { domainKey: DomainKey; on
       setRanked(shelfRanked.sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999)));
       setQueue(shelfQueue);
       setLoadingInitial(false);
+    })
+    .catch(() => {
+      if (!active) return;
+      setLoadingInitial(false);
     });
     return () => { active = false; };
   }, [domainKey]);

@@ -8,8 +8,9 @@ export async function GET(
   // Handle both Next.js 14 (sync) and 15 (async) params
   const p = await Promise.resolve(params);
   try {
+    const apiDomain = p.domain === 'tv' ? 'tv-shows' : p.domain;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const items = await apiFetch<any[]>(`/v1/users/me/${p.domain}`);
+    const items = await apiFetch<any[]>(`/v1/users/me/${apiDomain}`);
     return NextResponse.json(items);
   } catch (err) {
     const status = err instanceof ApiError ? err.status : 500;

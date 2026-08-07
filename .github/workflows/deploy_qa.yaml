@@ -52,6 +52,7 @@ jobs:
           docker build \
             --build-arg "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID_QA }}" \
             --build-arg "NEXT_PUBLIC_APP_ENV=qa" \
+            --build-arg "NEXT_PUBLIC_SITE_URL=https://qa.druthers.io" \
             -t "$IMAGE" .
           docker push "$IMAGE"
 

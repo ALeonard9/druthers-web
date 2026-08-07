@@ -98,7 +98,15 @@ export function ShareTop5Button({
       handle: data.handle,
       visibility: data.profilePublic ? 'public' : 'private',
     });
+  // Two different URLs for two different audiences. The rendered card image
+  // and Facebook/X posts outlive this session and may be opened by anyone,
+  // anywhere, later — those must always resolve, so they're forced to prod.
+  // Copy URL and Send message are opened right now, by whoever the current
+  // page is actually being served to (QA/local/prod), so they use
+  // `resolvedDestination.url` as-is — it's already env-dynamic (built via
+  // getSiteUrl() in buildShareDestination/contentUrl/profileUrl).
   const publicDestinationUrl = publicShareUrl(resolvedDestination.url);
+  const copyableUrl = resolvedDestination.url;
 
   useEffect(() => {
     if (destination || (!initialCategory && !visibilityField)) return;
@@ -157,11 +165,11 @@ export function ShareTop5Button({
   }, [open]);
 
   const copyUrl = useCallback(async () => {
-    await navigator.clipboard.writeText(publicDestinationUrl);
+    await navigator.clipboard.writeText(copyableUrl);
     setCopied(true);
     setNotice(null);
     window.setTimeout(() => setCopied(false), 2000);
-  }, [publicDestinationUrl]);
+  }, [copyableUrl]);
 
   const sendMessage = useCallback(async () => {
     const payload = messageSharePayload({
@@ -170,7 +178,7 @@ export function ShareTop5Button({
       ownerHandle: window.location.pathname.startsWith('/u/')
         ? data.handle ?? undefined
         : undefined,
-      url: publicDestinationUrl,
+      url: copyableUrl,
     });
     if (typeof navigator.share === 'function') {
       try {
@@ -188,7 +196,7 @@ export function ShareTop5Button({
       `sms:?&body=${encodeURIComponent(`${payload.text}\n${payload.url}`)}`,
     );
     setOpen(false);
-  }, [data.handle, initialCategory, kind, publicDestinationUrl]);
+  }, [copyableUrl, data.handle, initialCategory, kind]);
 
   const formatFor = useCallback(
     (nextPlatform: SharePlatform) => {
@@ -705,9 +713,14 @@ export function messageSharePayload({
         ? watchlistSubjects[category]
         : rankedSubjects[category]
     : `${owner} Druthers profile`;
+  // `url` is passed through as-is — the caller decides whether it needs to
+  // be forced to prod (content posted for others to open later) or left
+  // env-dynamic (opened right now, by whoever this page is actually served
+  // to). Rewriting it here regressed "Send message" on QA/local back to a
+  // prod link no matter the environment.
   return {
     title: subject,
     text: `${subject} on Druthers`,
-    url: publicShareUrl(url),
+    url,
   };
 }

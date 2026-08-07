@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Visibility, VisibilityTier } from '@/lib/types';
-import { BASE_DOMAIN, SITE_URL } from '@/lib/shareCards';
+import { BASE_DOMAIN, getSiteUrl } from '@/lib/shareCards';
 import { impliedDefaultTier, fieldsFollowingDefault } from '@/lib/privacyDefaults';
 
 const TIER_ORDER: VisibilityTier[] = ['private', 'friends', 'public'];
@@ -327,7 +327,7 @@ export function PrivacySettings() {
                   return;
                 }
                 e.preventDefault();
-                void navigator.clipboard.writeText(`${SITE_URL}/u/${settings.handle}`);
+                void navigator.clipboard.writeText(`${getSiteUrl()}/u/${settings.handle}`);
                 setCopied(true);
                 window.setTimeout(() => setCopied(false), 1500);
               }}
@@ -490,7 +490,7 @@ export function PrivacySettings() {
                     type="button"
                     title="Click to copy a direct link to this shelf"
                     onClick={() =>
-                      copyShelfLink(d.field, `${SITE_URL}/u/${settings.handle}/${d.key}`)
+                      copyShelfLink(d.field, `${getSiteUrl()}/u/${settings.handle}/${d.key}`)
                     }
                     className="hover:text-brass-bright"
                   >
@@ -543,7 +543,7 @@ export function PrivacySettings() {
                     onClick={() =>
                       copyShelfLink(
                         d.watchlistField,
-                        `${SITE_URL}/u/${settings.handle}/${d.key}/watchlist`
+                        `${getSiteUrl()}/u/${settings.handle}/${d.key}/watchlist`
                       )
                     }
                     className="hover:text-brass-bright"

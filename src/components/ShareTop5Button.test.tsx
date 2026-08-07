@@ -84,6 +84,29 @@ describe('universal share menu (web#123)', () => {
     );
   });
 
+  it('copies and messages the actual environment host, not the prod host', async () => {
+    const qaDestination: ShareDestination = {
+      ...destination,
+      url: 'https://qa.druthers.io/u/avery/tv/watchlist',
+    };
+    render(<ShareTop5Button data={data} destination={qaDestination} initialCategory="tv" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Copy URL' }));
+    await waitFor(() =>
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        'https://qa.druthers.io/u/avery/tv/watchlist',
+      ),
+    );
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Send message' }));
+    await waitFor(() =>
+      expect(navigator.share).toHaveBeenCalledWith(
+        expect.objectContaining({ url: 'https://qa.druthers.io/u/avery/tv/watchlist' }),
+      ),
+    );
+  });
+
   it('warns before sharing a friends-only URL and links to settings', () => {
     render(
       <ShareTop5Button
@@ -119,6 +142,8 @@ describe('contextual share formatter title', () => {
   });
 
   it('builds concise category and watchlist message copy', () => {
+    // The URL passes through unchanged (web#regression: QA/local "Send
+    // message" must not be silently rewritten to the prod host).
     expect(
       messageSharePayload({
         category: 'games',
@@ -128,7 +153,7 @@ describe('contextual share formatter title', () => {
     ).toEqual({
       title: 'My games',
       text: 'My games on Druthers',
-      url: 'https://www.druthers.io/u/avery/games',
+      url: 'http://localhost:3000/u/avery/games',
     });
     expect(
       messageSharePayload({

@@ -467,6 +467,8 @@ export interface Summary {
   profile_public: boolean;
   shelves: SummaryShelf[];
   total_ranked: number;
+  /** Ranked + queued across every shelf — zero means a genuinely empty account. */
+  total_items: number;
   onboarding_completed: boolean;
   /** Whether the onboarding wizard should show: unfinished AND zero items added. */
   needs_onboarding: boolean;

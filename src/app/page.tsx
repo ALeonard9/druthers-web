@@ -134,7 +134,7 @@ export default async function HomePage() {
         <HomeActivity />
       </Suspense>
 
-      <TutorialLauncher />
+      <TutorialLauncher hasItems={summary.total_items > 0} />
     </div>
   );
 }

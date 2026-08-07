@@ -7,6 +7,7 @@ import { duelHrefFor } from '@/lib/duelShelves';
 import { playPop } from '@/lib/pop';
 import type { UserTVShow } from '@/lib/types';
 import { ShowStatusBadge } from './ShowStatusBadge';
+import { SwipeableRow } from './SwipeableRow';
 
 export function TVWatchlistCard({ userShow }: { userShow: UserTVShow }) {
   const router = useRouter();
@@ -31,21 +32,32 @@ export function TVWatchlistCard({ userShow }: { userShow: UserTVShow }) {
   }
 
   return (
-    <li className="flex flex-col overflow-hidden rounded-lg border border-line bg-panel">
-      <Link href={`/tv/${show.id}`} className="aspect-[2/3] block bg-line">
-        {show.poster_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={show.poster_url}
-            alt={show.title}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center p-2 text-center text-xs text-neutral-500">
-            {show.title}
+    <li className="block">
+      <SwipeableRow
+        onFullSwipeRight={() => track({ on_watchlist: false })}
+        rightActionWidth={80}
+        fullSwipeThreshold={120}
+        className="flex h-full flex-col overflow-hidden rounded-lg border border-line bg-panel"
+        rightActions={
+          <div className="flex h-full w-20 flex-col items-center justify-center bg-red-600/90 text-white shadow-inner">
+            <span className="text-xs font-medium">Remove</span>
           </div>
-        )}
-      </Link>
+        }
+      >
+        <Link href={`/tv/${show.id}`} className="aspect-[2/3] block bg-line">
+          {show.poster_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={show.poster_url}
+              alt={show.title}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center p-2 text-center text-xs text-neutral-500">
+              {show.title}
+            </div>
+          )}
+        </Link>
       <div className="flex flex-1 flex-col gap-2 p-3">
         <Link
           href={`/tv/${show.id}`}
@@ -75,15 +87,9 @@ export function TVWatchlistCard({ userShow }: { userShow: UserTVShow }) {
           >
             {userShow.on_rankings ? 'In Rankings' : '→ Rankings'}
           </button>
-          <button
-            onClick={() => track({ on_watchlist: false })}
-            disabled={pending}
-            className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400 disabled:opacity-50"
-          >
-            Remove
-          </button>
         </div>
       </div>
+      </SwipeableRow>
     </li>
   );
 }

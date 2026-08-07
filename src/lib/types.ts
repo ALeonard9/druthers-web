@@ -467,4 +467,5 @@ export interface Summary {
   profile_public: boolean;
   shelves: SummaryShelf[];
   total_ranked: number;
+  onboarding_completed: boolean;
 }

@@ -10,6 +10,7 @@ import { HomeTonight, TonightSkeleton } from '@/components/HomeTonight';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { HomeShelfCarousel } from '@/components/HomeShelfCarousel';
 import { PublicLanding } from '@/components/PublicLanding';
+import { TutorialLauncher } from '@/components/Tutorial';
 import type { Summary } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -78,6 +79,10 @@ export default async function HomePage() {
     throw err;
   }
 
+  if (!summary.onboarding_completed) {
+    redirect('/onboarding');
+  }
+
   const shareData = buildShareData(summary);
   const nothingRanked = summary.total_ranked === 0;
 
@@ -128,6 +133,8 @@ export default async function HomePage() {
       <Suspense fallback={<ActivitySkeleton />}>
         <HomeActivity />
       </Suspense>
+
+      <TutorialLauncher />
     </div>
   );
 }

@@ -31,6 +31,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
 import { DuelShareButton } from '@/components/DuelShareButton';
+import { SwipeableRow } from '@/components/SwipeableRow';
 import type { DuelEntry, ShelfConfig } from '@/lib/duelShelves';
 import type { DuelShareCard } from '@/lib/duelShareCardRender';
 import {
@@ -140,6 +141,7 @@ export function RankingDuel({
   queue: initialQueue,
   rerankId,
   priorRank,
+  onQueueEmpty,
 }: {
   shelf: ShelfConfig;
   ranked: DuelEntry[];
@@ -148,6 +150,8 @@ export function RankingDuel({
   rerankId?: string;
   /** Its rank just before that — the candidate's own `rank` is already null. */
   priorRank?: number;
+  /** Callback fired when the queue is emptied, useful for parent components that manage their own state. */
+  onQueueEmpty?: (newRanked: DuelEntry[]) => void;
 }) {
   const router = useRouter();
   const [ranked, setRanked] = useState(initialRanked);
@@ -277,9 +281,30 @@ export function RankingDuel({
   const [confirmingRemoveEntry, setConfirmingRemoveEntry] = useState<DuelEntry | null>(null);
 
   if (!candidate) {
+    if (onQueueEmpty) {
+      return (
+        <div className="flex flex-col items-center gap-6 rounded-xl border border-line bg-panel/60 px-6 py-12 text-center">
+          <p className="font-display text-2xl font-medium text-paper">
+            Placed!
+          </p>
+          <button onClick={() => onQueueEmpty(ranked)} className="rounded bg-brass px-6 py-3 text-sm font-medium text-ink hover:bg-brass-bright">
+            Continue adding {shelf.label}
+          </button>
+        </div>
+      );
+    }
     return (
       <Done shelf={shelf} placements={placements} rankedCount={ranked.length} />
     );
+  }
+
+  function removeCandidate(entry: DuelEntry) {
+    if (entry.id === candidate?.id) {
+      skip();
+    } else {
+      setRanked((prev) => prev.filter((e) => e.id !== entry.id));
+      setAnswers(null);
+    }
   }
 
   return (
@@ -357,6 +382,7 @@ export function RankingDuel({
               }
               hint="←"
               onPick={() => answer('candidate')}
+              onRemove={() => removeCandidate(pair.candidate)}
               onLongPress={() => setConfirmingRemoveEntry(pair.candidate)}
             />
             <Contender
@@ -364,6 +390,7 @@ export function RankingDuel({
               badge={pair.opponent.rank != null ? `#${pair.opponent.rank}` : null}
               hint="→"
               onPick={() => answer('opponent')}
+              onRemove={() => removeCandidate(pair.opponent)}
               onLongPress={() => setConfirmingRemoveEntry(pair.opponent)}
             />
           </div>
@@ -459,12 +486,14 @@ function Contender({
   badge,
   hint,
   onPick,
+  onRemove,
   onLongPress,
 }: {
   entry: DuelEntry;
   badge: string | null;
   hint: string;
   onPick: () => void;
+  onRemove?: () => void;
   onLongPress?: () => void;
 }) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -488,21 +517,34 @@ function Contender({
   }
 
   return (
-    <button
-      onClick={() => {
-        if (!didLongPressRef.current) {
-          onPick();
-        }
-        didLongPressRef.current = false;
-      }}
-      onMouseDown={startPress}
-      onMouseUp={cancelPress}
-      onMouseLeave={cancelPress}
-      onTouchStart={startPress}
-      onTouchEnd={cancelPress}
-      className="group flex h-full min-h-0 flex-col items-center gap-2 rounded-xl border border-line bg-panel p-3 text-center transition-colors hover:border-brass hover:bg-brass-wash/40 focus:outline-none focus-visible:border-brass focus-visible:ring-2 focus-visible:ring-brass"
+    <SwipeableRow
+      onFullSwipeRight={onRemove}
+      rightActionWidth={80}
+      fullSwipeThreshold={120}
+      className="h-full rounded-xl"
+      rightActions={
+        onRemove ? (
+          <div className="flex h-full w-20 flex-col items-center justify-center rounded-r-xl bg-red-600/90 text-white shadow-inner">
+            <span className="text-xs font-medium">Remove</span>
+          </div>
+        ) : undefined
+      }
     >
-      {/* Sized off the viewport, not the column, so the question, both posters
+      <button
+        onClick={() => {
+          if (!didLongPressRef.current) {
+            onPick();
+          }
+          didLongPressRef.current = false;
+        }}
+        onMouseDown={startPress}
+        onMouseUp={cancelPress}
+        onMouseLeave={cancelPress}
+        onTouchStart={startPress}
+        onTouchEnd={cancelPress}
+        className="group flex h-full min-h-0 w-full flex-col items-center gap-2 rounded-xl border border-line bg-panel p-3 text-center transition-colors hover:border-brass hover:bg-brass-wash/40 focus:outline-none focus-visible:border-brass focus-visible:ring-2 focus-visible:ring-brass"
+      >
+        {/* Sized off the viewport, not the column, so the question, both posters
           and the placement button stay on one screen without scrolling — the
           whole flow is "glance, pick, repeat". */}
       <div className="relative min-h-0 flex-1">
@@ -534,6 +576,7 @@ function Contender({
         </p>
       </div>
     </button>
+    </SwipeableRow>
   );
 }
 

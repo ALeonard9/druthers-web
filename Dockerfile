@@ -17,8 +17,10 @@ ENV DOCKER_BUILD=1
 # prod builds must pass them as build args (see druthers-infra launch runbook).
 ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
 ARG NEXT_PUBLIC_APP_ENV
+ARG NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 RUN npm run build
 
 # --- runner: minimal image running the standalone server as non-root ---

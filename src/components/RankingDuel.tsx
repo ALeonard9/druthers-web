@@ -31,7 +31,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
 import { DuelShareButton } from '@/components/DuelShareButton';
-import { SwipeableRow } from '@/components/SwipeableRow';
 import type { DuelEntry, ShelfConfig } from '@/lib/duelShelves';
 import type { DuelShareCard } from '@/lib/duelShareCardRender';
 import {
@@ -298,15 +297,6 @@ export function RankingDuel({
     );
   }
 
-  function removeCandidate(entry: DuelEntry) {
-    if (entry.id === candidate?.id) {
-      skip();
-    } else {
-      setRanked((prev) => prev.filter((e) => e.id !== entry.id));
-      setAnswers(null);
-    }
-  }
-
   return (
     <div className="flex flex-col gap-3">
       {confirmingRemoveEntry && (
@@ -316,7 +306,7 @@ export function RankingDuel({
               Remove “{confirmingRemoveEntry.title}”?
             </h3>
             <p className="text-xs text-neutral-400">
-              This will remove it from duel considerations for this shelf.
+              This will remove it from this ranking session.
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -327,14 +317,8 @@ export function RankingDuel({
               </button>
               <button
                 onClick={() => {
-                  const toRemove = confirmingRemoveEntry;
                   setConfirmingRemoveEntry(null);
-                  if (toRemove.id === candidate?.id) {
-                    skip();
-                  } else {
-                    setRanked((prev) => prev.filter((e) => e.id !== toRemove.id));
-                    setAnswers(null);
-                  }
+                  skip();
                 }}
                 className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-500"
               >
@@ -382,16 +366,13 @@ export function RankingDuel({
               }
               hint="←"
               onPick={() => answer('candidate')}
-              onRemove={() => removeCandidate(pair.candidate)}
-              onLongPress={() => setConfirmingRemoveEntry(pair.candidate)}
+              onRemove={() => setConfirmingRemoveEntry(pair.candidate)}
             />
             <Contender
               entry={pair.opponent}
               badge={pair.opponent.rank != null ? `#${pair.opponent.rank}` : null}
               hint="→"
               onPick={() => answer('opponent')}
-              onRemove={() => removeCandidate(pair.opponent)}
-              onLongPress={() => setConfirmingRemoveEntry(pair.opponent)}
             />
           </div>
 
@@ -487,61 +468,17 @@ function Contender({
   hint,
   onPick,
   onRemove,
-  onLongPress,
 }: {
   entry: DuelEntry;
   badge: string | null;
   hint: string;
   onPick: () => void;
   onRemove?: () => void;
-  onLongPress?: () => void;
 }) {
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const didLongPressRef = useRef(false);
-
-  function startPress() {
-    didLongPressRef.current = false;
-    if (!onLongPress) return;
-    timerRef.current = setTimeout(() => {
-      didLongPressRef.current = true;
-      onLongPress();
-      timerRef.current = null;
-    }, 600);
-  }
-
-  function cancelPress() {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  }
-
   return (
-    <SwipeableRow
-      onFullSwipeRight={onRemove}
-      rightActionWidth={80}
-      fullSwipeThreshold={120}
-      className="h-full rounded-xl"
-      rightActions={
-        onRemove ? (
-          <div className="flex h-full w-20 flex-col items-center justify-center rounded-r-xl bg-red-600/90 text-white shadow-inner">
-            <span className="text-xs font-medium">Remove</span>
-          </div>
-        ) : undefined
-      }
-    >
+    <div className="relative h-full min-h-0 overflow-hidden rounded-xl bg-panel">
       <button
-        onClick={() => {
-          if (!didLongPressRef.current) {
-            onPick();
-          }
-          didLongPressRef.current = false;
-        }}
-        onMouseDown={startPress}
-        onMouseUp={cancelPress}
-        onMouseLeave={cancelPress}
-        onTouchStart={startPress}
-        onTouchEnd={cancelPress}
+        onClick={onPick}
         className="group flex h-full min-h-0 w-full flex-col items-center gap-2 rounded-xl border border-line bg-panel p-3 text-center transition-colors hover:border-brass hover:bg-brass-wash/40 focus:outline-none focus-visible:border-brass focus-visible:ring-2 focus-visible:ring-brass"
       >
         {/* Sized off the viewport, not the column, so the question, both posters
@@ -575,8 +512,19 @@ function Contender({
           <span className="hidden group-hover:text-brass sm:inline">{hint}</span>
         </p>
       </div>
-    </button>
-    </SwipeableRow>
+      </button>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove ${entry.title} from this ranking session`}
+          title="Remove from this ranking session"
+          className="absolute right-2 top-2 z-20 flex min-h-11 min-w-11 items-center justify-center rounded-full border border-red-700/80 bg-red-950/95 text-2xl leading-none text-red-300 shadow-lg transition-colors hover:border-red-500 hover:bg-red-900 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      )}
+    </div>
   );
 }
 

@@ -28,12 +28,13 @@ function loadFetchHandler(
   fakeFetch: (req: Request, init?: RequestInit) => Promise<Response> = async () =>
     new Response('ok'),
   puts: { request: Request; response: Response }[] = [],
+  origin = 'https://www.druthers.io',
 ): (event: FakeEvent) => void {
   const src = readFileSync(resolve(__dirname, '../../public/sw.js'), 'utf8');
   const listeners: Record<string, (event: FakeEvent) => void> = {};
 
   const fakeSelf = {
-    location: { origin: 'http://localhost:3000' },
+    location: { origin },
     addEventListener: (name: string, handler: (event: FakeEvent) => void) => {
       listeners[name] = handler;
     },
@@ -82,8 +83,9 @@ function fetchEvent(
   mode: string,
   fakeFetch?: (req: Request, init?: RequestInit) => Promise<Response>,
   puts?: { request: Request; response: Response }[],
+  origin?: string,
 ): { event: FakeEvent; responded: boolean; result: Promise<unknown> | undefined } {
-  const handler = loadFetchHandler(fakeFetch, puts);
+  const handler = loadFetchHandler(fakeFetch, puts, origin);
   const request =
     mode === 'navigate'
       ? fakeNavigateRequest(url)
@@ -106,26 +108,37 @@ describe('sw.js fetch strategy (druthers-web#91 regression)', () => {
   it('does NOT cache-first a same-origin page route fetched as a client-side transition', () => {
     // This is the exact request shape Next.js issues for a soft navigation:
     // a GET to the page's own URL, mode "same-origin" (not "navigate").
-    const { responded } = fetchEvent('http://localhost:3000/tv/schedule', 'same-origin');
+    const { responded } = fetchEvent('https://www.druthers.io/tv/schedule', 'same-origin');
     expect(responded).toBe(false);
   });
 
   it('does NOT intercept API calls', () => {
-    const { responded } = fetchEvent('http://localhost:3000/api/tv/some-id/track', 'same-origin');
+    const { responded } = fetchEvent('https://www.druthers.io/api/tv/some-id/track', 'same-origin');
     expect(responded).toBe(false);
   });
 
   it('still cache-firsts hashed Next.js static assets', () => {
     const { responded } = fetchEvent(
-      'http://localhost:3000/_next/static/chunks/main.js',
+      'https://www.druthers.io/_next/static/chunks/main.js',
       'same-origin',
     );
     expect(responded).toBe(true);
   });
 
   it('still cache-firsts the declared app-shell URLs', () => {
-    const { responded } = fetchEvent('http://localhost:3000/manifest.webmanifest', 'same-origin');
+    const { responded } = fetchEvent('https://www.druthers.io/manifest.webmanifest', 'same-origin');
     expect(responded).toBe(true);
+  });
+
+  it('does NOT intercept Next.js assets on localhost', () => {
+    const { responded } = fetchEvent(
+      'http://localhost:3000/_next/static/chunks/main.js',
+      'same-origin',
+      undefined,
+      undefined,
+      'http://localhost:3000',
+    );
+    expect(responded).toBe(false);
   });
 });
 
@@ -140,7 +153,7 @@ describe('sw.js does not pin a bad response into the cache (PWA-in-prod regressi
     const puts: { request: Request; response: Response }[] = [];
     const notFound = async () => new Response('not found', { status: 404 });
     const { result } = fetchEvent(
-      'http://localhost:3000/_next/static/chunks/deleted-hash.js',
+      'https://www.druthers.io/_next/static/chunks/deleted-hash.js',
       'same-origin',
       notFound,
       puts,
@@ -153,7 +166,7 @@ describe('sw.js does not pin a bad response into the cache (PWA-in-prod regressi
     const puts: { request: Request; response: Response }[] = [];
     const ok = async () => new Response('ok');
     const { result } = fetchEvent(
-      'http://localhost:3000/_next/static/chunks/current-hash.js',
+      'https://www.druthers.io/_next/static/chunks/current-hash.js',
       'same-origin',
       ok,
       puts,
@@ -165,7 +178,7 @@ describe('sw.js does not pin a bad response into the cache (PWA-in-prod regressi
   it('does not cache a failed navigation as the offline fallback', async () => {
     const puts: { request: Request; response: Response }[] = [];
     const serverError = async () => new Response('error', { status: 500 });
-    const { result } = fetchEvent('http://localhost:3000/', 'navigate', serverError, puts);
+    const { result } = fetchEvent('https://www.druthers.io/', 'navigate', serverError, puts);
     await result;
     expect(puts).toHaveLength(0);
   });
@@ -176,7 +189,7 @@ describe('sw.js does not pin a bad response into the cache (PWA-in-prod regressi
       sawInit = init;
       return new Response('ok');
     };
-    const { result } = fetchEvent('http://localhost:3000/', 'navigate', spy);
+    const { result } = fetchEvent('https://www.druthers.io/', 'navigate', spy);
     await result;
     expect(sawInit?.cache).toBe('no-store');
   });

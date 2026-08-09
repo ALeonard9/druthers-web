@@ -2,18 +2,31 @@
 // screen when the network is slow or briefly unavailable. Not a full offline
 // mode — API data always comes from the network.
 //
-// Only the shell URLs below and Next's hashed /_next/static/ build output are
-// cache-first. Everything else — including client-side route transitions,
-// which fetch a page's RSC payload from that same page's URL rather than
-// under /api/ — must always hit the network. Caching those cache-first froze
-// a page's server-rendered snapshot (e.g. /tv/schedule's watched status)
-// indefinitely, since nothing here bumps the entry once cached.
-const CACHE_NAME = 'druthers-shell-v3';
-const SHELL_URLS = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+// Only static assets and Next's hashed /_next/static/ build output are
+// cache-first. A *page* URL must never be. Client-side route transitions
+// fetch a page's RSC payload from that same page's URL rather than under
+// /api/, and with a `?_rsc=` cache-buster that leaves the pathname alone, so
+// a pathname match cannot tell live page data from a static asset. Caching
+// those cache-first froze a page's server-rendered snapshot indefinitely,
+// since nothing here bumps the entry once cached (#98: /tv/schedule's
+// watched status; and again on the home page, where a deleted item kept its
+// rank and cover in the Top 5).
+//
+// '/' is precached as the offline fallback for a cold PWA start, but it is a
+// page route, so it is served network-first through the navigate branch and
+// is deliberately absent from CACHE_FIRST_URLS.
+const CACHE_NAME = 'druthers-shell-v4';
+const OFFLINE_FALLBACK_URL = '/';
+const CACHE_FIRST_URLS = [
+  '/manifest.webmanifest',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+];
+const PRECACHE_URLS = [OFFLINE_FALLBACK_URL, ...CACHE_FIRST_URLS];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_URLS)),
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)),
   );
   self.skipWaiting();
 });
@@ -57,13 +70,22 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached ?? caches.match('/'))),
+        .catch(() =>
+          caches
+            .match(request)
+            .then((cached) => cached ?? caches.match(OFFLINE_FALLBACK_URL)),
+        ),
     );
     return;
   }
 
+  // Belt and braces alongside keeping page routes out of CACHE_FIRST_URLS:
+  // an RSC payload is live page data whatever URL it is served from, so it
+  // can never be answered from the shell cache.
+  if (request.headers.has('RSC') || url.searchParams.has('_rsc')) return;
+
   const cacheable =
-    url.pathname.startsWith('/_next/static/') || SHELL_URLS.includes(url.pathname);
+    url.pathname.startsWith('/_next/static/') || CACHE_FIRST_URLS.includes(url.pathname);
   if (!cacheable) return;
 
   event.respondWith(

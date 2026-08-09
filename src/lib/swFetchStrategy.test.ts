@@ -24,12 +24,13 @@ interface FakeEvent {
   waitUntil: (p: unknown) => void;
 }
 
-function loadFetchHandler(
+function loadSw(
   fakeFetch: (req: Request, init?: RequestInit) => Promise<Response> = async () =>
     new Response('ok'),
   puts: { request: Request; response: Response }[] = [],
   origin = 'https://www.druthers.io',
-): (event: FakeEvent) => void {
+  precached: string[][] = [],
+): Record<string, (event: FakeEvent) => void> {
   const src = readFileSync(resolve(__dirname, '../../public/sw.js'), 'utf8');
   const listeners: Record<string, (event: FakeEvent) => void> = {};
 
@@ -44,7 +45,9 @@ function loadFetchHandler(
 
   const fakeCaches = {
     open: async () => ({
-      addAll: async () => {},
+      addAll: async (urls: string[]) => {
+        precached.push(urls);
+      },
       put: async (request: Request, response: Response) => {
         puts.push({ request, response });
       },
@@ -64,8 +67,31 @@ function loadFetchHandler(
     console,
   });
   vm.runInContext(src, context, { filename: 'sw.js' });
+  return listeners;
+}
 
-  const handler = listeners.fetch;
+/**
+ * Keeping '/' out of the cache-first list is what stops the home page's RSC
+ * payload freezing, but '/' still has to be *precached* or a cold PWA start
+ * with no network has nothing to fall back to. sw.js keeps those two lists
+ * separate precisely so they can differ, so pin the fallback down here.
+ */
+async function precachedUrls(): Promise<string[]> {
+  const precached: string[][] = [];
+  const install = loadSw(undefined, undefined, undefined, precached).install;
+  if (!install) throw new Error('sw.js never registered an install listener');
+  let waited: unknown;
+  install({ waitUntil: (p: unknown) => (waited = p) } as unknown as FakeEvent);
+  await waited;
+  return precached.flat();
+}
+
+function loadFetchHandler(
+  fakeFetch?: (req: Request, init?: RequestInit) => Promise<Response>,
+  puts?: { request: Request; response: Response }[],
+  origin?: string,
+): (event: FakeEvent) => void {
+  const handler = loadSw(fakeFetch, puts, origin).fetch;
   if (!handler) throw new Error('sw.js never registered a fetch listener');
   return handler;
 }
@@ -112,6 +138,19 @@ describe('sw.js fetch strategy (druthers-web#91 regression)', () => {
     expect(responded).toBe(false);
   });
 
+  it('does NOT cache-first the home page fetched as a client-side transition', () => {
+    // '/' is in the shell list as the offline fallback for a cold PWA start,
+    // but it is also a page route, so it needs the same exemption
+    // /tv/schedule got above. A soft navigation home — and the
+    // router.refresh() behind RefreshHomeOnReturn — fetches the home page's
+    // RSC payload from '/' with an `?_rsc=` cache-buster that leaves the
+    // pathname alone, so a shell-list check on pathname alone matches it.
+    // Cache-firsting that froze the Top 5: a deleted item kept its rank and
+    // cover on the home page indefinitely.
+    const { responded } = fetchEvent('https://www.druthers.io/?_rsc=1t9kq', 'same-origin');
+    expect(responded).toBe(false);
+  });
+
   it('does NOT intercept API calls', () => {
     const { responded } = fetchEvent('https://www.druthers.io/api/tv/some-id/track', 'same-origin');
     expect(responded).toBe(false);
@@ -128,6 +167,10 @@ describe('sw.js fetch strategy (druthers-web#91 regression)', () => {
   it('still cache-firsts the declared app-shell URLs', () => {
     const { responded } = fetchEvent('https://www.druthers.io/manifest.webmanifest', 'same-origin');
     expect(responded).toBe(true);
+  });
+
+  it('still precaches the home page as the offline fallback', async () => {
+    expect(await precachedUrls()).toContain('/');
   });
 
   it('does NOT intercept Next.js assets on localhost', () => {

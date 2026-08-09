@@ -26,7 +26,6 @@ import { pagerWindow } from '@/lib/pagerWindow';
 import { useRankedListLength } from '@/lib/rankedListLength';
 import { useIncrementalReveal } from '@/lib/useIncrementalReveal';
 import { LengthControl } from './LengthControl';
-import { SwipeableRow } from './SwipeableRow';
 
 function Cover({ url, className }: { url: string | null; className: string }) {
   if (!url) return <div className={`${className} bg-line`} />;
@@ -55,19 +54,9 @@ function ToRankChip({
     <div
       ref={setNodeRef}
       style={style}
-      className="block"
+      className="flex flex-wrap items-center gap-2 rounded-lg border border-neutral-700 bg-panel p-2"
     >
-      <SwipeableRow
-        onFullSwipeRight={() => onMoveToWatchlist(item)}
-        rightActionWidth={90}
-        fullSwipeThreshold={140}
-        className="flex items-center gap-2 rounded-lg border border-neutral-700 bg-panel p-2"
-        rightActions={
-          <div className="flex h-full w-[90px] flex-col items-center justify-center rounded-r-lg bg-neutral-700 text-neutral-200 shadow-inner">
-            <span className="text-xs font-medium">Read List</span>
-          </div>
-        }
-      >
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <button
           {...attributes}
           {...listeners}
@@ -84,21 +73,29 @@ function ToRankChip({
         >
           {item.book.title}
         </Link>
-        <Link
-          href={`/books/ranking?item=${item.book.id}`}
-          title="Place it by comparison instead of dragging"
-          className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright"
+      </div>
+      <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
+        <button
+          onClick={() => onMoveToWatchlist(item)}
+          className="min-h-10 rounded border border-line px-3 py-2 text-xs font-medium text-neutral-200 hover:border-neutral-500 hover:bg-line/40"
         >
-          Place it →
-        </Link>
+          Read List
+        </button>
         <button
           onClick={() => onPlaceTop(item)}
-          title="Place at #1 without dragging"
-          className="rounded bg-brass-wash px-2 py-1 font-display text-xs font-medium text-brass hover:bg-brass hover:text-ink"
+          title="Rank at #1 without dragging"
+          className="min-h-10 rounded border border-brass/50 bg-brass-wash px-3 py-2 text-xs font-medium text-brass hover:border-brass hover:bg-brass hover:text-ink"
         >
-          → #1
+          Rank #1
         </button>
-      </SwipeableRow>
+        <Link
+          href={`/books/ranking?item=${item.book.id}`}
+          title="Rank by comparison instead of dragging"
+          className="inline-flex min-h-10 items-center rounded bg-brass px-3 py-2 text-xs font-semibold text-ink hover:bg-brass-bright"
+        >
+          Rank by comparison →
+        </Link>
+      </div>
     </div>
   );
 }
@@ -143,19 +140,9 @@ function RankedRow({
     <li
       ref={setNodeRef}
       style={style}
-      className="block"
+      className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-panel p-2"
     >
-      <SwipeableRow
-        onFullSwipeRight={() => onConfirmRemove(item)}
-        rightActionWidth={80}
-        fullSwipeThreshold={120}
-        className="flex items-center gap-3 rounded-lg border border-line bg-panel p-2"
-        rightActions={
-          <div className="flex h-full w-20 flex-col items-center justify-center rounded-r-lg bg-red-600/90 text-white shadow-inner">
-            <span className="text-xs font-medium">Remove</span>
-          </div>
-        }
-      >
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         <button
           {...attributes}
           {...listeners}
@@ -175,14 +162,23 @@ function RankedRow({
           {item.book.title}
           {item.book.year ? ` (${item.book.year})` : ''}
         </Link>
+      </div>
+      <div className="ml-auto flex shrink-0 items-center justify-end gap-2">
         <button
           onClick={() => onRerank(item)}
           title="Pull it back out and re-judge its position by comparison"
-          className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-brass"
+          className="min-h-10 rounded border border-line px-3 py-2 text-xs font-medium text-neutral-200 hover:border-brass/60 hover:text-brass"
         >
           Rerank
         </button>
-      </SwipeableRow>
+        <button
+          onClick={() => onConfirmRemove(item)}
+          aria-label={`Remove ${item.book.title} from rankings`}
+          className="min-h-10 rounded border border-red-600/60 px-3 py-2 text-xs font-medium text-red-300 hover:border-red-500 hover:bg-red-600/20 hover:text-red-200"
+        >
+          Remove
+        </button>
+      </div>
     </li>
   );
 }

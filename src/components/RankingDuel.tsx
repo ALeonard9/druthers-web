@@ -255,6 +255,28 @@ export function RankingDuel({
     setAnswers(null);
   }
 
+  async function removeFromShelf(entry: DuelEntry) {
+    setCommitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/${shelf.id}/${entry.id}/track`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ on_rankings: false, on_watchlist: false }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+
+      setQueue((prev) => prev.filter((queued) => queued.id !== entry.id));
+      setAnswers(null);
+      setConfirmingRemoveEntry(null);
+      router.refresh();
+    } catch {
+      setError(`Couldn't remove that ${shelf.noun}. Try again.`);
+    } finally {
+      setCommitting(false);
+    }
+  }
+
   // Arrow keys pick a side, Enter takes the estimate — the whole point is to
   // get through a pile quickly, and reaching for the mouse each time is the
   // slow part.
@@ -306,7 +328,7 @@ export function RankingDuel({
               Remove “{confirmingRemoveEntry.title}”?
             </h3>
             <p className="text-xs text-neutral-400">
-              This will remove it from this ranking session.
+              This removes it from both your rankings and watchlist.
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -316,13 +338,11 @@ export function RankingDuel({
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  setConfirmingRemoveEntry(null);
-                  skip();
-                }}
-                className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-500"
+                onClick={() => void removeFromShelf(confirmingRemoveEntry)}
+                disabled={committing}
+                className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-500 disabled:opacity-50"
               >
-                Remove
+                Remove from both
               </button>
             </div>
           </div>
@@ -517,8 +537,8 @@ function Contender({
         <button
           type="button"
           onClick={onRemove}
-          aria-label={`Remove ${entry.title} from this ranking session`}
-          title="Remove from this ranking session"
+          aria-label={`Remove ${entry.title} from rankings and watchlist`}
+          title="Remove from rankings and watchlist"
           className="absolute right-2 top-2 z-20 flex min-h-11 min-w-11 items-center justify-center rounded-full border border-red-700/80 bg-red-950/95 text-2xl leading-none text-red-300 shadow-lg transition-colors hover:border-red-500 hover:bg-red-900 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
         >
           <span aria-hidden="true">×</span>

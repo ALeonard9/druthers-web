@@ -37,6 +37,10 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // Never let an installed production PWA worker cache a local Next.js dev
+  // runtime. Dev chunk names are reused while their contents change, so a
+  // cache-first response can combine incompatible React/Next client modules.
+  if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return;
   if (url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate') {

@@ -177,7 +177,7 @@ export function SwipeableRow({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className="relative z-10 h-full w-full touch-pan-y will-change-transform"
+        className="relative z-10 h-full w-full touch-pan-y bg-inherit will-change-transform"
       >
         {children}
       </div>

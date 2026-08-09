@@ -58,6 +58,17 @@ describe('RankingDuel Component (web#136)', () => {
     );
 
     expect(screen.getAllByText('Test Movie Title')[0]).toBeTruthy();
+    const removeButton = screen.getByRole('button', {
+        name: 'Remove Test Movie Title from this ranking session',
+      });
+    expect(removeButton).toBeTruthy();
+    expect(removeButton.parentElement?.className).toContain('min-h-0');
+    expect(removeButton.parentElement?.className).toContain('overflow-hidden');
+    expect(
+      screen.queryByRole('button', {
+        name: 'Remove Opponent One from this ranking session',
+      }),
+    ).toBeNull();
     const shareButton = screen.getByRole('button', { name: 'Share this duel' });
     expect(shareButton.className).toContain('min-h-11');
     expect(
@@ -67,6 +78,25 @@ describe('RankingDuel Component (web#136)', () => {
     const skipBtn = screen.getAllByRole('button', { name: 'Skip for now' })[0];
     fireEvent.click(skipBtn);
     expect(skipBtn).toBeTruthy();
+  });
+
+  it('confirms removal only for the item currently being ranked', () => {
+    render(
+      <RankingDuel
+        shelf={mockShelf}
+        queue={[mockEntry]}
+        ranked={mockOpponents}
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Remove Test Movie Title from this ranking session',
+      }),
+    );
+
+    expect(screen.getByRole('heading', { name: 'Remove “Test Movie Title”?' })).toBeTruthy();
+    expect(screen.getByText('This will remove it from this ranking session.')).toBeTruthy();
   });
 
   it('presents the board return as a prominent touch target', () => {

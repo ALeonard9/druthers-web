@@ -1,12 +1,12 @@
 /** @vitest-environment happy-dom */
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { RankingDuel } from './RankingDuel';
 import { RankingDuelPage } from './RankingDuelPage';
 import { SHELVES, type DuelEntry } from '@/lib/duelShelves';
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }));
 
 global.fetch = vi.fn().mockResolvedValue({
@@ -59,14 +59,14 @@ describe('RankingDuel Component (web#136)', () => {
 
     expect(screen.getAllByText('Test Movie Title')[0]).toBeTruthy();
     const removeButton = screen.getByRole('button', {
-        name: 'Remove Test Movie Title from this ranking session',
-      });
+      name: 'Remove Test Movie Title from rankings and watchlist',
+    });
     expect(removeButton).toBeTruthy();
     expect(removeButton.parentElement?.className).toContain('min-h-0');
     expect(removeButton.parentElement?.className).toContain('overflow-hidden');
     expect(
       screen.queryByRole('button', {
-        name: 'Remove Opponent One from this ranking session',
+        name: 'Remove Opponent One from rankings and watchlist',
       }),
     ).toBeNull();
     const shareButton = screen.getByRole('button', { name: 'Share this duel' });
@@ -80,7 +80,7 @@ describe('RankingDuel Component (web#136)', () => {
     expect(skipBtn).toBeTruthy();
   });
 
-  it('confirms removal only for the item currently being ranked', () => {
+  it('removes the current item from both rankings and watchlist', async () => {
     render(
       <RankingDuel
         shelf={mockShelf}
@@ -91,12 +91,24 @@ describe('RankingDuel Component (web#136)', () => {
 
     fireEvent.click(
       screen.getByRole('button', {
-        name: 'Remove Test Movie Title from this ranking session',
+        name: 'Remove Test Movie Title from rankings and watchlist',
       }),
     );
 
     expect(screen.getByRole('heading', { name: 'Remove “Test Movie Title”?' })).toBeTruthy();
-    expect(screen.getByText('This will remove it from this ranking session.')).toBeTruthy();
+    expect(
+      screen.getByText('This removes it from both your rankings and watchlist.'),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove from both' }));
+
+    await waitFor(() =>
+      expect(global.fetch).toHaveBeenCalledWith('/api/movies/item-1/track', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ on_rankings: false, on_watchlist: false }),
+      }),
+    );
   });
 
   it('presents the board return as a prominent touch target', () => {

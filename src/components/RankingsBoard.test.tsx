@@ -1,6 +1,6 @@
 /** @vitest-environment happy-dom */
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { RankingsBoard } from './RankingsBoard';
 import { TVRankingsBoard } from './TVRankingsBoard';
 import { BookRankingsBoard } from './BookRankingsBoard';
@@ -15,6 +15,8 @@ global.fetch = vi.fn().mockResolvedValue({
   ok: true,
   json: async () => ({}),
 });
+
+afterEach(cleanup);
 
 const mockMovieItem: UserMovie = {
   id: 'um-1',
@@ -125,23 +127,60 @@ const mockGameItem: UserVideoGame = {
 };
 
 describe('Drag-and-Drop Rankings Boards (web#137)', () => {
-  it('renders Movies RankingsBoard cleanly with items', () => {
-    render(<RankingsBoard placed={[mockMovieItem]} unplaced={[]} placedCount={1} />);
+  function expectExplicitActions(removeLabel: string, listLabel: string) {
+    expect(screen.getByRole('link', { name: 'Rank by comparison →' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Rank #1' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: listLabel })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Rerank' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: removeLabel })).toBeTruthy();
+    expect(screen.queryByText('Place it →')).toBeNull();
+  }
+
+  it('renders explicit right-side movie actions without swipe-only controls', () => {
+    const ready = {
+      ...mockMovieItem,
+      id: 'um-2',
+      rank: null,
+      movie: { ...mockMovieItem.movie, id: 'movie-2', title: 'Ready Movie' },
+    };
+    render(<RankingsBoard placed={[mockMovieItem]} unplaced={[ready]} placedCount={1} />);
     expect(screen.getByText(/Test Movie/)).toBeTruthy();
+    expectExplicitActions('Remove Test Movie from rankings', 'Watchlist');
   });
 
-  it('renders TVRankingsBoard cleanly with items', () => {
-    render(<TVRankingsBoard placed={[mockTVItem]} unplaced={[]} placedCount={1} />);
+  it('renders explicit right-side TV actions without swipe-only controls', () => {
+    const ready = {
+      ...mockTVItem,
+      id: 'utv-2',
+      rank: null,
+      tv_show: { ...mockTVItem.tv_show, id: 'tv-2', title: 'Ready TV Show' },
+    };
+    render(<TVRankingsBoard placed={[mockTVItem]} unplaced={[ready]} placedCount={1} />);
     expect(screen.getByText(/Test TV Show/)).toBeTruthy();
+    expectExplicitActions('Remove Test TV Show from rankings', 'Watchlist');
   });
 
-  it('renders BookRankingsBoard cleanly with items', () => {
-    render(<BookRankingsBoard placed={[mockBookItem]} unplaced={[]} placedCount={1} />);
+  it('renders explicit right-side book actions without swipe-only controls', () => {
+    const ready = {
+      ...mockBookItem,
+      id: 'ub-2',
+      rank: null,
+      book: { ...mockBookItem.book, id: 'book-2', title: 'Ready Book' },
+    };
+    render(<BookRankingsBoard placed={[mockBookItem]} unplaced={[ready]} placedCount={1} />);
     expect(screen.getByText(/Test Book/)).toBeTruthy();
+    expectExplicitActions('Remove Test Book from rankings', 'Read List');
   });
 
-  it('renders GameRankingsBoard cleanly with items', () => {
-    render(<GameRankingsBoard placed={[mockGameItem]} unplaced={[]} placedCount={1} />);
+  it('renders explicit right-side game actions without swipe-only controls', () => {
+    const ready = {
+      ...mockGameItem,
+      id: 'ug-2',
+      rank: null,
+      game: { ...mockGameItem.game, id: 'game-2', title: 'Ready Video Game' },
+    };
+    render(<GameRankingsBoard placed={[mockGameItem]} unplaced={[ready]} placedCount={1} />);
     expect(screen.getByText(/Test Video Game/)).toBeTruthy();
+    expectExplicitActions('Remove Test Video Game from rankings', 'Watchlist');
   });
 });

@@ -3,8 +3,9 @@ import { Fraunces, Instrument_Sans } from 'next/font/google';
 import './globals.css';
 import { Sidebar, BottomTabs } from '@/components/Sidebar';
 import { TopBar } from '@/components/TopBar';
-import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
+import { EnvBanner } from '@/components/EnvBanner';
 import { RefreshHomeOnReturn } from '@/components/RefreshHomeOnReturn';
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { getSessionUser } from '@/lib/session';
 import { SITE_URL } from '@/lib/shareCards';
 
@@ -87,6 +88,9 @@ export default async function RootLayout({
       className={`h-full antialiased ${fraunces.variable} ${instrumentSans.variable}`}
     >
       <body className="min-h-full bg-night text-neutral-100">
+        {/* Environment warning sits above the app shell so signed-out visitors
+            on the public landing page see it too. Renders nothing in dev. */}
+        <EnvBanner />
         {user ? (
           <div className="flex min-h-screen">
             <Sidebar />

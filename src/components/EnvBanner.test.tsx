@@ -37,7 +37,11 @@ describe('EnvBanner', () => {
     process.env.NEXT_PUBLIC_APP_ENV = 'prod';
     render(<EnvBanner />);
 
-    expect(screen.getByText(/beta/i)).toBeTruthy();
+    // /beta/i alone matches twice — the chip label and the sentence — and
+    // getByText throws on multiple matches. Assert each element separately so
+    // the test says which one it means.
+    expect(screen.getByText('Beta')).toBeTruthy();
+    expect(screen.getByText(/druthers is in beta/i)).toBeTruthy();
     expect(screen.getByText(/frequent changes/i)).toBeTruthy();
   });
 

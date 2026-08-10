@@ -3,6 +3,7 @@ import { getSessionUser } from '@/lib/session';
 import { ApiKeysManager } from '@/components/ApiKeysManager';
 import { PrivacySettings } from '@/components/PrivacySettings';
 import { SoundPicker } from '@/components/SoundPicker';
+import { TimeZonePicker } from '@/components/TimeZonePicker';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,6 +40,18 @@ export default async function SettingsPage() {
           </p>
         </div>
         <PrivacySettings />
+      </section>
+
+      <section id="time-zone" className="flex scroll-mt-24 flex-col gap-3">
+        <div>
+          <h2 className="font-display text-lg text-paper">Time zone</h2>
+          <p className="text-sm text-neutral-400">
+            Which clock your hours are read in — the greeting up top, and
+            which day the schedule calls today. Saved to your account, so it
+            follows you to another device.
+          </p>
+        </div>
+        <TimeZonePicker />
       </section>
 
       <section className="flex flex-col gap-3">

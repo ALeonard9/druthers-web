@@ -1,21 +1,22 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { getSessionUser } from '@/lib/session';
+import { greetingAt, FALLBACK_TIME_ZONE } from '@/lib/viewerTime';
+import { getViewerTimeZone } from '@/lib/viewerTimeZone';
 import { LogoutButton } from './LogoutButton';
 import { EnvBadge } from './EnvBadge';
 import { UnreadBadge } from './UnreadBadge';
 import { FriendRequestBadge } from './FriendRequestBadge';
 
-function greeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 5) return 'Up late';
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-}
-
 export async function TopBar() {
   const user = await getSessionUser();
+  // This runs on the server, so the greeting has to be told which clock to
+  // read — `new Date().getHours()` here is the container's hour, which is how
+  // a reader in Sydney got "Good evening" with their breakfast. Signed-out
+  // visitors have no preference to honour, and skipping the lookup keeps the
+  // login page off the API entirely.
+  const timeZone = user ? await getViewerTimeZone() : FALLBACK_TIME_ZONE;
+  const greeting = greetingAt(new Date(), timeZone);
 
   return (
     <header
@@ -41,7 +42,7 @@ export async function TopBar() {
           ?
         </Link>
         <span className="hidden font-display text-lg text-paper md:inline">
-          {greeting()}.
+          {greeting}.
         </span>
         <EnvBadge />
       </div>

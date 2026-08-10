@@ -314,6 +314,8 @@ export type RankedListLength = '25' | '50' | '100' | 'all';
 
 export interface Preferences {
   ranked_list_length: RankedListLength;
+  /** IANA zone. Always concrete — the API resolves an unset column server-side. */
+  time_zone: string;
 }
 
 export type VisibilityTier = 'private' | 'friends' | 'public';

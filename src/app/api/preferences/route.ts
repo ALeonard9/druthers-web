@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Preferences } from '@/lib/types';
 
-// Read the caller's display preferences (today: ranked_list_length).
+// Read the caller's display preferences (ranked_list_length, time_zone,
+// onboarding_completed). Writes are partial — only sent fields change.
 export async function GET() {
   try {
     const preferences = await apiFetch<Preferences>('/v1/users/me/preferences');

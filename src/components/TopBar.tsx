@@ -7,6 +7,7 @@ import { LogoutButton } from './LogoutButton';
 import { EnvBadge } from './EnvBadge';
 import { UnreadBadge } from './UnreadBadge';
 import { FriendRequestBadge } from './FriendRequestBadge';
+import { SearchForm } from './SearchForm';
 
 export async function TopBar() {
   const user = await getSessionUser();
@@ -20,7 +21,7 @@ export async function TopBar() {
 
   return (
     <header
-      className="flex items-center justify-between gap-4 border-b border-line bg-night px-4 py-3 md:px-8"
+      className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-night px-4 py-3 sm:flex-nowrap sm:gap-4 md:px-8"
       style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}
     >
       <div className="flex items-center gap-3">
@@ -47,14 +48,9 @@ export async function TopBar() {
         <EnvBadge />
       </div>
       {user && (
-        <form action="/search" className="mx-2 hidden flex-1 justify-center sm:flex">
-          <input
-            type="search"
-            name="q"
-            placeholder="Search everything…"
-            className="w-full max-w-sm rounded border border-neutral-700 bg-panel px-3 py-1.5 text-sm outline-none placeholder:text-neutral-600 focus:border-brass"
-          />
-        </form>
+        <div className="order-3 basis-full sm:order-none sm:mx-2 sm:flex-1 sm:basis-auto sm:max-w-lg">
+          <SearchForm compact />
+        </div>
       )}
       {user ? (
         <div className="flex items-center gap-3 text-sm">

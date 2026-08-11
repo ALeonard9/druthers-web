@@ -1,10 +1,13 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { bestScore, rankResults } from '@/lib/similarity';
-import type { GlobalSearch } from '@/lib/types';
+import { includesCatalogScope, includesPeopleScope, searchScope } from '@/lib/searchScope';
+import type { GlobalSearch, UserSearchResponse } from '@/lib/types';
 import { AddFromSearchButton } from '@/components/AddFromSearchButton';
 import { MultiAddMode } from '@/components/MultiAddMode';
+import { SearchForm } from '@/components/SearchForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,38 +70,42 @@ export default async function SearchPage({
 }) {
   const user = await getSessionUser();
   if (!user) redirect('/login');
-  const { q } = await searchParams;
+  const { q, scope: requestedScope } = await searchParams;
+  const scope = searchScope(requestedScope);
 
   let results: GlobalSearch | null = null;
+  let peopleResults: UserSearchResponse | null = null;
   if (q?.trim()) {
     try {
-      results = await apiFetch<GlobalSearch>(
-        `/v1/search?q=${encodeURIComponent(q)}`,
-      );
+      [results, peopleResults] = await Promise.all([
+        includesCatalogScope(scope)
+          ? apiFetch<GlobalSearch>(`/v1/search?q=${encodeURIComponent(q)}`)
+          : Promise.resolve(null),
+        includesPeopleScope(scope)
+          ? apiFetch<UserSearchResponse>(`/v1/search/users?q=${encodeURIComponent(q)}`)
+          : Promise.resolve(null),
+      ]);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) redirect('/login');
       throw err;
     }
   }
 
-  const total = results
-    ? results.movies.length +
-      results.tv_shows.length +
-      results.games.length +
-      results.books.length
-    : 0;
-
   // Close matches first, within each domain and across sections — an exact
   // title match puts its whole section at the top.
   const ranked = results
     ? {
-        movies: rankResults(results.query, results.movies),
-        tv_shows: rankResults(results.query, results.tv_shows),
-        games: rankResults(results.query, results.games),
-        books: rankResults(results.query, results.books),
+        movies: scope === 'all' || scope === 'movies' ? rankResults(results.query, results.movies) : [],
+        tv_shows: scope === 'all' || scope === 'tv' ? rankResults(results.query, results.tv_shows) : [],
+        games: scope === 'all' || scope === 'games' ? rankResults(results.query, results.games) : [],
+        books: scope === 'all' || scope === 'books' ? rankResults(results.query, results.books) : [],
       }
     : null;
+  const total = ranked
+    ? ranked.movies.length + ranked.tv_shows.length + ranked.games.length + ranked.books.length
+    : 0;
   const effectiveQuery = results?.corrected ?? results?.query ?? '';
+  const people = peopleResults?.users ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -107,26 +114,11 @@ export default async function SearchPage({
           Search
         </h1>
         <p className="text-sm text-neutral-400">
-          Movies, TV, books, and games in one go.
+          Movies, TV, books, games, and people in one go.
         </p>
       </div>
 
-      <form action="/search" className="flex gap-2">
-        <input
-          type="search"
-          name="q"
-          defaultValue={q ?? ''}
-          placeholder="Search everything…"
-          autoFocus
-          className="w-full max-w-xl rounded border border-neutral-700 bg-panel px-3 py-2 text-sm outline-none focus:border-brass"
-        />
-        <button
-          type="submit"
-          className="rounded bg-brass px-4 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
-        >
-          Search
-        </button>
-      </form>
+      <SearchForm query={q ?? ''} scope={scope} />
 
       {results?.corrected && (
         <p className="text-sm text-neutral-400">
@@ -138,9 +130,35 @@ export default async function SearchPage({
 
       {results && total === 0 && (
         <p className="text-sm text-neutral-500">
-          Nothing found for “{results.query}” in any category — check the
+          Nothing found for “{results.query}” in {scope === 'all' ? 'the catalog' : scope} — check the
           spelling or try fewer words.
         </p>
+      )}
+
+      {peopleResults && (
+        <section className="rounded-lg border border-line bg-panel">
+          <h2 className="border-b border-line px-4 py-2 font-display text-lg text-paper">
+            People <span className="text-sm text-neutral-500">{people.length}</span>
+          </h2>
+          {people.length === 0 ? (
+            <p className="px-4 py-3 text-sm text-neutral-500">No people found.</p>
+          ) : (
+            <ul className="divide-y divide-line/60">
+              {people.map((person) => (
+                <li key={person.id} className={ROW}>
+                  {person.handle ? (
+                    <Link href={`/u/${person.handle}`} className="font-medium hover:text-brass">
+                      {person.display_name || `@${person.handle}`}
+                    </Link>
+                  ) : (
+                    <span className="font-medium">{person.display_name}</span>
+                  )}
+                  {person.handle && <span className="text-neutral-500">@{person.handle}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       )}
 
       {ranked && (

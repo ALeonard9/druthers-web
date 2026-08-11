@@ -276,6 +276,18 @@ export interface GlobalSearch {
   books: BookSearchResult[];
 }
 
+export interface UserSearchResult {
+  id: string;
+  display_name: string;
+  handle: string | null;
+}
+
+export interface UserSearchResponse {
+  query: string;
+  corrected: string | null;
+  users: UserSearchResult[];
+}
+
 export interface Notification {
   id: string;
   type: string;

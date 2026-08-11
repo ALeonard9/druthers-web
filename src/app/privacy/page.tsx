@@ -7,10 +7,6 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-sm text-amber-200">
-        <strong>Draft Notice:</strong> This is a generated first-pass draft pending legal review by Adam. It is not yet finalised or binding.
-      </div>
-
       <h1 className="font-display text-4xl text-paper">Privacy Policy</h1>
       <p className="text-sm text-neutral-400">Last Updated: August 2026</p>
 
@@ -62,16 +58,29 @@ export default function PrivacyPage() {
           necessary to provide our services (such as our Neon-hosted database) or when required by law.
         </p>
 
-        <h2 className="text-xl font-medium text-paper mt-6">5. Your Rights</h2>
+        <h2 className="text-xl font-medium text-paper mt-6">5. Children</h2>
         <p>
-          You have the right to access, correct, or delete your personal data. You can manage
-          your profile privacy settings within the app.
+          Druthers is intended for people aged 18 and over. We do not knowingly collect
+          information from anyone under 18; if you believe a minor has created an account,
+          email us and we will remove it.
         </p>
 
-        <h2 className="text-xl font-medium text-paper mt-6">6. Contact Us</h2>
+        <h2 className="text-xl font-medium text-paper mt-6">6. Your Rights</h2>
         <p>
-          If you have any questions or concerns about this Privacy Policy or our data practices,
-          please get in touch through the contact details on druthers.io.
+          You have the right to access, correct, or delete your personal data, wherever you
+          live — we honour these requests regardless of whether a specific privacy law
+          applies to you. You can manage your profile privacy settings within the app, and
+          export everything you have tracked from Settings at any time.
+        </p>
+
+        <h2 className="text-xl font-medium text-paper mt-6">7. Contact Us</h2>
+        <p>
+          If you have any questions or concerns about this Privacy Policy or our data
+          practices — including a request to access or delete your data — email{' '}
+          <a className="text-brass hover:underline" href="mailto:Admin@druthers.io">
+            Admin@druthers.io
+          </a>
+          .
         </p>
       </div>
     </div>

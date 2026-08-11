@@ -6,9 +6,22 @@ import PrivacyPage from './page';
 describe('Privacy Policy page', () => {
   afterEach(cleanup);
 
-  it('renders the draft warning banner', () => {
+  // These pages ship as the real policy, so the draft scaffolding must not
+  // survive into production copy.
+  it('carries no draft notice', () => {
+    const { container } = render(<PrivacyPage />);
+    expect(container.textContent).not.toMatch(/draft|pending legal review/i);
+  });
+
+  it('states the 18+ age requirement', () => {
     render(<PrivacyPage />);
-    expect(screen.getByText(/pending legal review by Adam/i)).toBeDefined();
+    expect(screen.getAllByText(/aged 18 and over/).length).toBeGreaterThan(0);
+  });
+
+  it('gives a reachable contact address', () => {
+    render(<PrivacyPage />);
+    const link = screen.getByText('Admin@druthers.io');
+    expect(link.getAttribute('href')).toBe('mailto:Admin@druthers.io');
   });
 
   // There is no company behind druthers.io — see the matching terms test.

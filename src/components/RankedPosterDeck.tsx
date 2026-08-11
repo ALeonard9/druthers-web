@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { DeckItem } from '@/lib/deck';
 
@@ -26,6 +26,7 @@ export function RankedPosterDeck({
   label = 'Your highest ranked titles',
   interactive = true,
   showRank = true,
+  renderCaptionActions,
 }: {
   items: DeckItem[];
   placedCount: number;
@@ -35,6 +36,8 @@ export function RankedPosterDeck({
   interactive?: boolean;
   /** False for an unranked deck (e.g. a watchlist) — hides the rank plate. */
   showRank?: boolean;
+  /** Optional controls tied to whichever poster is currently at the front. */
+  renderCaptionActions?: (item: DeckItem) => ReactNode;
 }) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
@@ -245,6 +248,9 @@ export function RankedPosterDeck({
           <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-brass/80">
             From @{front.sourceHandle}
           </p>
+        )}
+        {!front.isSeeAll && renderCaptionActions && (
+          <div className="mt-2.5">{renderCaptionActions(front)}</div>
         )}
         {front.isSeeAll && (
           <button

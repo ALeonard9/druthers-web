@@ -35,21 +35,19 @@ export function ScheduleEpisodeRow({
 
   return (
     <li className="flex items-center gap-3 border-b border-line/60 px-3 py-1.5 text-sm last:border-b-0">
-      <span className="flex-1 truncate">
+      <Link
+        href={`/tv/${item.show_id}`}
+        className="flex-1 truncate text-neutral-200 hover:text-brass-bright hover:underline"
+      >
         {showTitle && (
-          <Link
-            href={`/tv/${item.show_id}`}
-            className="text-neutral-200 hover:text-brass-bright hover:underline"
-          >
-            {item.show_title}
-          </Link>
+          item.show_title
         )}
         {showTitle && ' — '}
         <span className="text-neutral-500">
           {item.season}.{item.season_number}
         </span>{' '}
         {item.episode_title}
-      </span>
+      </Link>
       {error && <span className="shrink-0 text-xs text-red-400">Failed — retry</span>}
       {/* Every row on this page is unwatched, so it wears the "behind" plum
           and the same label EpisodeList uses. Green is reserved for done

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import type { Follow, Visibility } from '@/lib/types';
 
@@ -13,11 +13,23 @@ export default async function FollowersPage() {
   const user = await getSessionUser();
   if (!user) redirect('/login');
 
-  const visibility = await apiFetch<Visibility>('/v1/users/me/visibility');
-  const isPublic = visibility.visibility_profile === 'public';
-  const followers = isPublic
-    ? await apiFetch<Follow[]>('/v1/users/me/followers')
-    : null;
+  // A session cookie outlives the account it names, so the user object above
+  // can look valid while the API no longer has the row. Every other server
+  // page bounces that to /login rather than rendering a 500; the 404 case is
+  // the one a stale cookie from an earlier local database actually produces.
+  let visibility: Visibility;
+  let followers: Follow[] | null = null;
+  try {
+    visibility = await apiFetch<Visibility>('/v1/users/me/visibility');
+    if (visibility.visibility_profile === 'public') {
+      followers = await apiFetch<Follow[]>('/v1/users/me/followers');
+    }
+  } catch (err) {
+    if (err instanceof ApiError && (err.status === 401 || err.status === 404)) {
+      redirect('/login');
+    }
+    throw err;
+  }
 
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">

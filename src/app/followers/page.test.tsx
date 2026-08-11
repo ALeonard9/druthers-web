@@ -3,13 +3,30 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import FollowersPage from './page';
 
+// ApiError must be the real class shape, not omitted from the mock: the page
+// branches on `err instanceof ApiError`, so a mock without it sends every
+// error down the rethrow path and the redirect can never be observed.
+const { ApiError } = vi.hoisted(() => ({
+  ApiError: class ApiError extends Error {
+    status: number;
+    constructor(status: number, message: string) {
+      super(message);
+      this.status = status;
+    }
+  },
+}));
+
 const mocks = vi.hoisted(() => ({
   apiFetch: vi.fn(),
   getSessionUser: vi.fn(),
+  redirect: vi.fn(() => {
+    throw new Error('NEXT_REDIRECT');
+  }),
 }));
 
-vi.mock('@/lib/api', () => ({ apiFetch: mocks.apiFetch }));
+vi.mock('@/lib/api', () => ({ apiFetch: mocks.apiFetch, ApiError }));
 vi.mock('@/lib/session', () => ({ getSessionUser: mocks.getSessionUser }));
+vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 
 const publicVisibility = {
   handle: 'ada',
@@ -28,6 +45,9 @@ describe('followers page', () => {
   beforeEach(() => {
     mocks.getSessionUser.mockResolvedValue({ user_id: 'viewer', email: 'viewer@example.com' });
     mocks.apiFetch.mockReset();
+    // mockClear, not mockReset: reset would strip the throwing implementation
+    // that stands in for Next's redirect control flow.
+    mocks.redirect.mockClear();
   });
 
   afterEach(cleanup);
@@ -63,5 +83,25 @@ describe('followers page', () => {
     expect(screen.getByText('Make your profile public to track followers')).toBeTruthy();
     expect(screen.queryByText('Current audience')).toBeNull();
     expect(screen.getByRole('link', { name: 'Go to sharing settings' }).getAttribute('href')).toBe('/settings#sharing');
+  });
+
+  // A session cookie outlives the account it names — a stale cookie from an
+  // earlier local database renders a valid-looking user whose API row is gone.
+  // That has to bounce to /login, not blow up the route with a 500.
+  it.each([
+    [404, 'User with id abc not found'],
+    [401, 'Not authenticated'],
+  ])('redirects to /login when the session user is rejected with %i', async (status, detail) => {
+    mocks.apiFetch.mockRejectedValue(new ApiError(status, detail));
+
+    await expect(FollowersPage()).rejects.toThrow('NEXT_REDIRECT');
+    expect(mocks.redirect).toHaveBeenCalledWith('/login');
+  });
+
+  it('rethrows an unexpected API failure instead of hiding it behind a redirect', async () => {
+    mocks.apiFetch.mockRejectedValue(new ApiError(500, 'boom'));
+
+    await expect(FollowersPage()).rejects.toThrow('boom');
+    expect(mocks.redirect).not.toHaveBeenCalled();
   });
 });

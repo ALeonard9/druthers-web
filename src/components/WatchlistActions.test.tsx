@@ -64,6 +64,26 @@ describe('WatchlistActions', () => {
     expect(screen.queryByRole('button', { name: 'Rank Future Movie' })).toBeNull();
   });
 
+  it('styles Rank and Remove the same on every shelf', () => {
+    render(
+      <WatchlistActionProvider>
+        <WatchlistActions item={item} />
+      </WatchlistActionProvider>,
+    );
+
+    // TV used to render this button in moss while the other three were brass.
+    // One shelf-specific colour is what made the same action look like a
+    // different action, so the tone is no longer per-domain at all.
+    const rank = screen.getByRole('button', { name: 'Rank Test Movie' });
+    expect(rank.className).toContain('bg-brass');
+    expect(rank.className).not.toContain('moss');
+
+    // Remove matches the ranked row's Remove in RankingsBoard.
+    const remove = screen.getByRole('button', { name: 'Remove Test Movie from watchlist' });
+    expect(remove.className).toContain('border-red-800');
+    expect(remove.className).toContain('text-red-300');
+  });
+
   it('promotes with the title endpoint and opens its comparison flow', async () => {
     render(
       <WatchlistActionProvider>

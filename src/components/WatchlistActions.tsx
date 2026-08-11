@@ -129,7 +129,8 @@ export function WatchlistActions({ item }: { item: WatchlistActionItem }) {
   const [pending, startTransition] = useTransition();
 
   function rank() {
-    if (item.playPopOnRank) playPop();
+    // Every shelf pops, not just TV -- the sound marks the action, not the domain.
+    playPop();
     setError(null);
     startTransition(async () => {
       const response = await fetch(item.trackHref, {
@@ -161,11 +162,7 @@ export function WatchlistActions({ item }: { item: WatchlistActionItem }) {
           onClick={rank}
           disabled={pending || item.onRankings}
           aria-label={item.onRankings ? `${item.title} is in rankings` : `Rank ${item.title}`}
-          className={`rounded px-2 py-1 text-xs font-medium text-ink disabled:opacity-50 ${
-            item.rankTone === 'moss'
-              ? 'bg-moss hover:bg-moss-bright'
-              : 'bg-brass hover:bg-brass-bright'
-          }`}
+          className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
           title="Add to your ranked list"
         >
           {item.onRankings ? 'In Rankings' : 'Rank'}
@@ -204,7 +201,9 @@ export function WatchlistActions({ item }: { item: WatchlistActionItem }) {
           onClick={() => setConfirming(true)}
           disabled={pending}
           aria-label={`Remove ${item.title} from watchlist`}
-          className="rounded px-2 py-1 text-xs text-neutral-500 hover:text-red-400 disabled:opacity-50"
+          // Same treatment as the ranked row's Remove in RankingsBoard, so one
+          // destructive action does not read two different ways across shelves.
+          className="rounded border border-red-800 px-2 py-1 text-xs font-medium text-red-300 hover:border-red-600 hover:bg-red-950/60 hover:text-red-200 disabled:opacity-50"
         >
           Remove
         </button>

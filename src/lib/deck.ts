@@ -23,8 +23,6 @@ export interface WatchlistActionItem {
   rankable: boolean;
   trackHref: string;
   rankHref: string;
-  rankTone?: 'brass' | 'moss';
-  playPopOnRank?: boolean;
 }
 
 /**
@@ -146,9 +144,7 @@ function watchlistActionItem(
   id: string,
   title: string,
   onRankings: boolean,
-  options: Pick<WatchlistActionItem, 'rankable' | 'rankTone' | 'playPopOnRank'> = {
-    rankable: true,
-  },
+  options: Pick<WatchlistActionItem, 'rankable'> = { rankable: true },
 ): WatchlistActionItem {
   return {
     id,
@@ -171,11 +167,7 @@ export function movieWatchlistActionItem(row: UserMovie): WatchlistActionItem {
 }
 
 export function tvWatchlistActionItem(row: UserTVShow): WatchlistActionItem {
-  return watchlistActionItem('tv', row.tv_show.id, row.tv_show.title, row.on_rankings, {
-    rankable: true,
-    rankTone: 'moss',
-    playPopOnRank: true,
-  });
+  return watchlistActionItem('tv', row.tv_show.id, row.tv_show.title, row.on_rankings);
 }
 
 export function bookWatchlistActionItem(row: UserBook): WatchlistActionItem {

@@ -113,8 +113,6 @@ describe('cross-domain watchlist deck builders', () => {
       rankable: true,
       trackHref: '/api/tv/show-1/track',
       rankHref: '/tv/ranking?item=show-1',
-      rankTone: 'moss',
-      playPopOnRank: true,
     });
   });
 

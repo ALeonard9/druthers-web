@@ -11,8 +11,11 @@ describe('Terms of Use page', () => {
     expect(screen.getByText(/pending legal review by Adam/i)).toBeDefined();
   });
 
-  it('mentions Lady Bird LLC as the operating entity', () => {
-    render(<TermsPage />);
-    expect(screen.getAllByText(/Lady Bird LLC/).length).toBeGreaterThan(0);
+  // There is no company behind druthers.io. Naming an entity that does not
+  // exist is the one mistake a terms page cannot make, so pin its absence.
+  it('claims no corporate entity', () => {
+    const { container } = render(<TermsPage />);
+    expect(container.textContent).not.toMatch(/LLC|Inc\.|Ltd|Corporation/);
+    expect(screen.getAllByText(/independently run personal project/).length).toBeGreaterThan(0);
   });
 });

@@ -17,7 +17,8 @@ export default function TermsPage() {
       <div className="prose prose-invert max-w-none space-y-4 text-neutral-300">
         <p>
           Welcome to Druthers. These Terms of Use govern your access to and use of druthers.io
-          and its associated services, operated by Lady Bird LLC (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;).
+          and its associated services (&quot;Druthers&quot;, &quot;we&quot;, &quot;our&quot;,
+          or &quot;us&quot;). Druthers is an independently run personal project, not a company.
         </p>
 
         <h2 className="text-xl font-medium text-paper mt-6">1. Acceptance of Terms</h2>
@@ -34,16 +35,18 @@ export default function TermsPage() {
 
         <h2 className="text-xl font-medium text-paper mt-6">3. Content and Conduct</h2>
         <p>
-          You retain ownership of the data you submit, but grant Lady Bird LLC a license
-          to host and display it as part of operating the service. You agree not to use
+          You retain ownership of the data you submit, but grant us a license to host and
+          display it as part of operating the service. That license exists only to run
+          Druthers and ends when you delete the data or your account. You agree not to use
           the service for any unlawful purposes or to harass other users.
         </p>
 
         <h2 className="text-xl font-medium text-paper mt-6">4. Disclaimers and Limitations of Liability</h2>
         <p>
-          The service is provided &quot;as is&quot; without warranties of any kind. Lady Bird LLC
-          shall not be liable for any indirect, incidental, or consequential damages
-          arising from your use of the service.
+          The service is provided &quot;as is&quot; without warranties of any kind. Druthers is
+          run as a personal project with no uptime guarantee, and we may change or
+          discontinue it at any time. We shall not be liable for any indirect, incidental,
+          or consequential damages arising from your use of the service.
         </p>
 
         <h2 className="text-xl font-medium text-paper mt-6">5. Changes to Terms</h2>

@@ -11,9 +11,11 @@ describe('Privacy Policy page', () => {
     expect(screen.getByText(/pending legal review by Adam/i)).toBeDefined();
   });
 
-  it('mentions Lady Bird LLC as the operating entity', () => {
-    render(<PrivacyPage />);
-    expect(screen.getAllByText(/Lady Bird LLC/).length).toBeGreaterThan(0);
+  // There is no company behind druthers.io — see the matching terms test.
+  it('claims no corporate entity', () => {
+    const { container } = render(<PrivacyPage />);
+    expect(container.textContent).not.toMatch(/LLC|Inc\.|Ltd|Corporation/);
+    expect(screen.getAllByText(/independently run personal project/).length).toBeGreaterThan(0);
   });
 
   it('explicitly mentions the required data flows', () => {

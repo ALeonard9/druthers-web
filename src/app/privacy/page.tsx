@@ -16,8 +16,10 @@ export default function PrivacyPage() {
 
       <div className="prose prose-invert max-w-none space-y-4 text-neutral-300">
         <p>
-          This Privacy Policy explains how Lady Bird LLC (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) collects,
-          uses, and protects your information when you use druthers.io and its associated services.
+          This Privacy Policy explains how Druthers (&quot;we&quot;, &quot;our&quot;, or
+          &quot;us&quot;) collects, uses, and protects your information when you use druthers.io
+          and its associated services. Druthers is an independently run personal project,
+          not a company.
         </p>
 
         <h2 className="text-xl font-medium text-paper mt-6">1. Information We Collect</h2>
@@ -69,7 +71,7 @@ export default function PrivacyPage() {
         <h2 className="text-xl font-medium text-paper mt-6">6. Contact Us</h2>
         <p>
           If you have any questions or concerns about this Privacy Policy or our data practices,
-          please contact Lady Bird LLC.
+          please get in touch through the contact details on druthers.io.
         </p>
       </div>
     </div>

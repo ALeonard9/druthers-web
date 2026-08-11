@@ -3,7 +3,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Visibility, VisibilityTier } from '@/lib/types';
 import { BASE_DOMAIN, getSiteUrl } from '@/lib/shareCards';
-import { impliedDefaultTier, fieldsFollowingDefault } from '@/lib/privacyDefaults';
+import {
+  resolveShelfTier,
+  shelfInheritsDefault,
+  type ShelfField,
+} from '@/lib/privacyDefaults';
 
 const TIER_ORDER: VisibilityTier[] = ['private', 'friends', 'public'];
 
@@ -28,8 +32,6 @@ const TIER_OPENNESS: Record<VisibilityTier, number> = {
 function moreOpen(a: VisibilityTier, b: VisibilityTier) {
   return TIER_OPENNESS[a] > TIER_OPENNESS[b];
 }
-
-type ShelfField = Exclude<keyof Visibility, 'handle'>;
 
 const DOMAINS: {
   key: string;
@@ -82,7 +84,7 @@ function floorTier(settings: Visibility): { tier: VisibilityTier; source: string
       [d.field, ''],
       [d.watchlistField, ` ${d.queueLabel.toLowerCase()}`],
     ] as [ShelfField, string][]) {
-      const candidate = settings[field];
+      const candidate = resolveShelfTier(settings, field);
       if (moreOpen(candidate, tier)) {
         tier = candidate;
         source = `${d.label}${suffix}`;
@@ -144,10 +146,13 @@ function TierPills({
   );
 }
 
-// `origin` distinguishes a single-shelf raise (its own ShelfField) from the
-// bulk Default Sharing raise ('default'), so the confirmation notice knows
-// where to render and `fields` always lists what a confirm will touch.
-type PendingRaise = { origin: 'default' | ShelfField; fields: ShelfField[]; tier: VisibilityTier };
+// `origin` distinguishes a shelf change from a Default Sharing change so the
+// confirmation notice renders beside the control that needs it.
+type PendingRaise = {
+  origin: 'default' | ShelfField;
+  patch: Partial<Visibility>;
+  tier: VisibilityTier;
+};
 
 // Rebuilt for #274/#119: nine tiers (private/friends/public) instead of eight
 // on/off switches. The profile control is pulled out above the four domain
@@ -254,7 +259,7 @@ export function PrivacySettings() {
       return;
     }
     if (moreOpen(tier, settings.visibility_profile)) {
-      setPendingRaise({ origin: field, fields: [field], tier });
+      setPendingRaise({ origin: field, patch: { [field]: tier }, tier });
       return;
     }
     setPendingRaise(null);
@@ -263,13 +268,9 @@ export function PrivacySettings() {
 
   function confirmRaise() {
     if (!pendingRaise) return;
-    const { fields, tier } = pendingRaise;
+    const { origin, patch, tier } = pendingRaise;
     setPendingRaise(null);
-    const patch: Partial<Visibility> = { visibility_profile: tier };
-    for (const field of fields) {
-      patch[field] = tier;
-    }
-    void save(patch, fields.length === 1 ? fields[0] : 'default');
+    void save({ ...patch, visibility_profile: tier }, origin);
   }
 
   function requestDefaultTier(tier: VisibilityTier) {
@@ -279,17 +280,22 @@ export function PrivacySettings() {
       setHandleNotice(true);
       return;
     }
-    const fields = fieldsFollowingDefault(settings, impliedDefaultTier(settings));
     if (moreOpen(tier, settings.visibility_profile)) {
-      setPendingRaise({ origin: 'default', fields, tier });
+      setPendingRaise({ origin: 'default', patch: { default_privacy: tier }, tier });
       return;
     }
     setPendingRaise(null);
-    const patch: Partial<Visibility> = {};
-    for (const field of fields) {
-      patch[field] = tier;
+    void save({ default_privacy: tier }, 'default');
+  }
+
+  function clearShelfOverride(field: ShelfField) {
+    if (!settings) return;
+    const tier = settings.default_privacy;
+    if (moreOpen(tier, settings.visibility_profile)) {
+      setPendingRaise({ origin: field, patch: { [field]: null }, tier });
+      return;
     }
-    void save(patch, 'default');
+    void save({ [field]: null }, field);
   }
 
   function requestProfileTier(tier: VisibilityTier) {
@@ -435,7 +441,7 @@ export function PrivacySettings() {
         <div className="flex items-center gap-3">
           <span
             className="flex-1 text-sm text-neutral-200"
-            title="Applies a tier to every shelf that isn't already set differently below. Shelves you've customized in Advanced Sharing Options are left alone."
+            title="Sets the account-wide privacy used by shelves and watchlists without an override."
           >
             Default Sharing
             {savingField === 'default' && (
@@ -444,7 +450,7 @@ export function PrivacySettings() {
           </span>
           <TierPills
             ariaLabel="Default privacy for all shelves"
-            value={impliedDefaultTier(settings)}
+            value={settings.default_privacy}
             busy={savingField === 'default'}
             onSelect={requestDefaultTier}
           />
@@ -485,7 +491,7 @@ export function PrivacySettings() {
                 className="flex-1 text-xs text-neutral-400"
                 title={`Controls who can see your ${d.label} ranked list.`}
               >
-                {settings[d.field] !== 'private' && settings.handle ? (
+                {resolveShelfTier(settings, d.field) !== 'private' && settings.handle ? (
                   <button
                     type="button"
                     title="Click to copy a direct link to this shelf"
@@ -505,11 +511,28 @@ export function PrivacySettings() {
               </span>
               <TierPills
                 ariaLabel={`${d.label} ranked list visibility`}
-                value={settings[d.field]}
+                value={resolveShelfTier(settings, d.field)}
                 busy={savingField === d.field}
                 onSelect={(tier) => requestShelfTier(d.field, tier)}
               />
             </div>
+            <p className="pl-3 text-xs text-neutral-500">
+              {shelfInheritsDefault(settings, d.field) ? (
+                <>Using default ({TIER_LABEL[settings.default_privacy]}).</>
+              ) : (
+                <>
+                  Override ({TIER_LABEL[settings[d.field] as VisibilityTier]}).{' '}
+                  <button
+                    type="button"
+                    disabled={savingField === d.field}
+                    onClick={() => clearShelfOverride(d.field)}
+                    className="text-brass hover:text-brass-bright disabled:opacity-40"
+                  >
+                    Use default
+                  </button>
+                </>
+              )}
+            </p>
             {pendingRaise?.origin === d.field && (
               <p className="mt-1 flex items-center gap-2 rounded bg-brass-wash px-2 py-1.5 text-xs text-brass-bright ring-1 ring-brass/40">
                 <span className="flex-1">
@@ -536,7 +559,7 @@ export function PrivacySettings() {
                 className="flex-1 text-xs text-neutral-500"
                 title={`Controls who can see your ${d.label} ${d.queueLabel.toLowerCase()}.`}
               >
-                {settings[d.watchlistField] !== 'private' && settings.handle ? (
+                {resolveShelfTier(settings, d.watchlistField) !== 'private' && settings.handle ? (
                   <button
                     type="button"
                     title={`Click to copy a direct link to this ${d.queueLabel.toLowerCase()}`}
@@ -559,11 +582,28 @@ export function PrivacySettings() {
               </span>
               <TierPills
                 ariaLabel={`${d.label} ${d.queueLabel.toLowerCase()} visibility`}
-                value={settings[d.watchlistField]}
+                value={resolveShelfTier(settings, d.watchlistField)}
                 busy={savingField === d.watchlistField}
                 onSelect={(tier) => requestShelfTier(d.watchlistField, tier)}
               />
             </div>
+            <p className="pl-3 text-xs text-neutral-500">
+              {shelfInheritsDefault(settings, d.watchlistField) ? (
+                <>Using default ({TIER_LABEL[settings.default_privacy]}).</>
+              ) : (
+                <>
+                  Override ({TIER_LABEL[settings[d.watchlistField] as VisibilityTier]}).{' '}
+                  <button
+                    type="button"
+                    disabled={savingField === d.watchlistField}
+                    onClick={() => clearShelfOverride(d.watchlistField)}
+                    className="text-brass hover:text-brass-bright disabled:opacity-40"
+                  >
+                    Use default
+                  </button>
+                </>
+              )}
+            </p>
             {pendingRaise?.origin === d.watchlistField && (
               <p className="mt-1 flex items-center gap-2 rounded bg-brass-wash px-2 py-1.5 text-xs text-brass-bright ring-1 ring-brass/40">
                 <span className="flex-1">

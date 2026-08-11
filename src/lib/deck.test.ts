@@ -53,6 +53,27 @@ describe('movieWatchlistDeckItems', () => {
       subtitle: '1999 · Drama',
       posterUrl: 'https://example.com/1.jpg',
       href: '/movies/movie-1',
+      watchlistActions: {
+        id: 'movie-1',
+        title: 'First',
+        onRankings: false,
+        rankable: true,
+        trackHref: '/api/movies/movie-1/track',
+        rankHref: '/movies/ranking?item=movie-1',
+      },
+    });
+  });
+
+  it('preserves ranked and not-yet-rankable movie state', () => {
+    const movie = um('1', 'Future Movie');
+    movie.on_rankings = true;
+    movie.movie.release_date = '2999-01-01';
+
+    const [item] = movieWatchlistDeckItems([movie]);
+
+    expect(item.watchlistActions).toMatchObject({
+      onRankings: true,
+      rankable: false,
     });
   });
 });
@@ -86,6 +107,15 @@ describe('cross-domain watchlist deck builders', () => {
     };
     const [item] = tvWatchlistDeckItems([show]);
     expect(item.href).toBe('/tv/show-1');
+    expect(item.watchlistActions).toMatchObject({
+      id: 'show-1',
+      onRankings: false,
+      rankable: true,
+      trackHref: '/api/tv/show-1/track',
+      rankHref: '/tv/ranking?item=show-1',
+      rankTone: 'moss',
+      playPopOnRank: true,
+    });
   });
 
   it('bookWatchlistDeckItems links into /books', () => {
@@ -113,6 +143,13 @@ describe('cross-domain watchlist deck builders', () => {
     };
     const [item] = bookWatchlistDeckItems([book]);
     expect(item.href).toBe('/books/book-1');
+    expect(item.watchlistActions).toMatchObject({
+      id: 'book-1',
+      onRankings: false,
+      rankable: true,
+      trackHref: '/api/books/book-1/track',
+      rankHref: '/books/ranking?item=book-1',
+    });
   });
 
   it('gameWatchlistDeckItems links into /games', () => {
@@ -142,5 +179,12 @@ describe('cross-domain watchlist deck builders', () => {
     };
     const [item] = gameWatchlistDeckItems([game]);
     expect(item.href).toBe('/games/game-1');
+    expect(item.watchlistActions).toMatchObject({
+      id: 'game-1',
+      onRankings: false,
+      rankable: true,
+      trackHref: '/api/games/game-1/track',
+      rankHref: '/games/ranking?item=game-1',
+    });
   });
 });

@@ -5,6 +5,8 @@ import type {
   UserVideoGame,
   PublicShelf,
 } from './types';
+import { duelHrefFor, type ShelfId } from './duelShelves';
+import { isRankable } from './movies';
 
 /**
  * How many of the top ranked titles a domain's poster deck runs through.
@@ -13,6 +15,17 @@ import type {
  * client reference back, not the number.
  */
 export const DECK_SIZE = 25;
+
+export interface WatchlistActionItem {
+  id: string;
+  title: string;
+  onRankings: boolean;
+  rankable: boolean;
+  trackHref: string;
+  rankHref: string;
+  rankTone?: 'brass' | 'moss';
+  playPopOnRank?: boolean;
+}
 
 /**
  * What the deck needs to draw one poster, flattened out of whichever tracker
@@ -30,6 +43,8 @@ export interface DeckItem {
   href: string;
   /** First visible profile that inspired this tracker row. */
   sourceHandle?: string | null;
+  /** Mutation details for the signed-in user's watchlist views. */
+  watchlistActions?: WatchlistActionItem;
   /** True for the 6th "See All" card on public profile carousels. */
   isSeeAll?: boolean;
 }
@@ -126,6 +141,51 @@ function buildUnranked<T>(rows: T[], to: (row: T) => Omit<DeckItem, 'rank'>): De
   return rows.map((row, i) => ({ ...to(row), rank: i + 1 }));
 }
 
+function watchlistActionItem(
+  shelf: ShelfId,
+  id: string,
+  title: string,
+  onRankings: boolean,
+  options: Pick<WatchlistActionItem, 'rankable' | 'rankTone' | 'playPopOnRank'> = {
+    rankable: true,
+  },
+): WatchlistActionItem {
+  return {
+    id,
+    title,
+    onRankings,
+    trackHref: `/api/${shelf}/${id}/track`,
+    rankHref: duelHrefFor(shelf, id),
+    ...options,
+  };
+}
+
+export function movieWatchlistActionItem(row: UserMovie): WatchlistActionItem {
+  return watchlistActionItem(
+    'movies',
+    row.movie.id,
+    row.movie.title,
+    row.on_rankings,
+    { rankable: isRankable(row.movie.release_date) },
+  );
+}
+
+export function tvWatchlistActionItem(row: UserTVShow): WatchlistActionItem {
+  return watchlistActionItem('tv', row.tv_show.id, row.tv_show.title, row.on_rankings, {
+    rankable: true,
+    rankTone: 'moss',
+    playPopOnRank: true,
+  });
+}
+
+export function bookWatchlistActionItem(row: UserBook): WatchlistActionItem {
+  return watchlistActionItem('books', row.book.id, row.book.title, row.on_rankings);
+}
+
+export function gameWatchlistActionItem(row: UserVideoGame): WatchlistActionItem {
+  return watchlistActionItem('games', row.game.id, row.game.title, row.on_rankings);
+}
+
 export function movieWatchlistDeckItems(rows: UserMovie[]): DeckItem[] {
   return buildUnranked(rows, (r) => ({
     id: r.movie.id,
@@ -134,6 +194,7 @@ export function movieWatchlistDeckItems(rows: UserMovie[]): DeckItem[] {
     posterUrl: r.movie.poster_url,
     href: `/movies/${r.movie.id}`,
     sourceHandle: r.source_handle,
+    watchlistActions: movieWatchlistActionItem(r),
   }));
 }
 
@@ -145,6 +206,7 @@ export function tvWatchlistDeckItems(rows: UserTVShow[]): DeckItem[] {
     posterUrl: r.tv_show.poster_url,
     href: `/tv/${r.tv_show.id}`,
     sourceHandle: r.source_handle,
+    watchlistActions: tvWatchlistActionItem(r),
   }));
 }
 
@@ -156,6 +218,7 @@ export function bookWatchlistDeckItems(rows: UserBook[]): DeckItem[] {
     posterUrl: r.book.poster_url,
     href: `/books/${r.book.id}`,
     sourceHandle: r.source_handle,
+    watchlistActions: bookWatchlistActionItem(r),
   }));
 }
 
@@ -167,5 +230,6 @@ export function gameWatchlistDeckItems(rows: UserVideoGame[]): DeckItem[] {
     posterUrl: r.game.poster_url,
     href: `/games/${r.game.id}`,
     sourceHandle: r.source_handle,
+    watchlistActions: gameWatchlistActionItem(r),
   }));
 }

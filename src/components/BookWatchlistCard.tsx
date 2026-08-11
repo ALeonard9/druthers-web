@@ -1,38 +1,27 @@
 'use client';
 
-import { useTransition } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { duelHrefFor } from '@/lib/duelShelves';
+import { bookWatchlistActionItem } from '@/lib/deck';
 import type { UserBook } from '@/lib/types';
 import { SwipeableRow } from './SwipeableRow';
+import {
+  WatchlistActions,
+  useRemoveWatchlistItem,
+  useWatchlistItemRemoved,
+} from './WatchlistActions';
 
 export function BookWatchlistCard({ userBook }: { userBook: UserBook }) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
   const { book } = userBook;
+  const actionItem = bookWatchlistActionItem(userBook);
+  const remove = useRemoveWatchlistItem();
+  const removed = useWatchlistItemRemoved(book.id);
 
-  function track(body: Record<string, unknown>) {
-    startTransition(async () => {
-      await fetch(`/api/books/${book.id}/track`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      // Promoting to the rankings leaves it unplaced, so carry straight on to
-      // the duel to decide where it goes; anything else just refreshes here.
-      if (body.on_rankings === true) {
-        router.push(duelHrefFor('books', book.id));
-      } else {
-        router.refresh();
-      }
-    });
-  }
+  if (removed) return null;
 
   return (
     <li className="block">
       <SwipeableRow
-        onFullSwipeRight={() => track({ on_watchlist: false })}
+        onFullSwipeRight={() => void remove(actionItem)}
         rightActionWidth={80}
         fullSwipeThreshold={120}
         className="flex h-full flex-col overflow-hidden rounded-lg border border-line bg-panel"
@@ -71,14 +60,7 @@ export function BookWatchlistCard({ userBook }: { userBook: UserBook }) {
           <p className="line-clamp-1 text-xs text-neutral-500">{book.authors}</p>
         )}
         <div className="mt-auto flex items-center justify-between pt-1">
-          <button
-            onClick={() => track({ on_rankings: true })}
-            disabled={pending || userBook.on_rankings}
-            className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
-            title="Add to your ranked list"
-          >
-            {userBook.on_rankings ? 'In Rankings' : '→ Rankings'}
-          </button>
+          <WatchlistActions item={actionItem} />
         </div>
       </div>
       </SwipeableRow>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { refreshAuthState } from '@/app/authActions';
 
 export function LoginForm() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export function LoginForm() {
         setLoading(false);
         return;
       }
+      await refreshAuthState();
       router.replace('/');
     } catch {
       setError('Sign in failed');

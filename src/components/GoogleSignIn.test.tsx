@@ -5,21 +5,22 @@ import { GoogleSignIn } from './GoogleSignIn';
 
 const navigation = vi.hoisted(() => ({
   pathname: '/',
-  refresh: vi.fn(),
+  refreshAuthState: vi.fn(),
   replace: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
   usePathname: () => navigation.pathname,
-  useRouter: () => ({ refresh: navigation.refresh, replace: navigation.replace }),
+  useRouter: () => ({ replace: navigation.replace }),
 }));
+vi.mock('@/app/authActions', () => ({ refreshAuthState: navigation.refreshAuthState }));
 
 describe('GoogleSignIn', () => {
   let credentialCallback: (response: { credential: string }) => void;
 
   beforeEach(() => {
     navigation.pathname = '/';
-    navigation.refresh.mockReset();
+    navigation.refreshAuthState.mockReset().mockResolvedValue(undefined);
     navigation.replace.mockReset();
     window.google = {
       accounts: {
@@ -49,7 +50,7 @@ describe('GoogleSignIn', () => {
     return fetchMock;
   }
 
-  it('refreshes the public homepage in place after it establishes the session', async () => {
+  it('refreshes the public homepage shell in place after it establishes the session', async () => {
     const fetchMock = await submitCredential(Response.json({ ok: true }));
 
     expect(fetchMock).toHaveBeenCalledWith('/api/auth/google', {
@@ -57,17 +58,20 @@ describe('GoogleSignIn', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ credential: 'google-id-token' }),
     });
-    expect(navigation.refresh).toHaveBeenCalledOnce();
+    expect(navigation.refreshAuthState).toHaveBeenCalledOnce();
     expect(navigation.replace).not.toHaveBeenCalled();
     expect(screen.getByText('Signing in...')).toBeTruthy();
   });
 
-  it('uses a client transition from the dedicated login page', async () => {
+  it('refreshes the shared shell before transitioning from the dedicated login page', async () => {
     navigation.pathname = '/login';
     await submitCredential(Response.json({ ok: true }));
 
+    expect(navigation.refreshAuthState).toHaveBeenCalledOnce();
     expect(navigation.replace).toHaveBeenCalledWith('/');
-    expect(navigation.refresh).not.toHaveBeenCalled();
+    expect(navigation.refreshAuthState.mock.invocationCallOrder[0]).toBeLessThan(
+      navigation.replace.mock.invocationCallOrder[0],
+    );
   });
 
   it('restores the button and reports an API rejection', async () => {
@@ -75,7 +79,7 @@ describe('GoogleSignIn', () => {
 
     expect(screen.getByText('Account is disabled')).toBeTruthy();
     expect(screen.queryByText('Signing in...')).toBeNull();
-    expect(navigation.refresh).not.toHaveBeenCalled();
+    expect(navigation.refreshAuthState).not.toHaveBeenCalled();
     expect(navigation.replace).not.toHaveBeenCalled();
   });
 });

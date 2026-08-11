@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { refreshAuthState } from '@/app/authActions';
 
 // Minimal typing for the Google Identity Services global.
 interface GoogleCredentialResponse {
@@ -43,13 +44,11 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
           body: JSON.stringify({ credential: resp.credential }),
         });
         if (res.ok) {
-          // Google sign-in is also embedded on `/`, so a normal redirect used
-          // to reload the whole document just to render the signed-in version
-          // of the same route. Refresh that RSC payload in place; `/login`
-          // still needs a client transition, but neither path throws away the
-          // already-loaded app, fonts, and JavaScript.
-          if (pathname === '/') router.refresh();
-          else router.replace('/');
+          // The auth route writes cookies outside the current RSC tree. Merge
+          // a refreshed root layout before navigating so its shared signed-out
+          // shell cannot survive the soft transition from `/login`.
+          await refreshAuthState();
+          if (pathname !== '/') router.replace('/');
           return;
         }
         const data = await res.json().catch(() => null);

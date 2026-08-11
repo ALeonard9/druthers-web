@@ -213,6 +213,22 @@ function DomainPanel({
     );
   }
 
+  const isCompletelyEmpty =
+    domain.shared_ranked_count === 0 &&
+    domain.common_watchlist.length === 0 &&
+    domain.recommendations.length === 0 &&
+    domain.biggest_gaps.length === 0 &&
+    domain.most_aligned.length === 0;
+
+  if (isCompletelyEmpty) {
+    return (
+      <article className="rounded-xl border border-line bg-panel p-5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">{domain.label}</p>
+        <p className="mt-2 text-sm text-neutral-400">Nothing to compare here yet.</p>
+      </article>
+    );
+  }
+
   return (
     <article className="overflow-hidden rounded-xl border border-line bg-panel shadow-xl shadow-black/10">
       <header className="flex items-center justify-between gap-4 border-b border-line bg-night/45 px-5 py-4">
@@ -228,6 +244,8 @@ function DomainPanel({
                 aligned <AlignmentHelp method={domain.method} />
               </p>
             </>
+          ) : domain.shared_ranked_count === 0 ? (
+            <p className="text-sm text-neutral-400">Nothing to compare</p>
           ) : (
             <><p className="font-display text-xl text-neutral-300">{domain.shared_ranked_count}/5</p><p className="font-mono text-[9px] uppercase tracking-wider text-neutral-500">to score</p></>
           )}

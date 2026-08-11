@@ -88,4 +88,50 @@ describe('ComparisonView (web#126)', () => {
     expect(screen.getByText('84%')).toBeTruthy();
     expect(screen.queryByText('@brandon hasn’t shared this shelf with you.')).toBeNull();
   });
+
+  it('renders distinct states for no-data and not-shared scenarios', () => {
+    const noDataDomain: ComparisonDomain = {
+      ...movieDomain,
+      category: 'games',
+      label: 'Games',
+      rankings_visible: true,
+      alignment_status: 'not_enough_overlap',
+      shared_ranked_count: 0,
+      common_watchlist: [],
+      recommendations: [],
+      biggest_gaps: [],
+      most_aligned: [],
+    };
+    const noRankMatchDomain: ComparisonDomain = {
+      ...movieDomain,
+      category: 'tv',
+      label: 'TV',
+      rankings_visible: true,
+      alignment_status: 'not_enough_overlap',
+      shared_ranked_count: 0,
+      common_watchlist: [],
+      recommendations: [{ ...movieDomain.recommendations[0], id: 't1', title: 'The Wire' }],
+      biggest_gaps: [],
+      most_aligned: [],
+    };
+    render(
+      <ComparisonView
+        initial={{
+          ...comparison,
+          domains: [noDataDomain, noRankMatchDomain, hiddenDomain],
+        }}
+      />
+    );
+
+    // Suppressed completely empty state
+    expect(screen.getByText('Nothing to compare here yet.')).toBeTruthy();
+    // Not shared state
+    expect(screen.getByText('@brandon hasn’t shared this shelf with you.')).toBeTruthy();
+    // Partial state header (for domain with recommendations but no ranked overlap)
+    expect(screen.getByText('Nothing to compare')).toBeTruthy();
+
+    // Ensure "0/5" is not rendered anywhere
+    expect(screen.queryByText('0/5')).toBeNull();
+    expect(screen.queryByText('to score')).toBeNull();
+  });
 });

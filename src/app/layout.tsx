@@ -6,6 +6,7 @@ import { TopBar } from '@/components/TopBar';
 import { EnvBanner } from '@/components/EnvBanner';
 import { RefreshHomeOnReturn } from '@/components/RefreshHomeOnReturn';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
+import { SiteFooter } from '@/components/SiteFooter';
 import { getSessionUser } from '@/lib/session';
 import { SITE_URL } from '@/lib/shareCards';
 import { GENERIC_OG_IMAGE_PATH } from '@/lib/ogCards';
@@ -98,13 +99,17 @@ export default async function RootLayout({
             <Sidebar />
             <div className="flex min-w-0 flex-1 flex-col">
               <TopBar />
-              <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pb-8">
-                {children}
+              <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-8 md:pb-8">
+                <div className="flex-1">{children}</div>
+                <SiteFooter />
               </main>
             </div>
           </div>
         ) : (
-          <main className="min-h-screen px-4 py-8 md:px-8">{children}</main>
+          <main className="flex min-h-screen flex-col px-4 py-8 md:px-8">
+            <div className="flex-1">{children}</div>
+            <SiteFooter />
+          </main>
         )}
         {user && <BottomTabs />}
         {user && <RefreshHomeOnReturn />}

@@ -175,12 +175,16 @@ function Section({ title, note, children }: { title: string; note?: string; chil
   );
 }
 
-function AlignmentHelp({ method }: { method: string }) {
+// The same `?` affordance serves all three header states. The unscored ones
+// need it more than the scored one does: a percentage is self-explanatory,
+// while "Nothing to compare" reads as a dead end unless it says what would
+// make a score appear.
+function AlignmentHelp({ method, label }: { method: string; label?: string }) {
   return (
     <span className="group relative inline-flex">
       <button
         type="button"
-        aria-label="How alignment is calculated"
+        aria-label={label ?? 'How alignment is calculated'}
         className="flex h-4 w-4 items-center justify-center rounded-full border border-neutral-600 font-sans text-[10px] normal-case tracking-normal text-neutral-500 transition-colors hover:border-brass/70 hover:text-brass focus-visible:border-brass focus-visible:text-brass focus-visible:outline-none"
       >
         ?
@@ -224,7 +228,13 @@ function DomainPanel({
     return (
       <article className="rounded-xl border border-line bg-panel p-5">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">{domain.label}</p>
-        <p className="mt-2 text-sm text-neutral-400">Nothing to compare here yet.</p>
+        <p className="mt-2 flex items-center gap-1.5 text-sm text-neutral-400">
+          Nothing to compare here yet.
+          <AlignmentHelp
+            label="Why there is nothing to compare"
+            method={`Neither of you has ranked or shelved any ${domain.label} yet, so there is nothing to line up. Add a few titles and this fills in.`}
+          />
+        </p>
       </article>
     );
   }
@@ -245,9 +255,24 @@ function DomainPanel({
               </p>
             </>
           ) : domain.shared_ranked_count === 0 ? (
-            <p className="text-sm text-neutral-400">Nothing to compare</p>
+            <p className="flex items-center justify-end gap-1.5 text-sm text-neutral-400">
+              Nothing to compare
+              <AlignmentHelp
+                label="Why there is no alignment score"
+                method={`Alignment compares titles you have both ranked. You have none in common in ${domain.label} yet — rank a few of the same titles and a score appears here.`}
+              />
+            </p>
           ) : (
-            <><p className="font-display text-xl text-neutral-300">{domain.shared_ranked_count}/5</p><p className="font-mono text-[9px] uppercase tracking-wider text-neutral-500">to score</p></>
+            <>
+              <p className="font-display text-xl text-neutral-300">{domain.shared_ranked_count}/5</p>
+              <p className="flex items-center justify-end gap-1.5 font-mono text-[9px] uppercase tracking-wider text-neutral-500">
+                to score
+                <AlignmentHelp
+                  label="Why there is no alignment score yet"
+                  method={`Alignment needs at least 5 titles you have both ranked. You share ${domain.shared_ranked_count} so far.`}
+                />
+              </p>
+            </>
           )}
         </div>
       </header>

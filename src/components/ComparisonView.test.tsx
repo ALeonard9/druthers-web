@@ -134,4 +134,49 @@ describe('ComparisonView (web#126)', () => {
     expect(screen.queryByText('0/5')).toBeNull();
     expect(screen.queryByText('to score')).toBeNull();
   });
+
+  it('explains every unscored state in a tooltip, not just the scored one', () => {
+    // A percentage speaks for itself; "Nothing to compare" and "3/5" do not,
+    // so each unscored state carries its own `?` saying what would produce a
+    // score.
+    const emptyDomain: ComparisonDomain = {
+      ...movieDomain,
+      category: 'games',
+      label: 'Games',
+      alignment_status: 'not_enough_overlap',
+      shared_ranked_count: 0,
+      common_watchlist: [],
+      recommendations: [],
+      biggest_gaps: [],
+      most_aligned: [],
+    };
+    const noOverlapDomain: ComparisonDomain = {
+      ...emptyDomain,
+      category: 'tv',
+      label: 'TV',
+      recommendations: [{ ...movieDomain.recommendations[0], id: 't1', title: 'The Wire' }],
+    };
+    const partialDomain: ComparisonDomain = {
+      ...movieDomain,
+      alignment_status: 'not_enough_overlap',
+      shared_ranked_count: 3,
+    };
+    render(
+      <ComparisonView
+        initial={{ ...comparison, domains: [emptyDomain, noOverlapDomain, partialDomain] }}
+      />
+    );
+
+    // Completely empty: the suppressed card explains itself too.
+    expect(screen.getByRole('button', { name: 'Why there is nothing to compare' })).toBeTruthy();
+
+    // Nothing ranked in common, but the shelf itself is not empty.
+    expect(screen.getByRole('button', { name: 'Why there is no alignment score' })).toBeTruthy();
+    expect(screen.getByText(/none in common in TV yet/)).toBeTruthy();
+
+    // Some overlap, still under the five-title threshold: the counter stays.
+    expect(screen.getByText('3/5')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Why there is no alignment score yet' })).toBeTruthy();
+    expect(screen.getByText(/You share 3 so far/)).toBeTruthy();
+  });
 });

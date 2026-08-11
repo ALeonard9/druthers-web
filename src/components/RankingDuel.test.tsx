@@ -1,12 +1,32 @@
 /** @vitest-environment happy-dom */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RankingDuel } from './RankingDuel';
 import { RankingDuelPage } from './RankingDuelPage';
-import { SHELVES, type DuelEntry } from '@/lib/duelShelves';
+import { SHELVES, duelLists, type DuelEntry } from '@/lib/duelShelves';
+
+const push = vi.fn();
+const replace = vi.fn();
+const refresh = vi.fn();
+
+// Two things about this mock are deliberate.
+//
+// It is hoisted with vi.hoisted because vi.mock is itself hoisted above these
+// declarations: useRouter gets away with a plain const since its body only
+// runs when a test calls it, but redirect is read as the factory evaluates,
+// where a plain const is still in the temporal dead zone.
+//
+// And it records rather than throws. The real next/navigation redirect throws
+// to unwind the render, and mimicking that is tempting, but the throw escapes
+// as an unhandled error that vitest then reports against whichever test is
+// running — including the negative control that never redirects. Asserting the
+// call is what the behaviour actually is: the guard decided to redirect, and
+// where to.
+const { redirect } = vi.hoisted(() => ({ redirect: vi.fn() }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ push, replace, refresh }),
+  redirect,
 }));
 
 global.fetch = vi.fn().mockResolvedValue({
@@ -124,5 +144,44 @@ describe('RankingDuel Component (web#136)', () => {
     expect(boardLink.className).toContain('bg-brass-wash');
     expect(boardLink.textContent).toContain('Back to Movies');
     expect(boardLink.textContent).toContain('Use the board');
+  });
+});
+
+// RankingDuelPage is a synchronous server component whose guard runs before it
+// returns any JSX, so these call it as a plain function rather than rendering
+// it. That keeps the assertion on the guard itself and out of React's render
+// and error handling.
+describe('RankingDuelPage default to the list when nothing is left to rank (web#212)', () => {
+  beforeEach(() => redirect.mockClear());
+
+  it('redirects every fully-ranked shelf to its own board', () => {
+    // Two ranked entries, nothing queued — a matchup is impossible, so the
+    // duel must hand off to the board instead of showing an empty duel.
+    // Parametrised over all four shelves so a config typo can't strand one.
+    const cases = [
+      ['movies', '/movies/ranking/list'],
+      ['tv', '/tv/ranking/list'],
+      ['books', '/books/ranking/list'],
+      ['games', '/games/ranking/list'],
+    ] as const;
+    for (const [id, href] of cases) {
+      redirect.mockClear();
+      RankingDuelPage({ shelf: SHELVES[id], entries: mockOpponents });
+      expect(redirect).toHaveBeenCalledWith(href);
+    }
+  });
+
+  it('redirects a fully empty shelf to the board, which owns the empty state', () => {
+    // Zero entries is the same queue-empty case; the board already renders
+    // its "nothing ranked yet" empty list, so that behavior stays intact.
+    RankingDuelPage({ shelf: mockShelf, entries: [] });
+    expect(redirect).toHaveBeenCalledWith('/movies/ranking/list');
+  });
+
+  it('does not redirect when a title is still waiting to be placed', () => {
+    // The negative control: one unplaced title is a duel the page can hold.
+    expect(duelLists([...mockOpponents, mockEntry], undefined).queue).toHaveLength(1);
+    RankingDuelPage({ shelf: mockShelf, entries: [...mockOpponents, mockEntry] });
+    expect(redirect).not.toHaveBeenCalled();
   });
 });

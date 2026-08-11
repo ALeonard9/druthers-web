@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { RankingDuel } from '@/components/RankingDuel';
 import { duelLists, type DuelEntry, type ShelfConfig } from '@/lib/duelShelves';
 
@@ -25,6 +26,14 @@ export function RankingDuelPage({
   priorRank?: number;
 }) {
   const { ranked, queue } = duelLists(entries, focusId);
+
+  // A duel needs a candidate plus at least one ranked opponent to compare it
+  // against. An empty queue means every shelf title already has a position —
+  // or the shelf has nothing on it at all — so there's no question the duel
+  // could ask. Land on the board instead, which already owns both of those
+  // states (the ranked list, and the "nothing ranked yet" empty list). This
+  // applies on entry, so nobody lands on an empty duel (web#212).
+  if (queue.length === 0) redirect(shelf.boardHref);
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-3">

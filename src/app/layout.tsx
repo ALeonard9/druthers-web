@@ -8,6 +8,7 @@ import { RefreshHomeOnReturn } from '@/components/RefreshHomeOnReturn';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { getSessionUser } from '@/lib/session';
 import { SITE_URL } from '@/lib/shareCards';
+import { GENERIC_OG_IMAGE_PATH } from '@/lib/ogCards';
 
 // Display face: bookish, characterful — wordmark, page titles, rank numerals.
 const fraunces = Fraunces({
@@ -45,7 +46,8 @@ export const metadata: Metadata = {
     description: 'Your favorites — watched, read, played, and ranked.',
     images: [
       {
-        url: '/opengraph-image',
+        url: GENERIC_OG_IMAGE_PATH,
+        type: 'image/png',
         width: 1200,
         height: 630,
         alt: 'Druthers — your favorites, ranked',
@@ -56,7 +58,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Druthers — your favorites, ranked',
     description: 'Your favorites — watched, read, played, and ranked.',
-    images: ['/opengraph-image'],
+    images: [GENERIC_OG_IMAGE_PATH],
   },
   appleWebApp: {
     title: 'Druthers',

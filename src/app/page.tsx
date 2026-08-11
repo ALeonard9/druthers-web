@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import { ApiError, apiFetch } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
+import { GENERIC_OG_IMAGE_PATH } from '@/lib/ogCards';
 import { HomeActivity, ActivitySkeleton } from '@/components/HomeActivity';
 import { HomeTonight, TonightSkeleton } from '@/components/HomeTonight';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
@@ -33,7 +34,8 @@ export async function generateMetadata(): Promise<Metadata> {
       url: '/',
       images: [
         {
-          url: '/opengraph-image',
+          url: GENERIC_OG_IMAGE_PATH,
+          type: 'image/png',
           width: 1200,
           height: 630,
           alt: 'Druthers — your favorites, ranked',
@@ -44,7 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: 'Druthers — your favorites, ranked',
       description: 'Movies, TV, books, and games — ranked by your real choices.',
-      images: ['/opengraph-image'],
+      images: [GENERIC_OG_IMAGE_PATH],
     },
   };
 }

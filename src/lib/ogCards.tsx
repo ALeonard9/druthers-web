@@ -4,7 +4,7 @@ export interface OgCardItem {
   rank?: number;
   title: string;
   year: number | null;
-  posterUrl: string | null;
+  posterUrl: string | ArrayBuffer | null;
 }
 
 export interface OgCardData {
@@ -14,6 +14,8 @@ export interface OgCardData {
   items: OgCardItem[];
   footer: string;
 }
+
+export const GENERIC_OG_IMAGE_PATH = '/opengraph-image?v=web-200';
 
 export function profileOgData(
   profile: PublicProfile,
@@ -56,21 +58,18 @@ export function profileOgData(
 export async function embedPosters(data: OgCardData): Promise<OgCardData> {
   const items = await Promise.all(
     data.items.map(async (item) => {
-      if (!item.posterUrl) return item;
+      if (!item.posterUrl || item.posterUrl instanceof ArrayBuffer) return item;
       try {
         const response = await fetch(item.posterUrl);
         if (!response.ok) return { ...item, posterUrl: null };
-        const type = response.headers.get('content-type') ?? 'image/jpeg';
-
-        const buffer = await response.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i]);
+        const type = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase();
+        if (!type || !['image/jpeg', 'image/png', 'image/gif'].includes(type)) {
+          return { ...item, posterUrl: null };
         }
-        const b64 = btoa(binary);
 
-        return { ...item, posterUrl: `data:${type};base64,${b64}` };
+        // Satori accepts image bytes directly. Passing the ArrayBuffer avoids
+        // the data-URI path that produced valid PNG cards with blank posters.
+        return { ...item, posterUrl: await response.arrayBuffer() };
       } catch (e) {
         console.error('Failed to embed poster:', e);
         return { ...item, posterUrl: null };
@@ -89,7 +88,7 @@ export function OgShareCard({ data }: { data: OgCardData }) {
         display: 'flex',
         background: '#101014',
         color: '#f4eddf',
-        padding: '64px',
+        padding: '40px',
         fontFamily: 'Arial, sans-serif',
       }}
     >
@@ -100,31 +99,32 @@ export function OgShareCard({ data }: { data: OgCardData }) {
           flexDirection: 'column',
           border: '2px solid #34343d',
           borderRadius: '28px',
-          padding: '42px 48px',
+          padding: '30px 36px 24px',
           background: '#17171d',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', color: '#c9a86a', fontSize: 22, letterSpacing: 5, textTransform: 'uppercase' }}>
+            <div style={{ display: 'flex', color: '#c9a86a', fontSize: 19, letterSpacing: 5, textTransform: 'uppercase' }}>
               {data.eyebrow}
             </div>
-            <div style={{ display: 'flex', marginTop: 10, fontFamily: 'Georgia, serif', fontSize: 58, lineHeight: 1 }}>
+            <div style={{ display: 'flex', marginTop: 7, fontFamily: 'Georgia, serif', fontSize: 47, lineHeight: 1 }}>
               {data.title}
             </div>
-            <div style={{ display: 'flex', marginTop: 14, color: '#a4a4ad', fontSize: 23 }}>{data.description}</div>
+            <div style={{ display: 'flex', marginTop: 9, color: '#a4a4ad', fontSize: 20 }}>{data.description}</div>
           </div>
-          <div style={{ display: 'flex', color: '#c9a86a', fontFamily: 'Georgia, serif', fontSize: 32 }}>’druthers</div>
+          <div style={{ display: 'flex', color: '#c9a86a', fontFamily: 'Georgia, serif', fontSize: 30 }}>’druthers</div>
         </div>
 
-        <div style={{ display: 'flex', gap: 22, marginTop: 34, flex: 1 }}>
+        <div style={{ display: 'flex', gap: 18, marginTop: 20, flex: 1, minHeight: 0 }}>
           {data.items.length > 0 ? (
             data.items.map((item, index) => (
               <div key={`${item.title}-${index}`} style={{ display: 'flex', flex: 1, minWidth: 0, flexDirection: 'column' }}>
                 <div
                   style={{
                     display: 'flex',
-                    height: 250,
+                    height: 210,
+                    flexShrink: 0,
                     alignItems: 'center',
                     justifyContent: 'center',
                     overflow: 'hidden',
@@ -134,18 +134,24 @@ export function OgShareCard({ data }: { data: OgCardData }) {
                 >
                   {item.posterUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.posterUrl} alt="" width="166" height="250" style={{ objectFit: 'cover' }} />
+                    <img
+                      src={item.posterUrl as string}
+                      alt=""
+                      width="166"
+                      height="210"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                   ) : (
-                    <div style={{ display: 'flex', color: '#c9a86a', fontFamily: 'Georgia, serif', fontSize: 58 }}>
+                    <div style={{ display: 'flex', color: '#c9a86a', fontFamily: 'Georgia, serif', fontSize: 52 }}>
                       {item.rank ?? index + 1}
                     </div>
                   )}
                 </div>
-                <div style={{ display: 'flex', marginTop: 14, color: '#c9a86a', fontSize: 20 }}>
+                <div style={{ display: 'flex', marginTop: 9, color: '#c9a86a', fontSize: 17 }}>
                   {item.rank ? `#${item.rank}` : 'UP NEXT'}
                 </div>
-                <div style={{ display: 'flex', marginTop: 4, fontSize: 22, lineHeight: 1.15 }}>{item.title}</div>
-                {item.year && <div style={{ display: 'flex', marginTop: 5, color: '#83838d', fontSize: 17 }}>{item.year}</div>}
+                <div style={{ display: 'flex', marginTop: 3, fontSize: 18, lineHeight: 1.12, maxHeight: 41, overflow: 'hidden' }}>{item.title}</div>
+                {item.year && <div style={{ display: 'flex', marginTop: 3, color: '#83838d', fontSize: 15 }}>{item.year}</div>}
               </div>
             ))
           ) : (
@@ -155,7 +161,7 @@ export function OgShareCard({ data }: { data: OgCardData }) {
           )}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #34343d', paddingTop: 20, color: '#a4a4ad', fontSize: 18 }}>
+        <div style={{ display: 'flex', flexShrink: 0, justifyContent: 'space-between', borderTop: '1px solid #34343d', marginTop: 14, paddingTop: 13, color: '#a4a4ad', fontSize: 16 }}>
           <span>{data.footer}</span>
           <span>Your favorites, ranked.</span>
         </div>

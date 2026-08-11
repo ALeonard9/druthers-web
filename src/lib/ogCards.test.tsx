@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { embedPosters, OgShareCard, profileOgData } from './ogCards';
+import { embedPosters, genericOgData, OgShareCard, profileOgData } from './ogCards';
 import type { PublicProfile } from './types';
 
 const profile: PublicProfile = {
@@ -97,5 +97,43 @@ describe('OG card data (web#124, web#200)', () => {
     const embedded = await embedPosters(data);
 
     expect(embedded.items.map((item) => item.posterUrl)).toEqual([null, null]);
+  });
+});
+
+describe('generic card for profiles the caller may not see (web#200)', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('carries nothing that identifies a user', () => {
+    const data = genericOgData();
+    const html = renderToStaticMarkup(<OgShareCard data={data} />);
+
+    expect(data.footer).toBe('druthers.io');
+    expect(data.eyebrow).not.toContain('@');
+    // A handle reaching this card in any form would make it an enumeration
+    // oracle, which is the whole reason the three cases render alike.
+    expect(html).not.toContain('avery');
+    expect(html).not.toContain('/u/');
+  });
+
+  it('is identical for every hidden case, so private and absent cannot be told apart', () => {
+    // The routes call genericOgData() with no arguments precisely so that a
+    // friends-only profile, a private one, and a handle that does not exist
+    // cannot produce different bytes.
+    const forPrivate = renderToStaticMarkup(<OgShareCard data={genericOgData()} />);
+    const forFriendsOnly = renderToStaticMarkup(<OgShareCard data={genericOgData()} />);
+    const forMissing = renderToStaticMarkup(<OgShareCard data={genericOgData()} />);
+
+    expect(forFriendsOnly).toBe(forPrivate);
+    expect(forMissing).toBe(forPrivate);
+  });
+
+  it('still renders its panels when every poster host fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 503 }));
+    const embedded = await embedPosters(genericOgData());
+    const html = renderToStaticMarkup(<OgShareCard data={embedded} />);
+
+    expect(embedded.items).toHaveLength(3);
+    expect(embedded.items.every((item) => item.posterUrl === null)).toBe(true);
+    expect(html).toContain('What would you rather?');
   });
 });

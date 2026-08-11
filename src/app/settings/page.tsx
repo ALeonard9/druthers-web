@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { getSessionUser } from '@/lib/session';
 import { ApiKeysManager } from '@/components/ApiKeysManager';
 import { PrivacySettings } from '@/components/PrivacySettings';
@@ -40,6 +41,12 @@ export default async function SettingsPage() {
           </p>
         </div>
         <PrivacySettings />
+        <Link
+          href="/followers"
+          className="w-fit text-sm text-brass hover:text-brass-bright"
+        >
+          Track your followers
+        </Link>
       </section>
 
       <section id="time-zone" className="flex scroll-mt-24 flex-col gap-3">

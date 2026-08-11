@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 // Minimal typing for the Google Identity Services global.
 interface GoogleCredentialResponse {
@@ -25,6 +25,7 @@ declare global {
 
 export function GoogleSignIn({ clientId }: { clientId: string }) {
   const router = useRouter();
+  const pathname = usePathname();
   const btnRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,12 +43,20 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
           body: JSON.stringify({ credential: resp.credential }),
         });
         if (res.ok) {
-          window.location.href = '/';
+          // Google sign-in is also embedded on `/`, so a normal redirect used
+          // to reload the whole document just to render the signed-in version
+          // of the same route. Refresh that RSC payload in place; `/login`
+          // still needs a client transition, but neither path throws away the
+          // already-loaded app, fonts, and JavaScript.
+          if (pathname === '/') router.refresh();
+          else router.replace('/');
           return;
         }
         const data = await res.json().catch(() => null);
         setError(data?.error ?? 'Google sign-in failed. Try again.');
-      } finally {
+        setLoading(false);
+      } catch {
+        setError('Google sign-in failed. Try again.');
         setLoading(false);
       }
     }
@@ -77,7 +86,7 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
     script.defer = true;
     script.onload = init;
     document.head.appendChild(script);
-  }, [clientId, router]);
+  }, [clientId, pathname, router]);
 
   if (!clientId) {
     return (

@@ -1,12 +1,22 @@
 /** @vitest-environment happy-dom */
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { cleanup, render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RankingDuel } from './RankingDuel';
 import { RankingDuelPage } from './RankingDuelPage';
 import { SHELVES, type DuelEntry } from '@/lib/duelShelves';
 
+const push = vi.fn();
+const replace = vi.fn();
+const refresh = vi.fn();
+// RankingDuelPage's server-side redirect throws to stop rendering, like the
+// real one — so a test that hits it proves the duel is not rendered either.
+const redirect = vi.fn(() => {
+  throw new Error('NEXT_REDIRECT');
+});
+
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ push, replace, refresh }),
+  redirect,
 }));
 
 global.fetch = vi.fn().mockResolvedValue({
@@ -124,5 +134,47 @@ describe('RankingDuel Component (web#136)', () => {
     expect(boardLink.className).toContain('bg-brass-wash');
     expect(boardLink.textContent).toContain('Back to Movies');
     expect(boardLink.textContent).toContain('Use the board');
+  });
+});
+
+describe('RankingDuelPage default to the list when nothing is left to rank (web#212)', () => {
+  beforeEach(() => redirect.mockClear());
+
+  it('redirects every fully-ranked shelf to its own board', () => {
+    // Two ranked entries, nothing queued — a matchup is impossible, so the
+    // duel must hand off to the board instead of showing an empty duel.
+    // Parametrised over all four shelves so a config typo can't strand one.
+    const cases = [
+      ['movies', '/movies/ranking/list'],
+      ['tv', '/tv/ranking/list'],
+      ['books', '/books/ranking/list'],
+      ['games', '/games/ranking/list'],
+    ] as const;
+    for (const [id, href] of cases) {
+      expect(() =>
+        render(<RankingDuelPage shelf={SHELVES[id]} entries={mockOpponents} />),
+      ).toThrow('NEXT_REDIRECT');
+      expect(redirect).toHaveBeenCalledWith(href);
+      cleanup();
+    }
+  });
+
+  it('redirects a fully empty shelf to the board, which owns the empty state', () => {
+    // Zero entries is the same queue-empty case; the board already renders
+    // its "nothing ranked yet" empty list, so that behavior stays intact.
+    expect(() =>
+      render(<RankingDuelPage shelf={mockShelf} entries={[]} />),
+    ).toThrow('NEXT_REDIRECT');
+    expect(redirect).toHaveBeenCalledWith('/movies/ranking/list');
+  });
+
+  it('does not redirect when a title is still waiting to be placed', () => {
+    render(
+      <RankingDuelPage
+        shelf={mockShelf}
+        entries={[...mockOpponents, mockEntry]}
+      />,
+    );
+    expect(redirect).not.toHaveBeenCalled();
   });
 });

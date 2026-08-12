@@ -17,8 +17,8 @@ describe('ShelfManager', () => {
           new Response(
             JSON.stringify(
               init?.method === 'PUT'
-                ? { shelf_order: ['movies', 'tv', 'books', 'games'], enabled_shelves: ['movies', 'tv', 'books', 'games'] }
-                : { shelf_order: ['movies', 'tv', 'books', 'games'], enabled_shelves: ['movies', 'tv', 'books', 'games'] },
+                ? { shelf_order: ['movies', 'tv', 'games', 'books'], enabled_shelves: ['movies', 'tv', 'games', 'books'] }
+                : { shelf_order: ['movies', 'tv', 'games', 'books'], enabled_shelves: ['movies', 'tv', 'games', 'books'] },
             ),
           ),
         ),
@@ -38,8 +38,8 @@ describe('ShelfManager', () => {
 
     await waitFor(() => expect(fetch).toHaveBeenLastCalledWith('/api/preferences', expect.objectContaining({ method: 'PUT' })));
     expect(JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[1][1].body)).toEqual({
-      shelf_order: ['movies', 'tv', 'books', 'games'],
-      enabled_shelves: ['tv', 'books', 'games'],
+      shelf_order: ['movies', 'tv', 'games', 'books'],
+      enabled_shelves: ['tv', 'games', 'books'],
     });
     expect(navigation.push).not.toHaveBeenCalled();
   });
@@ -48,7 +48,7 @@ describe('ShelfManager', () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({
-          shelf_order: ['movies', 'tv', 'books', 'games'],
+          shelf_order: ['movies', 'tv', 'games', 'books'],
           enabled_shelves: ['movies', 'tv', 'games'],
         }),
       ),
@@ -59,7 +59,7 @@ describe('ShelfManager', () => {
 
     await waitFor(() => expect(navigation.push).toHaveBeenCalledWith('/onboarding?shelf=books'));
     expect(JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[1][1].body)).toEqual({
-      shelf_order: ['movies', 'tv', 'books', 'games'],
+      shelf_order: ['movies', 'tv', 'games', 'books'],
       enabled_shelves: ['movies', 'tv', 'games', 'books'],
     });
   });

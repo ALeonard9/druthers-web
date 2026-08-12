@@ -4,6 +4,7 @@ import { getSessionUser } from '@/lib/session';
 import type { Summary } from '@/lib/types';
 import { OnboardingWizard } from '@/components/OnboardingWizard';
 import type { ShelfId } from '@/lib/duelShelves';
+import { SHELF_ORDER } from '@/lib/shelfPreferences';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,7 @@ export default async function OnboardingPage({
   }
 
   const requestedShelf = (await searchParams).shelf;
-  const shelf = ['movies', 'tv', 'books', 'games'].includes(requestedShelf ?? '')
+  const shelf = SHELF_ORDER.includes(requestedShelf as ShelfId)
     ? (requestedShelf as ShelfId)
     : undefined;
 

@@ -6,8 +6,8 @@ import type { Visibility } from '@/lib/types';
 
 vi.mock('@/lib/useShelfPreferences', () => ({
   useShelfPreferences: () => ({
-    order: ['movies', 'tv', 'books', 'games'],
-    enabled: ['movies', 'tv', 'books', 'games'],
+    order: ['movies', 'tv', 'games', 'books'],
+    enabled: ['movies', 'tv', 'games', 'books'],
   }),
 }));
 

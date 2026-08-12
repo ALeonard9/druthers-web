@@ -2,7 +2,7 @@
 
 import type { ShelfId } from './duelShelves';
 
-export const SHELF_ORDER: ShelfId[] = ['movies', 'tv', 'books', 'games'];
+export const SHELF_ORDER: ShelfId[] = ['movies', 'tv', 'games', 'books'];
 export const SHELF_PREFERENCES_EVENT = 'druthers:shelf-preferences';
 
 export interface ShelfPreferences {

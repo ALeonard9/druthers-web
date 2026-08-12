@@ -7,16 +7,16 @@ import type { GlobalSearch, Summary } from '@/lib/types';
 import { SHELVES, movieToDuelEntry, showToDuelEntry, bookToDuelEntry, gameToDuelEntry, type DuelEntry } from '@/lib/duelShelves';
 import { RankingDuel } from '@/components/RankingDuel';
 import { playPop } from '@/lib/pop';
+import { ShelfPreferenceEditor } from '@/components/ShelfPreferenceEditor';
+import {
+  DEFAULT_SHELF_PREFERENCES,
+  orderedEnabledShelves,
+  saveShelfPreferences,
+  type ShelfPreferences,
+} from '@/lib/shelfPreferences';
 
-type Step = 'handle' | 'domains' | 'ranking';
-type DomainKey = 'movies' | 'tv' | 'books' | 'games';
-
-const DOMAINS: { key: DomainKey; label: string; icon: string }[] = [
-  { key: 'movies', label: 'Movies', icon: '🍿' },
-  { key: 'tv', label: 'TV Shows', icon: '📺' },
-  { key: 'books', label: 'Books', icon: '📚' },
-  { key: 'games', label: 'Games', icon: '🎮' },
-];
+type Step = 'handle' | 'shelves' | 'ranking';
+type DomainKey = keyof typeof SHELVES;
 
 export function OnboardingWizard({
   summary,
@@ -26,23 +26,27 @@ export function OnboardingWizard({
   shelfToSetUp?: DomainKey;
 }) {
   const router = useRouter();
-  const [step, setStep] = useState<Step>(shelfToSetUp ? 'ranking' : summary.handle ? 'domains' : 'handle');
+  const [step, setStep] = useState<Step>(shelfToSetUp ? 'ranking' : summary.handle ? 'shelves' : 'handle');
 
   // Handle state
   const [handle, setHandle] = useState(summary.handle ?? '');
   const [handleBusy, setHandleBusy] = useState(false);
   const [handleError, setHandleError] = useState<string | null>(null);
 
-  // Domains state
-  const [selectedDomains, setSelectedDomains] = useState<Set<DomainKey>>(
-    shelfToSetUp ? new Set([shelfToSetUp]) : new Set(),
+  // Shelf selection, visibility, and order are one shared account preference.
+  const [shelfPreferences, setShelfPreferences] = useState<ShelfPreferences>(
+    shelfToSetUp
+      ? { order: DEFAULT_SHELF_PREFERENCES.order, enabled: [shelfToSetUp] }
+      : DEFAULT_SHELF_PREFERENCES,
   );
+  const [shelfBusy, setShelfBusy] = useState(false);
+  const [shelfError, setShelfError] = useState<string | null>(null);
 
   // Ranking state
   const [currentDomainIdx, setCurrentDomainIdx] = useState(0);
   const [completing, setCompleting] = useState(false);
 
-  const activeDomain = Array.from(selectedDomains)[currentDomainIdx];
+  const activeDomain = orderedEnabledShelves(shelfPreferences)[currentDomainIdx];
 
   async function saveHandle(e: FormEvent) {
     e.preventDefault();
@@ -59,7 +63,7 @@ export function OnboardingWizard({
         setHandleError(body.error ?? 'Could not save.');
         return;
       }
-      setStep('domains');
+      setStep('shelves');
     } catch {
       setHandleError('Something went wrong.');
     } finally {
@@ -67,16 +71,19 @@ export function OnboardingWizard({
     }
   }
 
-  function toggleDomain(key: DomainKey) {
-    const next = new Set(selectedDomains);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    setSelectedDomains(next);
-  }
-
-  function startRanking() {
-    if (selectedDomains.size === 0) return;
-    setStep('ranking');
+  async function startRanking() {
+    if (shelfPreferences.enabled.length === 0) return;
+    setShelfBusy(true);
+    setShelfError(null);
+    try {
+      await saveShelfPreferences(shelfPreferences);
+      setCurrentDomainIdx(0);
+      setStep('ranking');
+    } catch {
+      setShelfError('Could not save your shelf choices. Try again.');
+    } finally {
+      setShelfBusy(false);
+    }
   }
 
   async function finishOnboarding() {
@@ -95,7 +102,7 @@ export function OnboardingWizard({
   }
 
   function handleDomainComplete() {
-    if (currentDomainIdx < selectedDomains.size - 1) {
+    if (currentDomainIdx < orderedEnabledShelves(shelfPreferences).length - 1) {
       setCurrentDomainIdx((i) => i + 1);
     } else {
       finishOnboarding();
@@ -135,40 +142,26 @@ export function OnboardingWizard({
         </div>
       )}
 
-      {step === 'domains' && (
+      {step === 'shelves' && (
         <div className="flex flex-col gap-6 rounded-xl border border-line bg-panel p-6 shadow-lg shadow-night/50">
           <div>
-            <h2 className="font-display text-2xl font-medium text-paper">What do you want to rank?</h2>
-            <p className="text-sm text-neutral-400">Pick one or more to get started. You can always add the others later.</p>
+            <h2 className="font-display text-2xl font-medium text-paper">Arrange your shelves</h2>
+            <p className="text-sm text-neutral-400">Choose the shelves you use and drag them into your preferred order. You can change this later in Settings.</p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {DOMAINS.map((d) => (
-              <button
-                key={d.key}
-                onClick={() => toggleDomain(d.key)}
-                className={`flex flex-col items-center gap-3 rounded-lg border p-4 transition-colors ${
-                  selectedDomains.has(d.key)
-                    ? 'border-brass bg-brass-wash/30 text-paper'
-                    : 'border-line bg-night text-neutral-400 hover:border-neutral-500'
-                }`}
-              >
-                <span className="text-3xl">{d.icon}</span>
-                <span className="font-medium">{d.label}</span>
-              </button>
-            ))}
-          </div>
+          <ShelfPreferenceEditor preferences={shelfPreferences} onChange={setShelfPreferences} />
           <div className="mt-4 flex items-center justify-between">
             <span className="text-sm text-neutral-500">
-              {selectedDomains.size} selected
+              {shelfPreferences.enabled.length} on
             </span>
             <button
               onClick={startRanking}
-              disabled={selectedDomains.size === 0}
+              disabled={shelfBusy || shelfPreferences.enabled.length === 0}
               className="rounded bg-brass px-6 py-3 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
             >
-              Continue
+              {shelfBusy ? 'Saving…' : 'Continue'}
             </button>
           </div>
+          {shelfError && <p className="text-sm text-red-400">{shelfError}</p>}
         </div>
       )}
 

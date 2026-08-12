@@ -30,5 +30,5 @@ export async function POST(request: Request) {
   const data = await res.json();
   const user = applyTokenCookies(await cookies(), data);
 
-  return NextResponse.json({ ok: true, user });
+  return NextResponse.json({ ok: true, user, time_zone: data.time_zone });
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { Preferences } from '@/lib/types';
 import { greetingAt, FALLBACK_TIME_ZONE } from '@/lib/viewerTime';
+import { deviceTimeZone } from '@/lib/deviceTimeZone';
 
 // Zones offered when the browser cannot enumerate the tzdb itself. Small on
 // purpose — it is a floor, not a catalogue, and every current browser takes
@@ -29,10 +30,6 @@ function knownZones(): string[] {
     }
   }
   return FALLBACK_ZONES;
-}
-
-function deviceZone(): string {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || FALLBACK_TIME_ZONE;
 }
 
 /**
@@ -99,7 +96,7 @@ export function TimeZonePicker() {
     );
   }
 
-  const device = deviceZone();
+  const device = deviceTimeZone();
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-line bg-panel p-4">

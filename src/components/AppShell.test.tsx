@@ -58,6 +58,10 @@ describe('AppShell after sign-in', () => {
       'viewer@example.com',
     );
     expect(screen.getByRole('navigation', { name: 'Bottom tabs' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Terms of Use' }).getAttribute('href')).toBe('/terms');
+    expect(screen.getByRole('link', { name: 'Privacy Policy' }).getAttribute('href')).toBe(
+      '/privacy',
+    );
   }
 
   it('renders signed-in chrome after a successful local sign-in from /login', async () => {

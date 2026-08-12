@@ -9,7 +9,7 @@ import { GENERIC_OG_IMAGE_PATH } from '@/lib/ogCards';
 import { HomeActivity, ActivitySkeleton } from '@/components/HomeActivity';
 import { HomeTonight, TonightSkeleton } from '@/components/HomeTonight';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
-import { HomeShelfCarousel } from '@/components/HomeShelfCarousel';
+import { HomeShelves } from '@/components/HomeShelves';
 import { PublicLanding } from '@/components/PublicLanding';
 import { TutorialLauncher } from '@/components/Tutorial';
 import type { Summary } from '@/lib/types';
@@ -157,11 +157,7 @@ async function SignedInHome({ summaryPromise }: { summaryPromise: Promise<Summar
         </p>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {summary.shelves.map((shelf) => (
-          <HomeShelfCarousel key={shelf.category} shelf={shelf} />
-        ))}
-      </div>
+      <HomeShelves shelves={summary.shelves} />
 
       <TutorialLauncher hasItems={summary.total_items > 0} />
     </>

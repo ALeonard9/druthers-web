@@ -7,34 +7,47 @@ import type { GlobalSearch, Summary } from '@/lib/types';
 import { SHELVES, movieToDuelEntry, showToDuelEntry, bookToDuelEntry, gameToDuelEntry, type DuelEntry } from '@/lib/duelShelves';
 import { RankingDuel } from '@/components/RankingDuel';
 import { playPop } from '@/lib/pop';
+import { ShelfPreferenceEditor } from '@/components/ShelfPreferenceEditor';
+import {
+  DEFAULT_SHELF_PREFERENCES,
+  orderedEnabledShelves,
+  type ShelfPreferences,
+} from '@/lib/shelfPreferences';
+import { saveShelfPreferences } from '@/lib/shelfPreferencesClient';
 
-type Step = 'handle' | 'domains' | 'ranking';
-type DomainKey = 'movies' | 'tv' | 'books' | 'games';
+type Step = 'handle' | 'shelves' | 'ranking';
+type DomainKey = keyof typeof SHELVES;
 
-const DOMAINS: { key: DomainKey; label: string; icon: string }[] = [
-  { key: 'movies', label: 'Movies', icon: '🍿' },
-  { key: 'tv', label: 'TV Shows', icon: '📺' },
-  { key: 'books', label: 'Books', icon: '📚' },
-  { key: 'games', label: 'Games', icon: '🎮' },
-];
-
-export function OnboardingWizard({ summary }: { summary: Summary }) {
+export function OnboardingWizard({
+  summary,
+  shelfToSetUp,
+}: {
+  summary: Summary;
+  shelfToSetUp?: DomainKey;
+}) {
   const router = useRouter();
-  const [step, setStep] = useState<Step>(summary.handle ? 'domains' : 'handle');
+  const [step, setStep] = useState<Step>(shelfToSetUp ? 'ranking' : summary.handle ? 'shelves' : 'handle');
 
   // Handle state
   const [handle, setHandle] = useState(summary.handle ?? '');
   const [handleBusy, setHandleBusy] = useState(false);
   const [handleError, setHandleError] = useState<string | null>(null);
 
-  // Domains state
-  const [selectedDomains, setSelectedDomains] = useState<Set<DomainKey>>(new Set());
+  // Shelf selection, visibility, and order are one shared account preference.
+  const [shelfPreferences, setShelfPreferences] = useState<ShelfPreferences>(
+    shelfToSetUp
+      ? { order: DEFAULT_SHELF_PREFERENCES.order, enabled: [shelfToSetUp] }
+      : DEFAULT_SHELF_PREFERENCES,
+  );
+  const [shelfBusy, setShelfBusy] = useState(false);
+  const [shelfError, setShelfError] = useState<string | null>(null);
 
   // Ranking state
   const [currentDomainIdx, setCurrentDomainIdx] = useState(0);
   const [completing, setCompleting] = useState(false);
+  const [completionError, setCompletionError] = useState<string | null>(null);
 
-  const activeDomain = Array.from(selectedDomains)[currentDomainIdx];
+  const activeDomain = orderedEnabledShelves(shelfPreferences)[currentDomainIdx];
 
   async function saveHandle(e: FormEvent) {
     e.preventDefault();
@@ -51,7 +64,7 @@ export function OnboardingWizard({ summary }: { summary: Summary }) {
         setHandleError(body.error ?? 'Could not save.');
         return;
       }
-      setStep('domains');
+      setStep('shelves');
     } catch {
       setHandleError('Something went wrong.');
     } finally {
@@ -59,35 +72,47 @@ export function OnboardingWizard({ summary }: { summary: Summary }) {
     }
   }
 
-  function toggleDomain(key: DomainKey) {
-    const next = new Set(selectedDomains);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    setSelectedDomains(next);
-  }
-
-  function startRanking() {
-    if (selectedDomains.size === 0) return;
-    setStep('ranking');
+  async function startRanking() {
+    if (shelfPreferences.enabled.length === 0) return;
+    setShelfBusy(true);
+    setShelfError(null);
+    try {
+      await saveShelfPreferences(shelfPreferences);
+      setCurrentDomainIdx(0);
+      setStep('ranking');
+    } catch {
+      setShelfError('Could not save your shelf choices. Try again.');
+    } finally {
+      setShelfBusy(false);
+    }
   }
 
   async function finishOnboarding() {
     setCompleting(true);
+    setCompletionError(null);
     try {
-      await fetch('/api/preferences', {
+      const res = await fetch('/api/preferences', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ onboarding_completed: true }),
       });
-      router.refresh();
-      // Wait for layout refresh to redirect us to '/'
-    } catch {
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? 'Could not finish onboarding. Try again.');
+      }
+
+      // A shelf setup stays on /onboarding after a refresh, so completion
+      // must navigate independently of the server page's redirect behavior.
+      router.push(shelfToSetUp ? `/${shelfToSetUp}` : '/');
+    } catch (err) {
+      setCompletionError(err instanceof Error ? err.message : 'Could not finish onboarding. Try again.');
+    } finally {
       setCompleting(false);
     }
   }
 
   function handleDomainComplete() {
-    if (currentDomainIdx < selectedDomains.size - 1) {
+    if (currentDomainIdx < orderedEnabledShelves(shelfPreferences).length - 1) {
       setCurrentDomainIdx((i) => i + 1);
     } else {
       finishOnboarding();
@@ -127,48 +152,38 @@ export function OnboardingWizard({ summary }: { summary: Summary }) {
         </div>
       )}
 
-      {step === 'domains' && (
+      {step === 'shelves' && (
         <div className="flex flex-col gap-6 rounded-xl border border-line bg-panel p-6 shadow-lg shadow-night/50">
           <div>
-            <h2 className="font-display text-2xl font-medium text-paper">What do you want to rank?</h2>
-            <p className="text-sm text-neutral-400">Pick one or more to get started. You can always add the others later.</p>
+            <h2 className="font-display text-2xl font-medium text-paper">Arrange your shelves</h2>
+            <p className="text-sm text-neutral-400">Choose the shelves you use and drag them into your preferred order. You can change this later in Settings.</p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {DOMAINS.map((d) => (
-              <button
-                key={d.key}
-                onClick={() => toggleDomain(d.key)}
-                className={`flex flex-col items-center gap-3 rounded-lg border p-4 transition-colors ${
-                  selectedDomains.has(d.key)
-                    ? 'border-brass bg-brass-wash/30 text-paper'
-                    : 'border-line bg-night text-neutral-400 hover:border-neutral-500'
-                }`}
-              >
-                <span className="text-3xl">{d.icon}</span>
-                <span className="font-medium">{d.label}</span>
-              </button>
-            ))}
-          </div>
+          <ShelfPreferenceEditor preferences={shelfPreferences} onChange={setShelfPreferences} />
           <div className="mt-4 flex items-center justify-between">
             <span className="text-sm text-neutral-500">
-              {selectedDomains.size} selected
+              {shelfPreferences.enabled.length} on
             </span>
             <button
               onClick={startRanking}
-              disabled={selectedDomains.size === 0}
+              disabled={shelfBusy || shelfPreferences.enabled.length === 0}
               className="rounded bg-brass px-6 py-3 text-sm font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
             >
-              Continue
+              {shelfBusy ? 'Saving…' : 'Continue'}
             </button>
           </div>
+          {shelfError && <p className="text-sm text-red-400">{shelfError}</p>}
         </div>
       )}
 
       {step === 'ranking' && activeDomain && (
-        <DomainRankingStep
-          domainKey={activeDomain}
-          onComplete={handleDomainComplete}
-        />
+        <>
+          <DomainRankingStep
+            domainKey={activeDomain}
+            onComplete={handleDomainComplete}
+            requireFive={Boolean(shelfToSetUp)}
+          />
+          {completionError && <p role="alert" className="text-sm text-red-400">{completionError}</p>}
+        </>
       )}
 
       {completing && (
@@ -183,7 +198,15 @@ export function OnboardingWizard({ summary }: { summary: Summary }) {
   );
 }
 
-function DomainRankingStep({ domainKey, onComplete }: { domainKey: DomainKey; onComplete: () => void }) {
+function DomainRankingStep({
+  domainKey,
+  onComplete,
+  requireFive = false,
+}: {
+  domainKey: DomainKey;
+  onComplete: () => void;
+  requireFive?: boolean;
+}) {
   const shelf = SHELVES[domainKey];
 
   const [ranked, setRanked] = useState<DuelEntry[]>([]);
@@ -403,12 +426,14 @@ function DomainRankingStep({ domainKey, onComplete }: { domainKey: DomainKey; on
         </div>
       )}
 
-      <button
-        onClick={onComplete}
-        className="self-end text-sm text-neutral-500 hover:text-white"
-      >
-        Skip the rest of {shelf.label}
-      </button>
+      {!requireFive && (
+        <button
+          onClick={onComplete}
+          className="self-end text-sm text-neutral-500 hover:text-white"
+        >
+          Skip the rest of {shelf.label}
+        </button>
+      )}
     </div>
   );
 }

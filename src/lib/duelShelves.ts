@@ -65,7 +65,7 @@ export const SHELVES: Record<ShelfId, ShelfConfig> = {
   },
   tv: {
     id: 'tv',
-    label: 'Shows',
+    label: 'TV',
     noun: 'show',
     boardHref: '/tv/ranking/list',
     duelHref: '/tv/ranking',

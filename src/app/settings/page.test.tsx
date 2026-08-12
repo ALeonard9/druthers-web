@@ -10,6 +10,7 @@ vi.mock('@/components/ApiKeysManager', () => ({ ApiKeysManager: () => null }));
 vi.mock('@/components/PrivacySettings', () => ({ PrivacySettings: () => null }));
 vi.mock('@/components/SoundPicker', () => ({ SoundPicker: () => null }));
 vi.mock('@/components/TimeZonePicker', () => ({ TimeZonePicker: () => null }));
+vi.mock('@/components/ShelfManager', () => ({ ShelfManager: () => null }));
 
 describe('settings page', () => {
   beforeEach(() => {

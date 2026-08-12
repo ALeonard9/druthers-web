@@ -4,6 +4,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrivacySettings } from './PrivacySettings';
 import type { Visibility } from '@/lib/types';
 
+vi.mock('@/lib/useShelfPreferences', () => ({
+  useShelfPreferences: () => ({
+    order: ['movies', 'tv', 'games', 'books'],
+    enabled: ['movies', 'tv', 'games', 'books'],
+  }),
+}));
+
 function visibility(overrides: Partial<Visibility> = {}): Visibility {
   return {
     handle: 'avery',

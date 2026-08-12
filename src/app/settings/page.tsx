@@ -5,6 +5,7 @@ import { ApiKeysManager } from '@/components/ApiKeysManager';
 import { PrivacySettings } from '@/components/PrivacySettings';
 import { SoundPicker } from '@/components/SoundPicker';
 import { TimeZonePicker } from '@/components/TimeZonePicker';
+import { ShelfManager } from '@/components/ShelfManager';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +48,16 @@ export default async function SettingsPage() {
         >
           Track your followers
         </Link>
+      </section>
+
+      <section id="shelves" className="flex scroll-mt-24 flex-col gap-3">
+        <div>
+          <h2 className="font-display text-lg text-paper">Shelves</h2>
+          <p className="text-sm text-neutral-400">
+            Choose which shelves appear around Druthers and arrange their order.
+          </p>
+        </div>
+        <ShelfManager />
       </section>
 
       <section id="time-zone" className="flex scroll-mt-24 flex-col gap-3">

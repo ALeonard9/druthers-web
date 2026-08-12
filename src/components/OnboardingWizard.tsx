@@ -45,6 +45,7 @@ export function OnboardingWizard({
   // Ranking state
   const [currentDomainIdx, setCurrentDomainIdx] = useState(0);
   const [completing, setCompleting] = useState(false);
+  const [completionError, setCompletionError] = useState<string | null>(null);
 
   const activeDomain = orderedEnabledShelves(shelfPreferences)[currentDomainIdx];
 
@@ -88,15 +89,24 @@ export function OnboardingWizard({
 
   async function finishOnboarding() {
     setCompleting(true);
+    setCompletionError(null);
     try {
-      await fetch('/api/preferences', {
+      const res = await fetch('/api/preferences', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ onboarding_completed: true }),
       });
-      router.refresh();
-      // Wait for layout refresh to redirect us to '/'
-    } catch {
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? 'Could not finish onboarding. Try again.');
+      }
+
+      // A shelf setup stays on /onboarding after a refresh, so completion
+      // must navigate independently of the server page's redirect behavior.
+      router.push(shelfToSetUp ? `/${shelfToSetUp}` : '/');
+    } catch (err) {
+      setCompletionError(err instanceof Error ? err.message : 'Could not finish onboarding. Try again.');
+    } finally {
       setCompleting(false);
     }
   }
@@ -166,11 +176,14 @@ export function OnboardingWizard({
       )}
 
       {step === 'ranking' && activeDomain && (
-        <DomainRankingStep
-          domainKey={activeDomain}
-          onComplete={handleDomainComplete}
-          requireFive={Boolean(shelfToSetUp)}
-        />
+        <>
+          <DomainRankingStep
+            domainKey={activeDomain}
+            onComplete={handleDomainComplete}
+            requireFive={Boolean(shelfToSetUp)}
+          />
+          {completionError && <p role="alert" className="text-sm text-red-400">{completionError}</p>}
+        </>
       )}
 
       {completing && (

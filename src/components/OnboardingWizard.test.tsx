@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OnboardingWizard } from './OnboardingWizard';
 import type { Summary } from '@/lib/types';
 
-const navigation = vi.hoisted(() => ({ refresh: vi.fn() }));
+const navigation = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 
 vi.mock('next/navigation', () => ({ useRouter: () => navigation }));
 
@@ -21,6 +21,7 @@ const summary: Summary = {
 
 describe('OnboardingWizard shelf setup', () => {
   beforeEach(() => {
+    navigation.push.mockReset();
     navigation.refresh.mockReset();
     vi.stubGlobal(
       'fetch',
@@ -90,7 +91,64 @@ describe('OnboardingWizard shelf setup', () => {
         enabled_shelves: ['movies', 'tv', 'games', 'books'],
       }),
     });
-    await waitFor(() => expect(navigation.refresh).toHaveBeenCalled());
+    await waitFor(() => expect(navigation.push).toHaveBeenCalledWith('/'));
+    expect(screen.queryByText('Finishing up…')).toBeNull();
     expect(localStorageSet).not.toHaveBeenCalled();
+  });
+
+  it('finishes a single-shelf setup without leaving the blocking overlay up', async () => {
+    vi.mocked(fetch).mockImplementation((input: string | URL | Request) => {
+      const url = input.toString();
+      return Promise.resolve(
+        new Response(
+          JSON.stringify(
+            url === '/api/user/games'
+              ? Array.from({ length: 5 }, (_, index) => ({
+                  on_rankings: true,
+                  rank: index + 1,
+                  game: { id: `game-${index}`, title: `Game ${index}`, year: 2020, poster_url: null },
+                }))
+              : {},
+          ),
+        ),
+      );
+    });
+
+    render(<OnboardingWizard summary={{ ...summary, needs_onboarding: false }} shelfToSetUp="games" />);
+
+    await screen.findByText("You've ranked 5 games.");
+    fireEvent.click(screen.getByRole('button', { name: 'Next Step' }));
+
+    await waitFor(() => expect(navigation.push).toHaveBeenCalledWith('/games'));
+    expect(screen.queryByText('Finishing up…')).toBeNull();
+  });
+
+  it('dismisses the blocking overlay and shows an error when completion fails', async () => {
+    vi.mocked(fetch).mockImplementation((input: string | URL | Request) => {
+      const url = input.toString();
+      return Promise.resolve(
+        new Response(
+          JSON.stringify(
+            url === '/api/user/games'
+              ? Array.from({ length: 5 }, (_, index) => ({
+                  on_rankings: true,
+                  rank: index + 1,
+                  game: { id: `game-${index}`, title: `Game ${index}`, year: 2020, poster_url: null },
+                }))
+              : { error: 'Preferences could not be saved.' },
+          ),
+          { status: url === '/api/preferences' ? 500 : 200 },
+        ),
+      );
+    });
+
+    render(<OnboardingWizard summary={{ ...summary, needs_onboarding: false }} shelfToSetUp="games" />);
+
+    await screen.findByText("You've ranked 5 games.");
+    fireEvent.click(screen.getByRole('button', { name: 'Next Step' }));
+
+    expect((await screen.findByRole('alert')).textContent).toContain('Preferences could not be saved.');
+    expect(screen.queryByText('Finishing up…')).toBeNull();
+    expect(navigation.push).not.toHaveBeenCalled();
   });
 });

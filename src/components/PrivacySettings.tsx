@@ -8,6 +8,8 @@ import {
   shelfInheritsDefault,
   type ShelfField,
 } from '@/lib/privacyDefaults';
+import type { ShelfId } from '@/lib/duelShelves';
+import { useShelfPreferences } from '@/lib/useShelfPreferences';
 
 const TIER_ORDER: VisibilityTier[] = ['private', 'friends', 'public'];
 
@@ -76,10 +78,13 @@ const DOMAINS: {
 // The profile can never sit below the most open of these (#274) — mirrors
 // the API's own floor check so a doomed selection is explained immediately
 // instead of round-tripping to a 422.
-function floorTier(settings: Visibility): { tier: VisibilityTier; source: string } {
+function floorTier(
+  settings: Visibility,
+  domains = DOMAINS,
+): { tier: VisibilityTier; source: string } {
   let tier: VisibilityTier = 'private';
   let source = '';
-  for (const d of DOMAINS) {
+  for (const d of domains) {
     for (const [field, suffix] of [
       [d.field, ''],
       [d.watchlistField, ` ${d.queueLabel.toLowerCase()}`],
@@ -158,6 +163,7 @@ type PendingRaise = {
 // on/off switches. The profile control is pulled out above the four domain
 // blocks since it's the one every shelf is constrained against.
 export function PrivacySettings() {
+  const shelfPreferences = useShelfPreferences();
   const [settings, setSettings] = useState<Visibility | null>(null);
   const [handle, setHandle] = useState('');
   const [handleBusy, setHandleBusy] = useState(false);
@@ -305,7 +311,10 @@ export function PrivacySettings() {
       setHandleNotice(true);
       return;
     }
-    const floor = floorTier(settings);
+    const floor = floorTier(
+      settings,
+      DOMAINS.filter((d) => shelfPreferences.enabled.includes(d.key as ShelfId)),
+    );
     if (moreOpen(floor.tier, tier)) {
       setProfileFloorNotice(floor);
       return;
@@ -483,7 +492,7 @@ export function PrivacySettings() {
           Advanced Sharing Options
         </summary>
         <ul className="divide-y divide-line/60 border-t border-line">
-        {DOMAINS.map((d) => (
+        {DOMAINS.filter((d) => shelfPreferences.enabled.includes(d.key as ShelfId)).map((d) => (
           <li key={d.key} className="px-4 py-3">
             <p className="mb-1.5 text-sm font-medium text-neutral-200">{d.label}</p>
             <div className="flex items-center gap-3 py-1">

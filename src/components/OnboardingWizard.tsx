@@ -18,9 +18,15 @@ const DOMAINS: { key: DomainKey; label: string; icon: string }[] = [
   { key: 'games', label: 'Games', icon: '🎮' },
 ];
 
-export function OnboardingWizard({ summary }: { summary: Summary }) {
+export function OnboardingWizard({
+  summary,
+  shelfToSetUp,
+}: {
+  summary: Summary;
+  shelfToSetUp?: DomainKey;
+}) {
   const router = useRouter();
-  const [step, setStep] = useState<Step>(summary.handle ? 'domains' : 'handle');
+  const [step, setStep] = useState<Step>(shelfToSetUp ? 'ranking' : summary.handle ? 'domains' : 'handle');
 
   // Handle state
   const [handle, setHandle] = useState(summary.handle ?? '');
@@ -28,7 +34,9 @@ export function OnboardingWizard({ summary }: { summary: Summary }) {
   const [handleError, setHandleError] = useState<string | null>(null);
 
   // Domains state
-  const [selectedDomains, setSelectedDomains] = useState<Set<DomainKey>>(new Set());
+  const [selectedDomains, setSelectedDomains] = useState<Set<DomainKey>>(
+    shelfToSetUp ? new Set([shelfToSetUp]) : new Set(),
+  );
 
   // Ranking state
   const [currentDomainIdx, setCurrentDomainIdx] = useState(0);
@@ -168,6 +176,7 @@ export function OnboardingWizard({ summary }: { summary: Summary }) {
         <DomainRankingStep
           domainKey={activeDomain}
           onComplete={handleDomainComplete}
+          requireFive={Boolean(shelfToSetUp)}
         />
       )}
 
@@ -183,7 +192,15 @@ export function OnboardingWizard({ summary }: { summary: Summary }) {
   );
 }
 
-function DomainRankingStep({ domainKey, onComplete }: { domainKey: DomainKey; onComplete: () => void }) {
+function DomainRankingStep({
+  domainKey,
+  onComplete,
+  requireFive = false,
+}: {
+  domainKey: DomainKey;
+  onComplete: () => void;
+  requireFive?: boolean;
+}) {
   const shelf = SHELVES[domainKey];
 
   const [ranked, setRanked] = useState<DuelEntry[]>([]);
@@ -403,12 +420,14 @@ function DomainRankingStep({ domainKey, onComplete }: { domainKey: DomainKey; on
         </div>
       )}
 
-      <button
-        onClick={onComplete}
-        className="self-end text-sm text-neutral-500 hover:text-white"
-      >
-        Skip the rest of {shelf.label}
-      </button>
+      {!requireFive && (
+        <button
+          onClick={onComplete}
+          className="self-end text-sm text-neutral-500 hover:text-white"
+        >
+          Skip the rest of {shelf.label}
+        </button>
+      )}
     </div>
   );
 }

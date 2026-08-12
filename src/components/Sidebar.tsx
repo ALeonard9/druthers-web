@@ -2,11 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { ShelfId } from '@/lib/duelShelves';
+import { orderedEnabledShelves } from '@/lib/shelfPreferences';
+import { useShelfPreferences } from '@/lib/useShelfPreferences';
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ReactNode;
+  shelf?: ShelfId;
 }
 
 const ICON = {
@@ -63,10 +67,10 @@ const ICON = {
 
 const COLLECTIONS: NavItem[] = [
   { href: '/', label: 'Home', icon: ICON.home },
-  { href: '/movies', label: 'Movies', icon: ICON.film },
-  { href: '/tv', label: 'TV', icon: ICON.tv },
-  { href: '/books', label: 'Books', icon: ICON.book },
-  { href: '/games', label: 'Games', icon: ICON.game },
+  { href: '/movies', label: 'Movies', icon: ICON.film, shelf: 'movies' },
+  { href: '/tv', label: 'TV', icon: ICON.tv, shelf: 'tv' },
+  { href: '/books', label: 'Books', icon: ICON.book, shelf: 'books' },
+  { href: '/games', label: 'Games', icon: ICON.game, shelf: 'games' },
 ];
 
 const VIEWS: NavItem[] = [
@@ -74,8 +78,8 @@ const VIEWS: NavItem[] = [
   { href: '/surprise', label: 'Surprise me', icon: ICON.ticket },
 ];
 
-function useActive(pathname: string): string | undefined {
-  const all = [...COLLECTIONS, ...VIEWS];
+function useActive(pathname: string, collections: NavItem[]): string | undefined {
+  const all = [...collections, ...VIEWS];
   return all
     .filter((l) =>
       l.href === '/' ? pathname === '/' : pathname.startsWith(l.href),
@@ -111,7 +115,11 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 // on small screens (BottomTabs).
 export function Sidebar() {
   const pathname = usePathname();
-  const active = useActive(pathname);
+  const preferences = useShelfPreferences();
+  const collections = [COLLECTIONS[0], ...orderedEnabledShelves(preferences).flatMap((id) =>
+    COLLECTIONS.filter((item) => item.shelf === id),
+  )];
+  const active = useActive(pathname, collections);
 
   return (
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-line bg-night px-3 py-4 md:flex">
@@ -128,7 +136,7 @@ export function Sidebar() {
         </span>
       </Link>
       <nav className="flex flex-col gap-1">
-        {COLLECTIONS.map((item) => (
+        {collections.map((item) => (
           <NavLink key={item.href} item={item} active={active === item.href} />
         ))}
         <div className="mx-3 my-3 border-t border-line" />
@@ -164,8 +172,12 @@ export function Sidebar() {
 
 export function BottomTabs() {
   const pathname = usePathname();
-  const active = useActive(pathname);
-  const items = [...COLLECTIONS, ...VIEWS];
+  const preferences = useShelfPreferences();
+  const collections = [COLLECTIONS[0], ...orderedEnabledShelves(preferences).flatMap((id) =>
+    COLLECTIONS.filter((item) => item.shelf === id),
+  )];
+  const active = useActive(pathname, collections);
+  const items = [...collections, ...VIEWS];
 
   return (
     <nav

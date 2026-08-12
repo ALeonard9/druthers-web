@@ -11,9 +11,9 @@ import { ShelfPreferenceEditor } from '@/components/ShelfPreferenceEditor';
 import {
   DEFAULT_SHELF_PREFERENCES,
   orderedEnabledShelves,
-  saveShelfPreferences,
   type ShelfPreferences,
 } from '@/lib/shelfPreferences';
+import { saveShelfPreferences } from '@/lib/shelfPreferencesClient';
 
 type Step = 'handle' | 'shelves' | 'ranking';
 type DomainKey = keyof typeof SHELVES;

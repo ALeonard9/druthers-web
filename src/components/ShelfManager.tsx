@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ShelfId } from '@/lib/duelShelves';
-import { saveShelfPreferences, type ShelfPreferences } from '@/lib/shelfPreferences';
+import type { ShelfPreferences } from '@/lib/shelfPreferences';
+import { saveShelfPreferences } from '@/lib/shelfPreferencesClient';
 import { useShelfPreferences } from '@/lib/useShelfPreferences';
 import { ShelfPreferenceEditor } from '@/components/ShelfPreferenceEditor';
 

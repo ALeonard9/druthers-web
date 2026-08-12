@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import {
   DEFAULT_SHELF_PREFERENCES,
   normalizeShelfPreferences,
-  SHELF_PREFERENCES_EVENT,
   type ShelfPreferences,
 } from './shelfPreferences';
+import { SHELF_PREFERENCES_EVENT } from './shelfPreferencesClient';
 
 export function useShelfPreferences(): ShelfPreferences {
   const [preferences, setPreferences] = useState(DEFAULT_SHELF_PREFERENCES);

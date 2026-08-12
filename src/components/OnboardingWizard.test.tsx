@@ -43,7 +43,7 @@ describe('OnboardingWizard shelf setup', () => {
     const shelfList = screen.getByRole('list', { name: 'Shelf order' });
     expect(within(shelfList).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
       expect.stringContaining('Movies'),
-      expect.stringContaining('Shows'),
+      expect.stringContaining('TV'),
       expect.stringContaining('Games'),
       expect.stringContaining('Books'),
     ]);
@@ -54,7 +54,7 @@ describe('OnboardingWizard shelf setup', () => {
   it('saves shelf choices through preferences and skips an off shelf during ranking', async () => {
     render(<OnboardingWizard summary={summary} />);
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Turn Shows off' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Turn TV off' }));
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
     await screen.findByText('Pick 5 Movies');
@@ -77,9 +77,9 @@ describe('OnboardingWizard shelf setup', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     await screen.findByText('Pick 5 Movies');
-    for (const shelf of ['Movies', 'Shows', 'Games', 'Books']) {
+    for (const shelf of ['Movies', 'TV', 'Games', 'Books']) {
       fireEvent.click(screen.getByRole('button', { name: `Skip the rest of ${shelf}` }));
-      if (shelf !== 'Books') await screen.findByText(`Pick 5 ${shelf === 'Movies' ? 'Shows' : shelf === 'Shows' ? 'Games' : 'Books'}`);
+      if (shelf !== 'Books') await screen.findByText(`Pick 5 ${shelf === 'Movies' ? 'TV' : shelf === 'TV' ? 'Games' : 'Books'}`);
     }
 
     expect(fetch).toHaveBeenCalledWith('/api/preferences', {

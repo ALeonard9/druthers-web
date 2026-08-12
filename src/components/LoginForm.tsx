@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { refreshAuthState } from '@/app/authActions';
+import { fillDeviceTimeZoneIfUnset } from '@/lib/deviceTimeZoneDetection';
 
 export function LoginForm() {
   const router = useRouter();
@@ -27,6 +28,8 @@ export function LoginForm() {
         setLoading(false);
         return;
       }
+      const data = await res.json();
+      await fillDeviceTimeZoneIfUnset(data.time_zone);
       await refreshAuthState();
       router.replace('/');
     } catch {

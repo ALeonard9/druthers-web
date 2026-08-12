@@ -58,5 +58,8 @@ export async function POST(request: Request) {
 
   const data = await res.json();
   const user = applyTokenCookies(await cookies(), data);
-  return withAuthTiming(NextResponse.json({ ok: true, user }), apiDurationMs);
+  return withAuthTiming(
+    NextResponse.json({ ok: true, user, time_zone: data.time_zone }),
+    apiDurationMs,
+  );
 }

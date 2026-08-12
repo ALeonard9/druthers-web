@@ -28,6 +28,8 @@ export interface TokenResponse {
   user_id: string;
   email: string;
   user_group: string;
+  /** Raw nullable account zone, used only immediately after a fresh sign-in. */
+  time_zone?: string | null;
 }
 
 // Minimal surfaces shared by the `cookies()` store, NextResponse.cookies, and

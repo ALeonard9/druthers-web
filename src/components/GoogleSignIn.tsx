@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { refreshAuthState } from '@/app/authActions';
+import { fillDeviceTimeZoneIfUnset } from '@/lib/deviceTimeZoneDetection';
 
 // Minimal typing for the Google Identity Services global.
 interface GoogleCredentialResponse {
@@ -44,6 +45,8 @@ export function GoogleSignIn({ clientId }: { clientId: string }) {
           body: JSON.stringify({ credential: resp.credential }),
         });
         if (res.ok) {
+          const data = await res.json();
+          await fillDeviceTimeZoneIfUnset(data.time_zone);
           // The auth route writes cookies outside the current RSC tree. Merge
           // a refreshed root layout before navigating so its shared signed-out
           // shell cannot survive the soft transition from `/login`.

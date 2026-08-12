@@ -1,7 +1,6 @@
 /** @vitest-environment happy-dom */
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { saveShelfPreferences } from '@/lib/shelfPreferences';
 import type { SummaryShelf } from '@/lib/types';
 import { HomeShelves } from './HomeShelves';
 
@@ -17,14 +16,25 @@ const shelves: SummaryShelf[] = [
 ];
 
 describe('HomeShelves', () => {
-  beforeEach(() => localStorage.clear());
-  afterEach(cleanup);
+  beforeEach(() => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            shelf_order: ['games', 'books', 'movies', 'tv'],
+            enabled_shelves: ['games', 'movies'],
+          }),
+        ),
+      ),
+    );
+  });
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
-  it('renders only enabled shelves in the stored order', async () => {
-    saveShelfPreferences({
-      order: ['games', 'books', 'movies', 'tv'],
-      enabled: ['games', 'movies'],
-    });
+  it('renders only enabled shelves in the account preference order', async () => {
     render(<HomeShelves shelves={shelves} />);
 
     await waitFor(() => expect(screen.queryByText('Books')).toBeNull());
@@ -32,5 +42,6 @@ describe('HomeShelves', () => {
     expect(screen.getByText('Games').compareDocumentPosition(screen.getByText('Movies'))).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
+    expect(fetch).toHaveBeenCalledWith('/api/preferences');
   });
 });

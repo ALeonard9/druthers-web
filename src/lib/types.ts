@@ -328,6 +328,8 @@ export interface Preferences {
   ranked_list_length: RankedListLength;
   /** IANA zone. Always concrete — the API resolves an unset column server-side. */
   time_zone: string;
+  shelf_order: string[];
+  enabled_shelves: string[];
 }
 
 export type VisibilityTier = 'private' | 'friends' | 'public';

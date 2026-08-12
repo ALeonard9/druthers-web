@@ -4,7 +4,6 @@ import type { ShelfId } from './duelShelves';
 
 export const SHELF_ORDER: ShelfId[] = ['movies', 'tv', 'books', 'games'];
 export const SHELF_PREFERENCES_EVENT = 'druthers:shelf-preferences';
-const STORAGE_KEY = 'druthers:shelf-preferences';
 
 export interface ShelfPreferences {
   order: ShelfId[];
@@ -32,20 +31,17 @@ export function normalizeShelfPreferences(value: unknown): ShelfPreferences {
   };
 }
 
-export function readShelfPreferences(): ShelfPreferences {
-  if (typeof window === 'undefined') return DEFAULT_SHELF_PREFERENCES;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? normalizeShelfPreferences(JSON.parse(raw)) : DEFAULT_SHELF_PREFERENCES;
-  } catch {
-    return DEFAULT_SHELF_PREFERENCES;
-  }
-}
-
-export function saveShelfPreferences(next: ShelfPreferences) {
+export function saveShelfPreferences(next: ShelfPreferences): Promise<void> {
   const normalized = normalizeShelfPreferences(next);
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-  window.dispatchEvent(new Event(SHELF_PREFERENCES_EVENT));
+  window.dispatchEvent(new CustomEvent(SHELF_PREFERENCES_EVENT, { detail: normalized }));
+  return fetch('/api/preferences', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      shelf_order: normalized.order,
+      enabled_shelves: normalized.enabled,
+    }),
+  }).then(() => undefined);
 }
 
 export function orderedEnabledShelves(preferences: ShelfPreferences): ShelfId[] {

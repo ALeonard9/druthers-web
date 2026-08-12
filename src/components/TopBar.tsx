@@ -1,24 +1,26 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { getSessionUser } from '@/lib/session';
-import { greetingAt, FALLBACK_TIME_ZONE } from '@/lib/viewerTime';
+import { greetingAt } from '@/lib/viewerTime';
 import { getViewerTimeZone } from '@/lib/viewerTimeZone';
+import type { SessionUser } from '@/lib/types';
 import { LogoutButton } from './LogoutButton';
 import { EnvBadge } from './EnvBadge';
 import { UnreadBadge } from './UnreadBadge';
 import { FriendRequestBadge } from './FriendRequestBadge';
 import { SearchForm } from './SearchForm';
 
-export async function TopBar() {
-  const user = await getSessionUser();
+async function ViewerGreeting() {
   // This runs on the server, so the greeting has to be told which clock to
   // read — `new Date().getHours()` here is the container's hour, which is how
-  // a reader in Sydney got "Good evening" with their breakfast. Signed-out
-  // visitors have no preference to honour, and skipping the lookup keeps the
-  // login page off the API entirely.
-  const timeZone = user ? await getViewerTimeZone() : FALLBACK_TIME_ZONE;
+  // a reader in Sydney got "Good evening" with their breakfast. It streams
+  // separately because a preference lookup must not hold up the whole bar.
+  const timeZone = await getViewerTimeZone();
   const greeting = greetingAt(new Date(), timeZone);
 
+  return <>{greeting}.</>;
+}
+
+export function TopBar({ user }: { user: SessionUser }) {
   return (
     <header
       className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-night px-4 py-3 sm:flex-nowrap sm:gap-4 md:px-8"
@@ -43,17 +45,16 @@ export async function TopBar() {
           ?
         </Link>
         <span className="hidden font-display text-lg text-paper md:inline">
-          {greeting}.
+          <Suspense fallback={<>Welcome.</>}>
+            <ViewerGreeting />
+          </Suspense>
         </span>
         <EnvBadge />
       </div>
-      {user && (
-        <div className="order-3 basis-full sm:order-none sm:mx-2 sm:flex-1 sm:basis-auto sm:max-w-lg">
-          <SearchForm compact />
-        </div>
-      )}
-      {user ? (
-        <div className="flex items-center gap-3 text-sm">
+      <div className="order-3 basis-full sm:order-none sm:mx-2 sm:flex-1 sm:basis-auto sm:max-w-lg">
+        <SearchForm compact />
+      </div>
+      <div className="flex items-center gap-3 text-sm">
           <Link
             href="/notifications"
             className="relative rounded p-1 text-neutral-400 hover:text-paper"
@@ -128,15 +129,7 @@ export async function TopBar() {
             {user.email}
           </span>
           <LogoutButton />
-        </div>
-      ) : (
-        <Link
-          href="/login"
-          className="rounded bg-brass px-3 py-1.5 text-sm font-medium text-ink hover:bg-brass-bright"
-        >
-          Sign in
-        </Link>
-      )}
+      </div>
     </header>
   );
 }

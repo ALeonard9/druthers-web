@@ -335,14 +335,16 @@ export type VisibilityTier = 'private' | 'friends' | 'public';
 export interface Visibility {
   handle: string | null;
   visibility_profile: VisibilityTier;
-  visibility_movies: VisibilityTier;
-  visibility_tv: VisibilityTier;
-  visibility_books: VisibilityTier;
-  visibility_games: VisibilityTier;
-  visibility_watchlist_movies: VisibilityTier;
-  visibility_watchlist_tv: VisibilityTier;
-  visibility_watchlist_books: VisibilityTier;
-  visibility_watchlist_games: VisibilityTier;
+  /** Account-wide default used by shelf and watchlist fields with no override. */
+  default_privacy: VisibilityTier;
+  visibility_movies: VisibilityTier | null;
+  visibility_tv: VisibilityTier | null;
+  visibility_books: VisibilityTier | null;
+  visibility_games: VisibilityTier | null;
+  visibility_watchlist_movies: VisibilityTier | null;
+  visibility_watchlist_tv: VisibilityTier | null;
+  visibility_watchlist_books: VisibilityTier | null;
+  visibility_watchlist_games: VisibilityTier | null;
 }
 
 // A friend or follow's counterpart — never email or visibility settings, only

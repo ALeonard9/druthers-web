@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { refreshAuthState } from '@/app/authActions';
 
 export function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -21,10 +24,13 @@ export function LoginForm() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? 'Sign in failed');
+        setLoading(false);
         return;
       }
-      window.location.href = '/';
-    } finally {
+      await refreshAuthState();
+      router.replace('/');
+    } catch {
+      setError('Sign in failed');
       setLoading(false);
     }
   }

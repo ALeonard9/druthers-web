@@ -1,4 +1,5 @@
 import type { PublicProfile, Summary, Visibility, VisibilityTier } from './types';
+import { resolveShelfTier } from './privacyDefaults';
 
 /**
  * Data plumbing for the shareable Top 5 cards (see the "Top 5 Share Cards"
@@ -162,7 +163,7 @@ export function shareVisibility(
     kind === 'watchlist'
       ? (`visibility_watchlist_${category}` as const)
       : (`visibility_${category}` as const);
-  return visibility[field];
+  return resolveShelfTier(visibility, field);
 }
 
 export function buildShareData(summary: Summary): ShareData {

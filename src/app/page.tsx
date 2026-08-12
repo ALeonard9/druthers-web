@@ -15,6 +15,9 @@ import { TutorialLauncher } from '@/components/Tutorial';
 import type { Summary } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
+// Complements the auth route's 4s exchange budget: credential callback to
+// populated home should stay within 5s, substantially below the reported 15s.
+const HOME_SUMMARY_BUDGET_MS = 1_000;
 
 // Signed-in visitors keep the root layout's default title (see
 // app/layout.tsx); a signed-out visitor gets marketing copy instead, mostly
@@ -57,11 +60,11 @@ export async function generateMetadata(): Promise<Metadata> {
  * doesn't sell the product), or your own Top 5 across all four shelves once
  * signed in.
  *
- * Only the summary is awaited before first paint — one bounded request that
+ * The summary is the only request needed for the primary content, and it
  * replaced four full-collection fetches (~1,400 movie rows alone) the page
- * used to pull just to count them. Tonight and Recent activity are real but
- * secondary, so they stream in behind their own Suspense boundaries instead
- * of holding up the shelves.
+ * used to pull just to count them. It now streams behind a page skeleton too,
+ * so even a slow summary cannot hold the app shell blank. Tonight and Recent
+ * activity remain secondary boundaries that resolve independently.
  */
 export default async function HomePage() {
   const user = await getSessionUser();
@@ -73,13 +76,45 @@ export default async function HomePage() {
     );
   }
 
-  let summary: Summary;
+  // Start the primary request before rendering, but pass its promise through
+  // the boundary instead of awaiting it here. That lets summary, schedule,
+  // activity, and the header's preference lookup all run concurrently while
+  // the shell is already visible.
+  const summaryPromise = loadSummary();
+  return (
+    <div className="flex flex-col gap-6">
+      <Suspense fallback={<HomeSkeleton />}>
+        <SignedInHome summaryPromise={summaryPromise} />
+      </Suspense>
+      <Suspense fallback={<TonightSkeleton />}>
+        <HomeTonight />
+      </Suspense>
+      <Suspense fallback={<ActivitySkeleton />}>
+        <HomeActivity />
+      </Suspense>
+    </div>
+  );
+}
+
+async function loadSummary(): Promise<Summary> {
+  const startedAt = performance.now();
   try {
-    summary = await apiFetch<Summary>('/v1/users/me/summary');
+    return await apiFetch<Summary>('/v1/users/me/summary');
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect('/login');
     throw err;
+  } finally {
+    const durationMs = performance.now() - startedAt;
+    if (durationMs > HOME_SUMMARY_BUDGET_MS) {
+      console.warn(
+        `[home] /v1/users/me/summary exceeded ${HOME_SUMMARY_BUDGET_MS}ms budget (${durationMs.toFixed(0)}ms)`,
+      );
+    }
   }
+}
+
+async function SignedInHome({ summaryPromise }: { summaryPromise: Promise<Summary> }) {
+  const summary = await summaryPromise;
 
   if (summary.needs_onboarding) {
     redirect('/onboarding');
@@ -89,7 +124,7 @@ export default async function HomePage() {
   const nothingRanked = summary.total_ranked === 0;
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl text-paper">Your Top 5</h1>
@@ -128,15 +163,27 @@ export default async function HomePage() {
         ))}
       </div>
 
-      <Suspense fallback={<TonightSkeleton />}>
-        <HomeTonight />
-      </Suspense>
-
-      <Suspense fallback={<ActivitySkeleton />}>
-        <HomeActivity />
-      </Suspense>
-
       <TutorialLauncher hasItems={summary.total_items > 0} />
+    </>
+  );
+}
+
+function HomeSkeleton() {
+  return (
+    <div className="flex flex-col gap-6" aria-label="Loading your home page">
+      <div>
+        <h1 className="font-display text-2xl text-paper">Your Top 5</h1>
+        <p className="animate-pulse text-sm text-neutral-500">Loading your shelves…</p>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {['Movies', 'TV', 'Books', 'Games'].map((label) => (
+          <div
+            key={label}
+            className="h-48 animate-pulse rounded-lg border border-line bg-panel"
+            aria-label={`Loading ${label}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

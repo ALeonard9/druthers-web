@@ -2,32 +2,26 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Claude MCP — Druthers',
+  title: 'MCP — Druthers',
   description:
-    'Connect your Druthers library to Claude with the Model Context Protocol.',
+    'Connect your Druthers library to an MCP client with the Model Context Protocol.',
 };
 
 const MCP_GUIDE_URL =
   'https://github.com/ALeonard9/druthers-api/blob/main/docs/mcp-usage.md';
 const MCP_REPO_URL = 'https://github.com/ALeonard9/druthers-mcp';
 
-function CodeBlock({ children }: { children: string }) {
-  return (
-    <pre className="overflow-x-auto rounded-md border border-line bg-night px-4 py-3 text-xs leading-relaxed text-neutral-300">
-      <code>{children}</code>
-    </pre>
-  );
-}
+import { McpClientSnippet } from '../../components/McpClientSnippet';
 
 // Intentionally public — a user evaluating the integration shouldn't need an
 // account first.
-export default function DevelopersPage() {
+export default function McpPage() {
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <div className="rotate-[-0.4deg] rounded-lg bg-paper px-7 py-8 text-ink shadow-[0_18px_48px_rgba(0,0,0,0.55)]">
         <div className="flex items-baseline justify-between border-b border-dashed border-brass/40 pb-4">
           <span className="font-display text-2xl font-semibold">
-            Claude MCP
+            MCP
           </span>
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-brass-wash/70">
             mcp
@@ -43,7 +37,7 @@ export default function DevelopersPage() {
           >
             Model Context Protocol
           </a>{' '}
-          server that puts your library in front of Claude. Connect your own
+          server that puts your library in front of your favorite MCP client. Connect your own
           Druthers account to manage your tracking in plain language.
         </p>
       </div>
@@ -51,10 +45,10 @@ export default function DevelopersPage() {
       {/* MCP */}
       <section className="rounded-lg border border-line bg-panel px-6 py-5">
         <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-neutral-500">
-          Talk to it from Claude — the Druthers MCP server
+          Talk to it from your tools — the Druthers MCP server
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-neutral-400">
-          Connect your library to Claude Desktop or Claude Code and manage it
+          Connect your library to an MCP client and manage it
           in plain language — &ldquo;add Dune to my watchlist,&rdquo; &ldquo;mark
           episode 3 watched,&rdquo; &ldquo;what have I 100%&apos;d?&rdquo;
         </p>
@@ -89,37 +83,8 @@ export default function DevelopersPage() {
           Games.
         </p>
 
-        <h3 className="mt-5 text-xs font-medium uppercase tracking-wide text-neutral-500">
-          Connect it (Claude Code)
-        </h3>
-        <p className="mt-2 text-sm leading-relaxed text-neutral-400">
-          First, mint a personal API key from{' '}
-          <Link href="/settings" className="text-brass hover:text-brass-bright">
-            Settings → API keys
-          </Link>
-          . Then, run:
-        </p>
-        <div className="mt-2">
-          <CodeBlock>{`claude mcp add druthers \\
-  -e API_BASE_URL=https://api.druthers.io \\
-  -e API_TOKEN=drk_your_key_here \\
-  --scope user \\
-  -- python -m aleonard_mcp.server`}</CodeBlock>
-        </div>
-        <p className="mt-3 text-sm leading-relaxed text-neutral-400">
-          Claude Desktop uses the same env vars in its JSON config instead.
-          Full setup (including Claude Desktop config, troubleshooting, and
-          the complete tool list) is in the{' '}
-          <a
-            href={MCP_GUIDE_URL}
-            className="text-brass hover:text-brass-bright"
-            rel="noreferrer"
-            target="_blank"
-          >
-            MCP usage guide
-          </a>
-          .
-        </p>
+        <McpClientSnippet />
+
         <p className="mt-3 text-xs text-neutral-600">
           Server source:{' '}
           <a

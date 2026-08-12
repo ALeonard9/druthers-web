@@ -1,16 +1,16 @@
 /** @vitest-environment happy-dom */
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import DevelopersPage from './page';
+import McpPage from './page';
 
 describe('MCP page', () => {
   afterEach(cleanup);
 
   it('is framed for personal MCP use', () => {
-    const { container } = render(<DevelopersPage />);
+    const { container } = render(<McpPage />);
 
     // Asserts primary framing
-    expect(screen.getAllByText(/Claude MCP/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/MCP/).length).toBeGreaterThan(0);
     expect(
       screen.getByText(/Connect your own Druthers account/i)
     ).toBeDefined();
@@ -21,7 +21,7 @@ describe('MCP page', () => {
   });
 
   it('keeps the MCP connection snippet and tool overview', () => {
-    const { container } = render(<DevelopersPage />);
+    const { container } = render(<McpPage />);
 
     // Tools list exists
     expect(screen.getByText(/search_\*/)).toBeDefined();
@@ -33,7 +33,7 @@ describe('MCP page', () => {
   });
 
   it('tells users where to get their API key', () => {
-    render(<DevelopersPage />);
+    render(<McpPage />);
     // Verify there's a link to settings for the key
     const link = screen.getByRole('link', { name: /Settings → API keys/ });
     expect(link.getAttribute('href')).toBe('/settings');

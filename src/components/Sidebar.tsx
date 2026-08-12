@@ -138,14 +138,14 @@ export function Sidebar() {
       </nav>
       <div className="mt-auto flex flex-col gap-0.5">
         <Link
-          href="/developers"
+          href="/mcp"
           className={`px-3 py-1 text-xs transition-colors ${
-            pathname === '/developers'
+            pathname === '/mcp'
               ? 'text-paper'
               : 'text-neutral-500 hover:text-paper'
           }`}
         >
-          Claude MCP
+          MCP
         </Link>
         <Link
           href="/about"

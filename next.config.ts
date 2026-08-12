@@ -5,8 +5,11 @@ const nextConfig: NextConfig = {
   // DOCKER_BUILD=1). It breaks `next start`/`next dev` locally, so gate it.
   output: process.env.DOCKER_BUILD ? 'standalone' : undefined,
   async redirects() {
-    // "Bored" became "Surprise me" — keep old links working.
-    return [{ source: '/bored', destination: '/surprise', permanent: true }];
+    return [
+      // "Bored" became "Surprise me" — keep old links working.
+      { source: '/bored', destination: '/surprise', permanent: true },
+      { source: '/developers', destination: '/mcp', permanent: true },
+    ];
   },
   async headers() {
     // Baseline security headers (druthers-infra THREAT-MODEL.md, H4).

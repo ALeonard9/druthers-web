@@ -2,16 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Developers — Druthers',
+  title: 'Claude MCP — Druthers',
   description:
-    'Build on the Druthers API: a Postman collection and an MCP server for Claude.',
+    'Connect your Druthers library to Claude with the Model Context Protocol.',
 };
 
 const MCP_GUIDE_URL =
   'https://github.com/ALeonard9/druthers-api/blob/main/docs/mcp-usage.md';
 const MCP_REPO_URL = 'https://github.com/ALeonard9/druthers-mcp';
-const API_REPO_URL = 'https://github.com/ALeonard9/druthers-api';
-const POSTMAN_COLLECTION_URL = '/downloads/druthers-api.postman_collection.json';
 
 function CodeBlock({ children }: { children: string }) {
   return (
@@ -21,7 +19,7 @@ function CodeBlock({ children }: { children: string }) {
   );
 }
 
-// Intentionally public — a developer evaluating the API shouldn't need an
+// Intentionally public — a user evaluating the integration shouldn't need an
 // account first.
 export default function DevelopersPage() {
   return (
@@ -29,15 +27,14 @@ export default function DevelopersPage() {
       <div className="rotate-[-0.4deg] rounded-lg bg-paper px-7 py-8 text-ink shadow-[0_18px_48px_rgba(0,0,0,0.55)]">
         <div className="flex items-baseline justify-between border-b border-dashed border-brass/40 pb-4">
           <span className="font-display text-2xl font-semibold">
-            For developers
+            Claude MCP
           </span>
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-brass-wash/70">
-            api · mcp
+            mcp
           </span>
         </div>
         <p className="mt-5 text-sm leading-relaxed text-ink/80">
-          Druthers is backed by a plain JWT/API-key-authenticated REST API,
-          and a{' '}
+          Druthers isn&apos;t just a web app. It comes with a personal{' '}
           <a
             href="https://modelcontextprotocol.io"
             className="text-brass hover:text-brass-bright"
@@ -46,61 +43,10 @@ export default function DevelopersPage() {
           >
             Model Context Protocol
           </a>{' '}
-          server that puts your library in front of Claude. Both are open
-          source. Pick whichever fits what you&apos;re building.
+          server that puts your library in front of Claude. Connect your own
+          Druthers account to manage your tracking in plain language.
         </p>
       </div>
-
-      {/* Postman collection */}
-      <section className="rounded-lg border border-line bg-panel px-6 py-5">
-        <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-neutral-500">
-          Call the API — Postman collection
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed text-neutral-400">
-          Every route — movies, TV, books, games, activity, search, and more
-          — as a ready-to-run Postman request. It&apos;s generated straight
-          from the live OpenAPI schema, so it never drifts from what&apos;s
-          actually deployed.
-        </p>
-        <ol className="mt-3 flex list-decimal flex-col gap-1.5 pl-5 text-sm leading-relaxed text-neutral-400">
-          <li>
-            Download the collection and import it into Postman (or any
-            client that reads Collection v2.1).
-          </li>
-          <li>
-            Mint a personal API key from{' '}
-            <Link href="/settings" className="text-brass hover:text-brass-bright">
-              Settings → API keys
-            </Link>
-            .
-          </li>
-          <li>
-            Set the collection&apos;s <code className="text-paper">apiToken</code>{' '}
-            variable to that key. Requests default to production
-            (<code className="text-paper">api.druthers.io</code>).
-          </li>
-        </ol>
-        <a
-          href={POSTMAN_COLLECTION_URL}
-          download
-          className="mt-4 inline-flex items-center gap-2 rounded bg-brass px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-brass-bright"
-        >
-          Download the Postman collection
-        </a>
-        <p className="mt-3 text-xs text-neutral-600">
-          Source lives in{' '}
-          <a
-            href={`${API_REPO_URL}/blob/main/docs/druthers-api.postman_collection.json`}
-            className="underline decoration-line hover:text-neutral-300"
-            rel="noreferrer"
-            target="_blank"
-          >
-            druthers-api/docs/
-          </a>{' '}
-          — a static, versioned file rather than a hosted Postman workspace,
-          so there&apos;s nothing extra to keep an account alive for.
-        </p>
-      </section>
 
       {/* MCP */}
       <section className="rounded-lg border border-line bg-panel px-6 py-5">
@@ -146,6 +92,13 @@ export default function DevelopersPage() {
         <h3 className="mt-5 text-xs font-medium uppercase tracking-wide text-neutral-500">
           Connect it (Claude Code)
         </h3>
+        <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+          First, mint a personal API key from{' '}
+          <Link href="/settings" className="text-brass hover:text-brass-bright">
+            Settings → API keys
+          </Link>
+          . Then, run:
+        </p>
         <div className="mt-2">
           <CodeBlock>{`claude mcp add druthers \\
   -e API_BASE_URL=https://api.druthers.io \\
@@ -176,15 +129,6 @@ export default function DevelopersPage() {
             target="_blank"
           >
             druthers-mcp
-          </a>
-          . API source:{' '}
-          <a
-            href={API_REPO_URL}
-            className="underline decoration-line hover:text-neutral-300"
-            rel="noreferrer"
-            target="_blank"
-          >
-            druthers-api
           </a>
           .
         </p>

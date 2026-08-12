@@ -145,7 +145,7 @@ export function Sidebar() {
               : 'text-neutral-500 hover:text-paper'
           }`}
         >
-          For developers
+          Claude MCP
         </Link>
         <Link
           href="/about"

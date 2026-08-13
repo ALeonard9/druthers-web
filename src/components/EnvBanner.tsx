@@ -57,9 +57,13 @@ export function EnvBanner() {
     setDismissed(true);
   }
 
+  // The standalone PWA window starts at the OS status bar / notch, so the
+  // strip pads below it via env(safe-area-inset-top) — same trick as AppShell's
+  // bottom inset. env() resolves to 0 in a browser tab, so the extra pt- class
+  // just re-states py-2's 0.5rem there and nothing shifts.
   return (
     <div
-      className={`${banner.style} flex items-center justify-center gap-3 px-4 py-2 text-sm`}
+      className={`${banner.style} flex items-center justify-center gap-3 px-4 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))] text-sm`}
       role="note"
     >
       <span className="rounded bg-black/15 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide">

@@ -52,6 +52,29 @@ describe('EnvBanner', () => {
     expect(screen.getByText(/no entry permitted/i)).toBeTruthy();
   });
 
+  it('pads the QA banner below the status bar / notch in the installed PWA', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'qa';
+    render(<EnvBanner />);
+
+    // happy-dom's CSS parser can't round-trip env() through inline styles
+    // (the style attribute comes back empty), so the safe-area padding rides
+    // a Tailwind arbitrary-value class — same as AppShell's bottom inset.
+    // The string pins both halves of the fix: the 0.5rem py-2 baseline (no
+    // layout shift in a browser tab, where env() is 0) and the env() inset.
+    expect(screen.getByRole('note').className).toContain(
+      'pt-[calc(0.5rem+env(safe-area-inset-top))]',
+    );
+  });
+
+  it('pads the Beta banner below the status bar / notch too', () => {
+    process.env.NEXT_PUBLIC_APP_ENV = 'prod';
+    render(<EnvBanner />);
+
+    expect(screen.getByRole('note').className).toContain(
+      'pt-[calc(0.5rem+env(safe-area-inset-top))]',
+    );
+  });
+
   it('dismisses and remembers the choice for the session', () => {
     process.env.NEXT_PUBLIC_APP_ENV = 'qa';
     const { unmount } = render(<EnvBanner />);

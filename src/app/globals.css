@@ -21,6 +21,12 @@
   --color-moss-wash: #1c2618;
   --color-plum: #b389b5;
   --color-plum-wash: #271f28;
+  /* Relationship colour in the activity feed: moss for friends, ember for
+     follows. Ember is pushed red of brass (#c9a86a) on purpose -- brass
+     already means "selected", and a gold-adjacent orange reads as selection
+     on a 2px swatch. */
+  --color-ember: #d2762d;
+  --color-ember-bright: #e59355;
 
   --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;

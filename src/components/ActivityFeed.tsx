@@ -15,16 +15,21 @@ type PersonOption = {
 
 type PersonGroup = 'friends' | 'following';
 
+// The selector and the rows it selects carry the SAME fill, so the control at
+// the top and the rows below read as one system. The shared -wash tokens are
+// not used here: they are shared with the status badges, comparison view and
+// sound picker, and lifting them for this feature would lift them everywhere.
+// A percentage of the base colour lifts only these surfaces.
 const GROUP_STYLE: Record<PersonGroup, { label: string; chip: string; row: string }> = {
   friends: {
     label: 'Friends',
-    chip: 'border-moss/50 bg-moss-wash text-moss-bright',
-    row: 'bg-moss-wash/45',
+    chip: 'border-moss/50 bg-moss/20 text-moss-bright',
+    row: 'bg-moss/20',
   },
   following: {
     label: 'Follows',
-    chip: 'border-plum/50 bg-plum-wash text-plum',
-    row: 'bg-plum-wash/45',
+    chip: 'border-ember/50 bg-ember/20 text-ember-bright',
+    row: 'bg-ember/20',
   },
 };
 
@@ -42,10 +47,10 @@ function dayLabel(day: string): string {
 }
 
 function RelationshipIcon({ relationship }: { relationship: PersonOption['relationship'] }) {
-  const label = relationship === 'friend' ? 'Friend' : 'Following';
+  const label = relationship === 'friend' ? 'Friend' : 'Follow';
   return (
     <span role="img" aria-label={label} className="inline-flex shrink-0 text-current">
-      {relationship === 'friend' ? '♣' : '◉'}
+      {relationship === 'friend' ? '👥' : '🔔'}
     </span>
   );
 }
@@ -98,6 +103,9 @@ export function ActivityFeed({
   category?: ActivityItem['category'];
 }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // You is on by default but removable: "I just want to see what my friends are
+  // up to" is a real question, and pinning yourself in makes it unanswerable.
+  const [includeSelf, setIncludeSelf] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Partial<Record<PersonGroup, boolean>>>({});
   const [query, setQuery] = useState('');
@@ -157,14 +165,14 @@ export function ActivityFeed({
   const items = useMemo(() => {
     const selected = new Set(selectedIds);
     return [
-      ...ownItems,
+      ...(includeSelf ? ownItems : []),
       ...socialItems.filter(
         (item) => selected.has(item.actor.id) && (!category || item.category === category),
       ),
     ].sort(
       (a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at),
     );
-  }, [category, ownItems, selectedIds, socialItems]);
+  }, [category, includeSelf, ownItems, selectedIds, socialItems]);
 
   function toggle(id: string) {
     setSelectedIds((current) => {
@@ -216,7 +224,13 @@ export function ActivityFeed({
           className="flex min-h-10 w-full items-center justify-between rounded-lg border border-line bg-panel px-3 text-left text-sm text-paper hover:border-neutral-600 sm:w-80"
         >
           <span>Include activity from</span>
-          <span className="text-xs text-neutral-400">You + {selectedIds.length} selected ▾</span>
+          <span className="text-xs text-neutral-400">
+            {includeSelf
+              ? `You + ${selectedIds.length} selected ▾`
+              : selectedIds.length === 0
+                ? 'Nobody selected ▾'
+                : `${selectedIds.length} selected ▾`}
+          </span>
         </button>
         {filterOpen && (
           <div id="activity-people-filter" className="absolute z-10 mt-2 w-full max-w-md rounded-lg border border-line bg-panel p-3 shadow-xl sm:w-96">
@@ -231,9 +245,13 @@ export function ActivityFeed({
             />
             <div className="mt-3 max-h-80 overflow-y-auto">
               <div className="flex items-center gap-2 rounded px-2 py-2 text-sm text-paper">
-                <GroupCheckbox label="You" checked indeterminate={false} disabled />
+                <GroupCheckbox
+                  label="You"
+                  checked={includeSelf}
+                  indeterminate={false}
+                  onChange={() => setIncludeSelf((current) => !current)}
+                />
                 <span className="font-medium">You</span>
-                <span className="ml-auto rounded border border-brass/40 bg-brass-wash px-2 py-0.5 text-xs text-brass">Always included</span>
               </div>
               {(['friends', 'following'] as const).map((group) => {
                 const groupPeople = peopleByGroup[group];
@@ -274,7 +292,11 @@ export function ActivityFeed({
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-neutral-500">Nothing here yet.</p>
+        <p className="text-sm text-neutral-500">
+          {!includeSelf && selectedIds.length === 0
+            ? 'Nobody selected — pick yourself or someone you follow above.'
+            : 'Nothing here yet.'}
+        </p>
       ) : (
         <div className="flex flex-col gap-4">
           {byDay.map(({ day, items: dayItems }) => (

@@ -74,6 +74,34 @@ describe('ActivityFeed', () => {
     expect(window.sessionStorage.getItem('druthers_activity_people')).toBe('["grace"]');
   });
 
+  it('drops your own activity when You is unchecked, leaving a selected friend', () => {
+    // "I just want to see what my friends are up to" -- You starts checked but
+    // has to be removable, which reverses the earlier always-included rule.
+    renderFeed();
+    openFilter();
+
+    fireEvent.click(screen.getByRole('button', { name: /friends/i }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include Grace Hopper' }));
+    expect(screen.getByText('My Movie')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include You' }));
+
+    expect(screen.queryByText('My Movie')).toBeNull();
+    expect(screen.getByText('Grace Movie')).toBeTruthy();
+  });
+
+  it('says nobody is selected when You is unchecked and no one else is picked', () => {
+    renderFeed();
+    openFilter();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include You' }));
+
+    // "Nobody selected" appears twice on purpose -- the summary label and the
+    // empty state. Match the empty state's own wording.
+    expect(screen.getByText(/pick yourself or someone you follow/i)).toBeTruthy();
+    expect(screen.queryByText('My Movie')).toBeNull();
+  });
+
   it('restores the selected people for a later activity-page mount', async () => {
     window.sessionStorage.setItem('druthers_activity_people', '["grace"]');
     renderFeed();

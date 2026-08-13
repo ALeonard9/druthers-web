@@ -254,6 +254,22 @@ export interface ActivityItem {
   occurred_at: string;
 }
 
+export interface ActivityActor {
+  id: string;
+  handle: string | null;
+  display_name: string | null;
+}
+
+/** An activity event returned by the friends/following social feed. */
+export interface SocialActivityItem extends ActivityItem {
+  actor: ActivityActor;
+}
+
+export interface SocialActivityPage {
+  items: SocialActivityItem[];
+  next_cursor: string | null;
+}
+
 export interface BoredItem {
   category: 'movie' | 'tv_show' | 'game' | 'book';
   title: string;

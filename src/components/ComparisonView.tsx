@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { FriendRequestButton } from '@/components/FriendRequestButton';
 import type { ComparisonDomain, ComparisonItem, UserComparison } from '@/lib/types';
 
 type Filter = 'all' | ComparisonDomain['category'];
@@ -345,7 +346,10 @@ export function ComparisonView({ initial }: { initial: UserComparison }) {
           <h1 className="mt-1 font-display text-4xl tracking-tight text-paper">You <span className="text-brass">×</span> @{initial.handle}</h1>
           <p className="mt-1 text-sm text-neutral-400">Shared queues, taste gaps, and the next thing worth trying.</p>
         </div>
-        <Link href={`/u/${initial.handle}`} className="text-sm text-neutral-400 hover:text-brass">Back to profile →</Link>
+        <div className="flex items-center gap-4">
+          {initial.relationship === 'none' && <FriendRequestButton handle={initial.handle} />}
+          <Link href={`/u/${initial.handle}`} className="text-sm text-neutral-400 hover:text-brass">Back to profile →</Link>
+        </div>
       </header>
 
       <nav aria-label="Comparison domain" className="flex gap-1 overflow-x-auto rounded-lg border border-line bg-panel p-1">

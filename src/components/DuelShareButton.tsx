@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   FacebookIcon,
+  isMobileOs,
   isStandalonePwa,
   ShareIcon,
   shouldUseNativeFileShare,
@@ -165,7 +166,7 @@ function DuelFormatter({
   const [notice, setNotice] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canNativeShareFiles] = useState(() => {
-    if (!isStandalonePwa() || typeof navigator.canShare !== 'function') return false;
+    if (!isStandalonePwa() || typeof navigator.canShare !== 'function' || !isMobileOs()) return false;
     return navigator.canShare({
       files: [new File([''], 'druthers-duel.png', { type: 'image/png' })],
     });

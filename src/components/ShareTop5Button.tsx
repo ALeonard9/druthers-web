@@ -57,6 +57,11 @@ export function isStandalonePwa(): boolean {
   return (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) || iosNavigator.standalone === true;
 }
 
+export function isMobileOs(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 export function shouldUseNativeFileShare(
   platform: SharePlatform,
   canShareFiles: boolean,
@@ -180,7 +185,7 @@ export function ShareTop5Button({
         : undefined,
       url: copyableUrl,
     });
-    if (typeof navigator.share === 'function') {
+    if (typeof navigator.share === 'function' && isMobileOs()) {
       try {
         await navigator.share(payload);
         setOpen(false);
@@ -385,7 +390,7 @@ function ShareModal({
   const [imageCopied, setImageCopied] = useState(false);
   const [imageNotice, setImageNotice] = useState<string | null>(null);
   const [canNativeShareFiles] = useState(() => {
-    if (!isStandalonePwa() || typeof navigator.canShare !== 'function') return false;
+    if (!isStandalonePwa() || typeof navigator.canShare !== 'function' || !isMobileOs()) return false;
     return navigator.canShare({
       files: [new File([''], 'druthers.png', { type: 'image/png' })],
     });

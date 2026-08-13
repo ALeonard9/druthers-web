@@ -38,6 +38,10 @@ describe('universal share menu (web#123)', () => {
       configurable: true,
       value: vi.fn().mockResolvedValue(undefined),
     });
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      value: 'iPhone',
+    });
     vi.spyOn(window, 'open').mockImplementation(() => null);
   });
 
@@ -81,6 +85,28 @@ describe('universal share menu (web#123)', () => {
     );
     expect(navigator.share).not.toHaveBeenCalledWith(
       expect.objectContaining({ files: expect.anything() }),
+    );
+  });
+
+  it('falls back to sms: on desktop platforms even when navigator.share exists', async () => {
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Macintosh; Intel Mac OS X 10_15_7',
+    });
+    vi.spyOn(window.location, 'assign').mockImplementation(() => {});
+
+    render(
+      <ShareTop5Button
+        data={data}
+        destination={destination}
+        initialCategory="tv"
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Send message' }));
+
+    expect(navigator.share).not.toHaveBeenCalled();
+    expect(window.location.assign).toHaveBeenCalledWith(
+      expect.stringContaining('sms:?&body='),
     );
   });
 

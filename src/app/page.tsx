@@ -7,6 +7,7 @@ import { getSessionUser } from '@/lib/session';
 import { buildShareData } from '@/lib/shareCards';
 import { GENERIC_OG_IMAGE_PATH } from '@/lib/ogCards';
 import { HomeActivity, ActivitySkeleton } from '@/components/HomeActivity';
+import { HomeFriendsActivity, FriendsActivitySkeleton } from '@/components/HomeFriendsActivity';
 import { HomeTonight, TonightSkeleton } from '@/components/HomeTonight';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { HomeShelves } from '@/components/HomeShelves';
@@ -91,6 +92,9 @@ export default async function HomePage() {
       </Suspense>
       <Suspense fallback={<ActivitySkeleton />}>
         <HomeActivity />
+      </Suspense>
+      <Suspense fallback={<FriendsActivitySkeleton />}>
+        <HomeFriendsActivity />
       </Suspense>
     </div>
   );

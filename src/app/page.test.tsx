@@ -40,7 +40,7 @@ describe('home page critical path', () => {
       'aria-label': string;
     }>;
     const skeleton = renderFallback();
-    expect(page.props.children).toHaveLength(3);
+    expect(page.props.children).toHaveLength(4);
     expect(page.props.children.every((child) => child.type === Suspense)).toBe(true);
     expect(primaryBoundary.type).toBe(Suspense);
     expect(skeleton.props['aria-label']).toBe('Loading your home page');

@@ -1,4 +1,5 @@
 /** @vitest-environment happy-dom */
+import { readFileSync } from 'node:fs';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -37,6 +38,14 @@ describe('universal share menu (web#123)', () => {
     Object.defineProperty(navigator, 'share', {
       configurable: true,
       value: vi.fn().mockResolvedValue(undefined),
+    });
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      value: 'iPhone',
+    });
+    Object.defineProperty(navigator, 'maxTouchPoints', {
+      configurable: true,
+      value: 5,
     });
     vi.spyOn(window, 'open').mockImplementation(() => null);
   });
@@ -81,6 +90,49 @@ describe('universal share menu (web#123)', () => {
     );
     expect(navigator.share).not.toHaveBeenCalledWith(
       expect.objectContaining({ files: expect.anything() }),
+    );
+  });
+
+  it.each([
+    ['macOS Chrome/Safari', 'Macintosh; Intel Mac OS X 10_15_7', 0, false],
+    ['iPhone Safari', 'iPhone', 5, true],
+    ['iPadOS Safari desktop-class UA', 'Macintosh; Intel Mac OS X 10_15_7', 5, true],
+  ])('uses native sharing for %s only when it is a mobile OS', async (
+    _platform,
+    userAgent,
+    maxTouchPoints,
+    expectsNativeShare,
+  ) => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      value: userAgent,
+    });
+    Object.defineProperty(navigator, 'maxTouchPoints', {
+      configurable: true,
+      value: maxTouchPoints,
+    });
+    const assign = vi.spyOn(window.location, 'assign').mockImplementation(() => {});
+    assign.mockClear();
+
+    render(
+      <ShareTop5Button
+        data={data}
+        destination={destination}
+        initialCategory="tv"
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Send message' }));
+
+    if (expectsNativeShare) {
+      await waitFor(() => expect(navigator.share).toHaveBeenCalledTimes(1));
+      expect(assign).not.toHaveBeenCalled();
+      return;
+    }
+
+    expect(navigator.share).not.toHaveBeenCalled();
+    expect(assign).toHaveBeenCalledWith(
+      expect.stringContaining('sms:?&body='),
     );
   });
 
@@ -131,6 +183,15 @@ describe('universal share menu (web#123)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Share' }));
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('keeps share copy free of platform-specific paste-key hints', () => {
+    const shareComponentSources = [
+      './ShareTop5Button.tsx',
+      './DuelShareButton.tsx',
+    ].map((path) => readFileSync(new URL(path, import.meta.url), 'utf8'));
+
+    expect(shareComponentSources.join('\n')).not.toMatch(/⌘V|Ctrl\+V|Command\+V/);
   });
 });
 

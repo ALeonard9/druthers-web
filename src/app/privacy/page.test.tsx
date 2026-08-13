@@ -24,6 +24,12 @@ describe('Privacy Policy page', () => {
     expect(link.getAttribute('href')).toBe('mailto:Admin@druthers.io');
   });
 
+  it('describes self-service account deletion from Settings', () => {
+    render(<PrivacyPage />);
+
+    expect(screen.getByText(/permanently delete your account from Settings/i)).toBeTruthy();
+  });
+
   // There is no company behind druthers.io — see the matching terms test.
   it('claims no corporate entity', () => {
     const { container } = render(<PrivacyPage />);

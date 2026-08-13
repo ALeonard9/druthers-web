@@ -14,6 +14,7 @@ import {
   type ShelfPreferences,
 } from '@/lib/shelfPreferences';
 import { saveShelfPreferences } from '@/lib/shelfPreferencesClient';
+import { GoodreadsImport } from '@/components/GoodreadsImport';
 
 type Step = 'handle' | 'shelves' | 'ranking';
 type DomainKey = keyof typeof SHELVES;
@@ -159,6 +160,13 @@ export function OnboardingWizard({
             <p className="text-sm text-neutral-400">Choose the shelves you use and drag them into your preferred order. You can change this later in Settings.</p>
           </div>
           <ShelfPreferenceEditor preferences={shelfPreferences} onChange={setShelfPreferences} />
+
+          {shelfPreferences.enabled.includes('books') && (
+            <div className="mt-2 border-t border-line/50 pt-6">
+              <GoodreadsImport />
+            </div>
+          )}
+
           <div className="mt-4 flex items-center justify-between">
             <span className="text-sm text-neutral-500">
               {shelfPreferences.enabled.length} on

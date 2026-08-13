@@ -6,6 +6,7 @@ import { PrivacySettings } from '@/components/PrivacySettings';
 import { SoundPicker } from '@/components/SoundPicker';
 import { TimeZonePicker } from '@/components/TimeZonePicker';
 import { ShelfManager } from '@/components/ShelfManager';
+import { GoodreadsImport } from '@/components/GoodreadsImport';
 
 export const dynamic = 'force-dynamic';
 
@@ -136,6 +137,9 @@ export default async function SettingsPage() {
               </span>
             ))}
           </p>
+        </div>
+        <div className="mt-4">
+          <GoodreadsImport />
         </div>
       </section>
     </div>

@@ -6,6 +6,7 @@ import { PrivacySettings } from '@/components/PrivacySettings';
 import { SoundPicker } from '@/components/SoundPicker';
 import { TimeZonePicker } from '@/components/TimeZonePicker';
 import { ShelfManager } from '@/components/ShelfManager';
+import { DeleteAccount } from '@/components/DeleteAccount';
 
 export const dynamic = 'force-dynamic';
 
@@ -137,6 +138,16 @@ export default async function SettingsPage() {
             ))}
           </p>
         </div>
+      </section>
+
+      <section className="flex flex-col gap-3 border-t border-red-950 pt-8">
+        <div>
+          <h2 className="font-display text-lg text-red-300">Delete account</h2>
+          <p className="text-sm text-neutral-400">
+            Permanently remove your Druthers account and its data.
+          </p>
+        </div>
+        <DeleteAccount />
       </section>
     </div>
   );

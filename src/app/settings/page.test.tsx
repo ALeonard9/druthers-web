@@ -11,6 +11,7 @@ vi.mock('@/components/PrivacySettings', () => ({ PrivacySettings: () => null }))
 vi.mock('@/components/SoundPicker', () => ({ SoundPicker: () => null }));
 vi.mock('@/components/TimeZonePicker', () => ({ TimeZonePicker: () => null }));
 vi.mock('@/components/ShelfManager', () => ({ ShelfManager: () => null }));
+vi.mock('@/components/DeleteAccount', () => ({ DeleteAccount: () => <div>Delete account control</div> }));
 
 describe('settings page', () => {
   beforeEach(() => {
@@ -23,5 +24,13 @@ describe('settings page', () => {
     render(await SettingsPage());
 
     expect(screen.getByRole('link', { name: 'Track your followers' }).getAttribute('href')).toBe('/followers');
+  });
+
+  it('places account deletion after the export controls', async () => {
+    const { container } = render(await SettingsPage());
+
+    expect(container.textContent?.indexOf('Download everything (JSON)')).toBeLessThan(
+      container.textContent?.indexOf('Delete account control') ?? -1,
+    );
   });
 });

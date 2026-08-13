@@ -24,6 +24,12 @@ describe('Terms of Use page', () => {
     expect(link.getAttribute('href')).toBe('mailto:Admin@druthers.io');
   });
 
+  it('describes self-service account deletion from Settings', () => {
+    render(<TermsPage />);
+
+    expect(screen.getByText(/permanently delete your account from Settings/i)).toBeTruthy();
+  });
+
   // There is no company behind druthers.io. Naming an entity that does not
   // exist is the one mistake a terms page cannot make, so pin its absence.
   it('claims no corporate entity', () => {

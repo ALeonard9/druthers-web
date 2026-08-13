@@ -35,6 +35,10 @@ export default function TermsPage() {
           You must create an account to use certain features. You are responsible for
           safeguarding your account credentials and for all activities that occur under your account.
         </p>
+        <p>
+          You can permanently delete your account from Settings. If you cannot sign in,
+          email us and we can help with the request.
+        </p>
 
         <h2 className="text-xl font-medium text-paper mt-6">4. Content and Conduct</h2>
         <p>

@@ -70,13 +70,16 @@ export default function PrivacyPage() {
           You have the right to access, correct, or delete your personal data, wherever you
           live — we honour these requests regardless of whether a specific privacy law
           applies to you. You can manage your profile privacy settings within the app, and
-          export everything you have tracked from Settings at any time.
+          export everything you have tracked from Settings at any time. You can also
+          permanently delete your account from Settings; if you cannot sign in, email us
+          for help with a deletion request.
         </p>
 
         <h2 className="text-xl font-medium text-paper mt-6">7. Contact Us</h2>
         <p>
           If you have any questions or concerns about this Privacy Policy or our data
-          practices — including a request to access or delete your data — email{' '}
+          practices — including a request to access or delete your data when you cannot
+          sign in — email{' '}
           <a className="text-brass hover:underline" href="mailto:Admin@druthers.io">
             Admin@druthers.io
           </a>

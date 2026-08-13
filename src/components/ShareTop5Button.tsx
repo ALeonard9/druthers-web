@@ -59,7 +59,8 @@ export function isStandalonePwa(): boolean {
 
 export function isMobileOs(): boolean {
   if (typeof navigator === 'undefined') return false;
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 }
 
 export function shouldUseNativeFileShare(

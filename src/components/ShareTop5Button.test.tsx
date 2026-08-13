@@ -43,6 +43,10 @@ describe('universal share menu (web#123)', () => {
       configurable: true,
       value: 'iPhone',
     });
+    Object.defineProperty(navigator, 'maxTouchPoints', {
+      configurable: true,
+      value: 5,
+    });
     vi.spyOn(window, 'open').mockImplementation(() => null);
   });
 
@@ -89,11 +93,26 @@ describe('universal share menu (web#123)', () => {
     );
   });
 
-  it('falls back to sms: on desktop platforms even when navigator.share exists', async () => {
+  it.each([
+    ['macOS Chrome/Safari', 'Macintosh; Intel Mac OS X 10_15_7', 0, false],
+    ['iPhone Safari', 'iPhone', 5, true],
+    ['iPadOS Safari desktop-class UA', 'Macintosh; Intel Mac OS X 10_15_7', 5, true],
+  ])('uses native sharing for %s only when it is a mobile OS', async (
+    _platform,
+    userAgent,
+    maxTouchPoints,
+    expectsNativeShare,
+  ) => {
     Object.defineProperty(navigator, 'userAgent', {
-      value: 'Macintosh; Intel Mac OS X 10_15_7',
+      configurable: true,
+      value: userAgent,
     });
-    vi.spyOn(window.location, 'assign').mockImplementation(() => {});
+    Object.defineProperty(navigator, 'maxTouchPoints', {
+      configurable: true,
+      value: maxTouchPoints,
+    });
+    const assign = vi.spyOn(window.location, 'assign').mockImplementation(() => {});
+    assign.mockClear();
 
     render(
       <ShareTop5Button
@@ -105,8 +124,14 @@ describe('universal share menu (web#123)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Share' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Send message' }));
 
+    if (expectsNativeShare) {
+      await waitFor(() => expect(navigator.share).toHaveBeenCalledTimes(1));
+      expect(assign).not.toHaveBeenCalled();
+      return;
+    }
+
     expect(navigator.share).not.toHaveBeenCalled();
-    expect(window.location.assign).toHaveBeenCalledWith(
+    expect(assign).toHaveBeenCalledWith(
       expect.stringContaining('sms:?&body='),
     );
   });

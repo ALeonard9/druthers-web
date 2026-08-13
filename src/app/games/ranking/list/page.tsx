@@ -27,7 +27,7 @@ export default async function GamesRankingListPage({
   let summary: Summary;
   try {
     [games, summary] = await Promise.all([
-      apiFetch<UserVideoGame[]>('/v1/users/me/games'),
+      apiFetch<UserVideoGame[]>('/v1/users/me/games?on_rankings=true'),
       apiFetch<Summary>('/v1/users/me/summary'),
     ]);
   } catch (err) {

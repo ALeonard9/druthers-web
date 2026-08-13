@@ -18,7 +18,7 @@ export default async function GamesDuelPage({
 
   let games: UserVideoGame[] = [];
   try {
-    games = await apiFetch<UserVideoGame[]>('/v1/users/me/games');
+    games = await apiFetch<UserVideoGame[]>('/v1/users/me/games?on_rankings=true');
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect('/login');
     throw err;
@@ -27,7 +27,7 @@ export default async function GamesDuelPage({
   return (
     <RankingDuelPage
       shelf={SHELVES.games}
-      entries={games.filter((g) => g.on_rankings).map(gameToDuelEntry)}
+      entries={games.map(gameToDuelEntry)}
       focusId={item}
       priorRank={wasRank ? Number(wasRank) : undefined}
     />

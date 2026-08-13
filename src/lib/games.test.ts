@@ -29,18 +29,7 @@ function ug(partial: Partial<UserVideoGame> & { id: string }): UserVideoGame {
 }
 
 describe('partitionGames', () => {
-  it('splits the backlog, placed rankings, and the to-rank bucket', () => {
-    const games = [
-      ug({ id: '1', on_rankings: true, rank: 1 }),
-      ug({ id: '2', on_watchlist: true }),
-      ug({ id: '3', on_watchlist: true, on_rankings: true, rank: 2 }),
-      ug({ id: '4', on_rankings: true, rank: null }),
-    ];
-    const { watchlist, rankingsPlaced, rankingsUnplaced } = partitionGames(games);
-    expect(watchlist.map((g) => g.id).sort()).toEqual(['2', '3']);
-    expect(rankingsPlaced.map((g) => g.id)).toEqual(['1', '3']);
-    expect(rankingsUnplaced.map((g) => g.id)).toEqual(['4']);
-  });
+
 
   it('orders placed rankings by rank', () => {
     const games = [

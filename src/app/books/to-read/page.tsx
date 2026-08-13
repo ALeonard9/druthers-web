@@ -29,7 +29,7 @@ export default async function BooksToReadPage({
   let summary: Summary;
   try {
     [books, summary] = await Promise.all([
-      apiFetch<UserBook[]>('/v1/users/me/books'),
+      apiFetch<UserBook[]>('/v1/users/me/books?on_watchlist=true'),
       apiFetch<Summary>('/v1/users/me/summary'),
     ]);
   } catch (err) {

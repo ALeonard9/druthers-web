@@ -53,10 +53,8 @@ export function partitionBooks(books: UserBook[]): {
   rankingsPlaced: UserBook[];
   rankingsUnplaced: UserBook[];
 } {
-  const watchlist = books
-    .filter((b) => b.on_watchlist)
-    .sort((a, b) => a.book.title.localeCompare(b.book.title));
-  const ranked = books.filter((b) => b.on_rankings);
+  const watchlist = [...books].sort((a, b) => a.book.title.localeCompare(b.book.title));
+  const ranked = books;
   const rankingsPlaced = ranked.filter((b) => b.rank != null).sort(byRank);
   const rankingsUnplaced = ranked
     .filter((b) => b.rank == null)

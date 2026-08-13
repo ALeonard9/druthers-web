@@ -63,10 +63,8 @@ export function partitionMovies(movies: UserMovie[]): {
   rankingsPlaced: UserMovie[];
   rankingsUnplaced: UserMovie[];
 } {
-  const watchlist = movies
-    .filter((m) => m.on_watchlist)
-    .sort((a, b) => a.movie.title.localeCompare(b.movie.title));
-  const ranked = movies.filter((m) => m.on_rankings);
+  const watchlist = [...movies].sort((a, b) => a.movie.title.localeCompare(b.movie.title));
+  const ranked = movies;
   const rankingsPlaced = ranked.filter((m) => m.rank != null).sort(byRank);
   const rankingsUnplaced = ranked
     .filter((m) => m.rank == null)

@@ -31,7 +31,7 @@ export default async function TVPage({
   let summary: Summary;
   try {
     [shows, summary] = await Promise.all([
-      apiFetch<UserTVShow[]>('/v1/users/me/tv-shows'),
+      apiFetch<UserTVShow[]>('/v1/users/me/tv-shows?on_rankings=true'),
       apiFetch<Summary>('/v1/users/me/summary'),
     ]);
   } catch (err) {

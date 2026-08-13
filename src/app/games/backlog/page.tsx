@@ -29,7 +29,7 @@ export default async function GamesBacklogPage({
   let summary: Summary;
   try {
     [games, summary] = await Promise.all([
-      apiFetch<UserVideoGame[]>('/v1/users/me/games'),
+      apiFetch<UserVideoGame[]>('/v1/users/me/games?on_watchlist=true'),
       apiFetch<Summary>('/v1/users/me/summary'),
     ]);
   } catch (err) {

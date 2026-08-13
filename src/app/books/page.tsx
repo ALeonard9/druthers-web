@@ -30,7 +30,7 @@ export default async function BooksPage({
   let summary: Summary;
   try {
     [books, summary] = await Promise.all([
-      apiFetch<UserBook[]>('/v1/users/me/books'),
+      apiFetch<UserBook[]>('/v1/users/me/books?on_rankings=true'),
       apiFetch<Summary>('/v1/users/me/summary'),
     ]);
   } catch (err) {

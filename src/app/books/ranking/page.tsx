@@ -18,7 +18,7 @@ export default async function BooksDuelPage({
 
   let books: UserBook[] = [];
   try {
-    books = await apiFetch<UserBook[]>('/v1/users/me/books');
+    books = await apiFetch<UserBook[]>('/v1/users/me/books?on_rankings=true');
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect('/login');
     throw err;
@@ -27,7 +27,7 @@ export default async function BooksDuelPage({
   return (
     <RankingDuelPage
       shelf={SHELVES.books}
-      entries={books.filter((b) => b.on_rankings).map(bookToDuelEntry)}
+      entries={books.map(bookToDuelEntry)}
       focusId={item}
       priorRank={wasRank ? Number(wasRank) : undefined}
     />

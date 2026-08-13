@@ -18,7 +18,7 @@ export default async function MoviesDuelPage({
 
   let movies: UserMovie[] = [];
   try {
-    movies = await apiFetch<UserMovie[]>('/v1/users/me/movies');
+    movies = await apiFetch<UserMovie[]>('/v1/users/me/movies?on_rankings=true');
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect('/login');
     throw err;
@@ -27,7 +27,7 @@ export default async function MoviesDuelPage({
   return (
     <RankingDuelPage
       shelf={SHELVES.movies}
-      entries={movies.filter((m) => m.on_rankings).map(movieToDuelEntry)}
+      entries={movies.map(movieToDuelEntry)}
       focusId={item}
       priorRank={wasRank ? Number(wasRank) : undefined}
     />

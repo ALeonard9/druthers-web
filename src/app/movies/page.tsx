@@ -30,7 +30,7 @@ export default async function MoviesPage({
   let summary: Summary;
   try {
     [movies, summary] = await Promise.all([
-      apiFetch<UserMovie[]>('/v1/users/me/movies'),
+      apiFetch<UserMovie[]>('/v1/users/me/movies?on_rankings=true'),
       apiFetch<Summary>('/v1/users/me/summary'),
     ]);
   } catch (err) {

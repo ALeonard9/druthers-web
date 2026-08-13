@@ -18,7 +18,7 @@ export default async function TVDuelPage({
 
   let shows: UserTVShow[] = [];
   try {
-    shows = await apiFetch<UserTVShow[]>('/v1/users/me/tv-shows');
+    shows = await apiFetch<UserTVShow[]>('/v1/users/me/tv-shows?on_rankings=true');
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect('/login');
     throw err;
@@ -27,7 +27,7 @@ export default async function TVDuelPage({
   return (
     <RankingDuelPage
       shelf={SHELVES.tv}
-      entries={shows.filter((s) => s.on_rankings).map(showToDuelEntry)}
+      entries={shows.map(showToDuelEntry)}
       focusId={item}
       priorRank={wasRank ? Number(wasRank) : undefined}
     />

@@ -52,10 +52,8 @@ export function partitionGames(games: UserVideoGame[]): {
   rankingsPlaced: UserVideoGame[];
   rankingsUnplaced: UserVideoGame[];
 } {
-  const watchlist = games
-    .filter((g) => g.on_watchlist)
-    .sort((a, b) => a.game.title.localeCompare(b.game.title));
-  const ranked = games.filter((g) => g.on_rankings);
+  const watchlist = [...games].sort((a, b) => a.game.title.localeCompare(b.game.title));
+  const ranked = games;
   const rankingsPlaced = ranked.filter((g) => g.rank != null).sort(byRank);
   const rankingsUnplaced = ranked
     .filter((g) => g.rank == null)

@@ -53,10 +53,8 @@ export function partitionShows(shows: UserTVShow[]): {
   rankingsPlaced: UserTVShow[];
   rankingsUnplaced: UserTVShow[];
 } {
-  const watchlist = shows
-    .filter((s) => s.on_watchlist)
-    .sort((a, b) => a.tv_show.title.localeCompare(b.tv_show.title));
-  const ranked = shows.filter((s) => s.on_rankings);
+  const watchlist = [...shows].sort((a, b) => a.tv_show.title.localeCompare(b.tv_show.title));
+  const ranked = shows;
   const rankingsPlaced = ranked.filter((s) => s.rank != null).sort(byRank);
   const rankingsUnplaced = ranked
     .filter((s) => s.rank == null)

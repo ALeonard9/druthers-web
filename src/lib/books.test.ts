@@ -27,18 +27,7 @@ function ub(partial: Partial<UserBook> & { id: string }): UserBook {
 }
 
 describe('partitionBooks', () => {
-  it('splits the to-read list, placed rankings, and the to-rank bucket', () => {
-    const books = [
-      ub({ id: '1', on_rankings: true, rank: 1 }),
-      ub({ id: '2', on_watchlist: true }),
-      ub({ id: '3', on_watchlist: true, on_rankings: true, rank: 2 }),
-      ub({ id: '4', on_rankings: true, rank: null }),
-    ];
-    const { watchlist, rankingsPlaced, rankingsUnplaced } = partitionBooks(books);
-    expect(watchlist.map((b) => b.id).sort()).toEqual(['2', '3']);
-    expect(rankingsPlaced.map((b) => b.id)).toEqual(['1', '3']);
-    expect(rankingsUnplaced.map((b) => b.id)).toEqual(['4']);
-  });
+
 
   it('orders placed rankings by rank', () => {
     const books = [

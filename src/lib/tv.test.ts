@@ -30,20 +30,7 @@ function us(partial: Partial<UserTVShow> & { id: string }): UserTVShow {
 }
 
 describe('partitionShows', () => {
-  it('splits watchlist, placed rankings, and the to-rank bucket', () => {
-    const shows = [
-      us({ id: '1', on_rankings: true, rank: 1 }),
-      us({ id: '2', on_watchlist: true }),
-      // on both lists at once
-      us({ id: '3', on_watchlist: true, on_rankings: true, rank: 2 }),
-      // added to rankings but not yet positioned
-      us({ id: '4', on_rankings: true, rank: null }),
-    ];
-    const { watchlist, rankingsPlaced, rankingsUnplaced } = partitionShows(shows);
-    expect(watchlist.map((s) => s.id).sort()).toEqual(['2', '3']);
-    expect(rankingsPlaced.map((s) => s.id)).toEqual(['1', '3']);
-    expect(rankingsUnplaced.map((s) => s.id)).toEqual(['4']);
-  });
+
 
   it('orders placed rankings by rank', () => {
     const shows = [

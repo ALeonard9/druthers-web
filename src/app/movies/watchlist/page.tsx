@@ -29,7 +29,7 @@ export default async function MoviesWatchlistPage({
   let summary: Summary;
   try {
     [movies, summary] = await Promise.all([
-      apiFetch<UserMovie[]>('/v1/users/me/movies'),
+      apiFetch<UserMovie[]>('/v1/users/me/movies?on_watchlist=true'),
       apiFetch<Summary>('/v1/users/me/summary'),
     ]);
   } catch (err) {

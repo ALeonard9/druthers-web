@@ -1,4 +1,5 @@
 /** @vitest-environment happy-dom */
+import { readFileSync } from 'node:fs';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -157,6 +158,15 @@ describe('universal share menu (web#123)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Share' }));
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('keeps share copy free of platform-specific paste-key hints', () => {
+    const shareComponentSources = [
+      './ShareTop5Button.tsx',
+      './DuelShareButton.tsx',
+    ].map((path) => readFileSync(new URL(path, import.meta.url), 'utf8'));
+
+    expect(shareComponentSources.join('\n')).not.toMatch(/⌘V|Ctrl\+V|Command\+V/);
   });
 });
 

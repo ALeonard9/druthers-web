@@ -508,7 +508,7 @@ function ShareModal({
       try {
         await copyPromise;
         setImageCopied(true);
-        setImageNotice('Image copied — press ⌘V in Facebook to attach it.');
+        setImageNotice('Image copied — paste the image in Facebook to attach it.');
         window.setTimeout(() => setImageCopied(false), 2000);
       } catch {
         setImageNotice('Facebook opened, but the image could not be copied. Download it instead.');
@@ -639,7 +639,7 @@ function ShareModal({
             </p>
           ) : platform === 'facebook' && (
             <p className="text-center text-[11px] text-neutral-500">
-              Then press ⌘V in Facebook to attach the formatted image.
+              Then paste the image in Facebook to attach the formatted image.
             </p>
           )}
           <div className="grid grid-cols-2 gap-2.5">

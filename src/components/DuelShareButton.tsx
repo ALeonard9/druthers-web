@@ -224,7 +224,7 @@ function DuelFormatter({
     if (copyPromise) {
       try {
         await copyPromise;
-        setNotice(`Image copied — press ⌘V in ${LABEL[platform]} to attach it.`);
+        setNotice(`Image copied — paste the image in ${LABEL[platform]} to attach it.`);
         return;
       } catch {
         // Download below when clipboard access is denied.
@@ -273,7 +273,7 @@ function DuelFormatter({
         <p className="mt-2 text-center text-[11px] text-neutral-500">
           {shouldUseNativeFileShare(platform, canNativeShareFiles)
             ? `Choose ${LABEL[platform]} from the native share sheet.`
-            : `Then press ⌘V in ${LABEL[platform]} to attach it.`}
+            : `Then paste the image in ${LABEL[platform]} to attach it.`}
         </p>
         {notice && <p role="status" className="mt-3 text-center text-xs text-brass">{notice}</p>}
       </div>

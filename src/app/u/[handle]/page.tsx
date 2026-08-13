@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { fetchPublicProfile } from '@/lib/publicProfile';
 import { PublicShelfCarousel } from '@/components/PublicShelfCarousel';
 import { FollowButton } from '@/components/FollowButton';
+import { FriendRequestButton } from '@/components/FriendRequestButton';
 import { ShareTop5Button } from '@/components/ShareTop5Button';
 import { buildPublicShareData, buildShareDestination } from '@/lib/shareCards';
 import { PrivateProfileNotice } from '@/components/PrivateProfileNotice';
@@ -77,7 +78,10 @@ export default async function PublicProfilePage({ params }: Props) {
             </span>
           )}
           {profile.viewer.relationship === 'none' && (
-            <FollowButton handle={profile.handle} initialFollowing={profile.viewer.following} />
+            <>
+              <FollowButton handle={profile.handle} initialFollowing={profile.viewer.following} />
+              <FriendRequestButton handle={profile.handle} />
+            </>
           )}
           {profile.viewer.relationship === 'anonymous' && (
             <a

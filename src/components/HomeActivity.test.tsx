@@ -51,6 +51,10 @@ describe('HomeActivity', () => {
     expect(subtitle.tagName).toBe('SPAN');
     expect(showLink.textContent).toBe('Severance');
     expect(subtitle.textContent).toBe('S2E5 - Woe’s Hollow');
+
+    const action = screen.getByText('Watched');
+    expect(showLink.nextElementSibling).toBe(subtitle);
+    expect(subtitle.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('lets the subtitle ellipsize rather than push the action label off a narrow row', async () => {

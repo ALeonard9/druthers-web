@@ -67,12 +67,19 @@ export async function HomeActivity() {
               <span className="w-16 shrink-0 text-xs uppercase tracking-wide text-neutral-500">
                 {categoryLabel(item.category)}
               </span>
-              <Link
-                href={activityHref(item)}
-                className="flex-1 truncate hover:underline"
-              >
-                {item.title}
-              </Link>
+              <span className="flex min-w-0 flex-1 items-baseline gap-2">
+                <Link
+                  href={activityHref(item)}
+                  className="min-w-0 truncate hover:underline"
+                >
+                  {item.title}
+                </Link>
+                {item.subtitle && (
+                  <span className="min-w-0 truncate text-xs text-neutral-500">
+                    {item.subtitle}
+                  </span>
+                )}
+              </span>
               <span className="shrink-0 text-xs text-neutral-400">
                 {describeActivity(item)}
               </span>

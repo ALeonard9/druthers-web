@@ -22,6 +22,14 @@ const socialItem = {
   actor: { id: 'grace', handle: 'grace', display_name: 'Grace Hopper' },
 };
 
+const followItem = {
+  ...ownItem,
+  title: 'Ada Movie',
+  entity_id: 'ada-movie',
+  occurred_at: '2026-08-12T12:00:00Z',
+  actor: { id: 'ada', handle: 'ada', display_name: 'Ada Lovelace' },
+};
+
 describe('ActivityFeed', () => {
   beforeEach(() => {
     window.sessionStorage.clear();
@@ -46,12 +54,19 @@ describe('ActivityFeed', () => {
     );
   }
 
-  it('defaults to only the viewer activity and adds a selected friend alongside it', () => {
+  function openFilter() {
+    fireEvent.click(screen.getByRole('button', { name: /include activity from/i }));
+  }
+
+  it('defaults to the checked You group and adds a selected friend alongside it', () => {
     renderFeed();
 
     expect(screen.getByText('My Movie')).toBeTruthy();
     expect(screen.queryByText('Grace Movie')).toBeNull();
+    openFilter();
+    expect(screen.getByRole('checkbox', { name: 'Include You' })).toHaveProperty('checked', true);
 
+    fireEvent.click(screen.getByRole('button', { name: /friends/i }));
     fireEvent.click(screen.getByRole('checkbox', { name: 'Include Grace Hopper' }));
 
     expect(screen.getByText('Grace Movie')).toBeTruthy();
@@ -59,16 +74,48 @@ describe('ActivityFeed', () => {
     expect(window.sessionStorage.getItem('druthers_activity_people')).toBe('["grace"]');
   });
 
+  it('drops your own activity when You is unchecked, leaving a selected friend', () => {
+    // "I just want to see what my friends are up to" -- You starts checked but
+    // has to be removable, which reverses the earlier always-included rule.
+    renderFeed();
+    openFilter();
+
+    fireEvent.click(screen.getByRole('button', { name: /friends/i }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include Grace Hopper' }));
+    expect(screen.getByText('My Movie')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include You' }));
+
+    expect(screen.queryByText('My Movie')).toBeNull();
+    expect(screen.getByText('Grace Movie')).toBeTruthy();
+  });
+
+  it('says nobody is selected when You is unchecked and no one else is picked', () => {
+    renderFeed();
+    openFilter();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include You' }));
+
+    // "Nobody selected" appears twice on purpose -- the summary label and the
+    // empty state. Match the empty state's own wording.
+    expect(screen.getByText(/pick yourself or someone you follow/i)).toBeTruthy();
+    expect(screen.queryByText('My Movie')).toBeNull();
+  });
+
   it('restores the selected people for a later activity-page mount', async () => {
     window.sessionStorage.setItem('druthers_activity_people', '["grace"]');
     renderFeed();
 
     await waitFor(() => expect(screen.getByText('Grace Movie')).toBeTruthy());
+    openFilter();
+    fireEvent.click(screen.getByRole('button', { name: /friends/i }));
     expect(screen.getByRole('checkbox', { name: 'Include Grace Hopper' })).toHaveProperty('checked', true);
   });
 
   it('applies the category chip filter to selected social activity too', () => {
     renderFeed({ category: 'book', ownItems: [] });
+    openFilter();
+    fireEvent.click(screen.getByRole('button', { name: /friends/i }));
     fireEvent.click(screen.getByRole('checkbox', { name: 'Include Grace Hopper' }));
 
     expect(screen.queryByText('Grace Movie')).toBeNull();
@@ -82,10 +129,47 @@ describe('ActivityFeed', () => {
       }),
     );
     renderFeed({ initialNextCursor: 'next-page' });
+    openFilter();
+    fireEvent.click(screen.getByRole('button', { name: /friends/i }));
     fireEvent.click(screen.getByRole('checkbox', { name: 'Include Grace Hopper' }));
     fireEvent.click(screen.getByRole('button', { name: 'Load more activity' }));
 
     await waitFor(() => expect(screen.getByText('Grace Book')).toBeTruthy());
     expect(fetch).toHaveBeenCalledWith('/api/activity/feed?cursor=next-page');
+  });
+
+  it('selects and clears every person in a group from its group checkbox', () => {
+    renderFeed({
+      initialSocialItems: [socialItem, followItem],
+      following: [{ id: 'follow', user: followItem.actor, followed_at: '2026-01-01T00:00:00Z' }],
+    });
+    openFilter();
+
+    const follows = screen.getByRole('checkbox', { name: 'Include Follows' });
+    fireEvent.click(follows);
+    expect(screen.getByText('Ada Movie')).toBeTruthy();
+    expect(follows).toHaveProperty('checked', true);
+
+    fireEvent.click(follows);
+    expect(screen.queryByText('Ada Movie')).toBeNull();
+    expect(follows).toHaveProperty('checked', false);
+  });
+
+  it('renders a partially selected group as indeterminate', () => {
+    const secondFriend = { ...followItem, actor: { id: 'alan', handle: 'alan', display_name: 'Alan Turing' } };
+    renderFeed({
+      initialSocialItems: [socialItem, secondFriend],
+      friends: [
+        { id: 'friendship', user: socialItem.actor, friends_since: '2026-01-01T00:00:00Z' },
+        { id: 'friendship-two', user: secondFriend.actor, friends_since: '2026-01-01T00:00:00Z' },
+      ],
+    });
+    openFilter();
+    fireEvent.click(screen.getByRole('button', { name: /friends/i }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include Grace Hopper' }));
+
+    const friends = screen.getByRole('checkbox', { name: 'Include Friends' }) as HTMLInputElement;
+    expect(friends.checked).toBe(false);
+    expect(friends.indeterminate).toBe(true);
   });
 });

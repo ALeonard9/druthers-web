@@ -69,10 +69,15 @@ export async function HomeActivity() {
               </span>
               <Link
                 href={activityHref(item)}
-                className="flex-1 truncate hover:underline"
+                className="min-w-0 flex-1 truncate hover:underline"
               >
                 {item.title}
               </Link>
+              {item.subtitle && (
+                <span className="min-w-0 truncate text-xs text-neutral-500">
+                  {item.subtitle}
+                </span>
+              )}
               <span className="shrink-0 text-xs text-neutral-400">
                 {describeActivity(item)}
               </span>

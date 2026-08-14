@@ -35,7 +35,8 @@ describe('GoodreadsImport', () => {
           books_matched: 5,
           trackers_created: 4,
           trackers_updated: 2,
-          unplaced_read_book_ids: ['book-1', 'book-2'],
+          unplaced_rankings_count: 2,
+          next_unplaced_book_id: 'book-1',
           skipped: [
             { row: 12, reason: 'Missing title' }
           ]
@@ -88,7 +89,15 @@ describe('GoodreadsImport', () => {
   it('accepts a CSV dropped onto the upload area', async () => {
     render(<GoodreadsImport />);
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify({ books_created: 0, books_matched: 1, trackers_created: 1, trackers_updated: 0, skipped: [] })),
+      new Response(JSON.stringify({
+        books_created: 0,
+        books_matched: 1,
+        trackers_created: 1,
+        trackers_updated: 0,
+        unplaced_rankings_count: 0,
+        next_unplaced_book_id: null,
+        skipped: [],
+      })),
     );
 
     const file = new File(['Title,Author\nBook,Bob\n'], 'shelf.csv', { type: 'text/csv' });

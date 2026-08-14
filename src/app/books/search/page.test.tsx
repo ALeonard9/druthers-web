@@ -17,10 +17,11 @@ describe('book search page', () => {
 
   afterEach(cleanup);
 
-  it('offers Goodreads import as an alternate way to add books', async () => {
+  it('keeps Goodreads import as a quiet secondary link', async () => {
     render(await BookSearchPage({ searchParams: Promise.resolve({}) }));
 
-    const link = screen.getByRole('link', { name: /Import from Goodreads/ });
+    const link = screen.getByRole('link', { name: 'Import your library.' });
     expect(link.getAttribute('href')).toBe('/import/goodreads');
+    expect(screen.queryByRole('heading', { name: /Import from Goodreads/ })).toBeNull();
   });
 });

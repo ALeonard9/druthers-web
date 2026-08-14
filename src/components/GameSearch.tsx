@@ -6,6 +6,7 @@ import { catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import type { GameSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
 import { useMultiAddMode } from './MultiAddMode';
+import { VoiceSearch } from './VoiceSearch';
 
 export function GameSearch() {
   const router = useRouter();
@@ -16,14 +17,13 @@ export function GameSearch() {
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState<Record<number, 'adding' | 'done' | 'error'>>({});
 
-  async function onSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!q.trim()) return;
+  async function search(query: string) {
+    if (!query.trim()) return;
     setError(null);
     setLoading(true);
     setResults([]);
     try {
-      const res = await fetch(`/api/games/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/games/search?q=${encodeURIComponent(query)}`);
       const data = await res.json();
       if (!res.ok) {
         setError(
@@ -38,6 +38,11 @@ export function GameSearch() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function onSearch(e: React.FormEvent) {
+    e.preventDefault();
+    void search(q);
   }
 
   async function add(g: GameSearchResult, list: 'watchlist' | 'rankings') {
@@ -82,6 +87,13 @@ export function GameSearch() {
           onChange={(e) => setQ(e.target.value)}
           placeholder="e.g. Breath of the Wild"
           className="flex-1 rounded border border-neutral-700 bg-panel px-3 py-2 outline-none focus:border-brass"
+        />
+        <VoiceSearch
+          onTranscript={(transcript) => {
+            setQ(transcript);
+            void search(transcript);
+          }}
+          className="rounded border border-neutral-700 bg-panel px-2 text-neutral-300 hover:text-paper focus:outline-none focus:ring-1 focus:ring-brass"
         />
         <button
           type="submit"

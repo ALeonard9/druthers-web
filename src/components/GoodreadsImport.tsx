@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 type SkippedRow = {
   row: number;
@@ -17,9 +17,11 @@ type ImportResponse = {
 };
 
 export function GoodreadsImport({ onComplete }: { onComplete?: () => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ImportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   async function handleFile(file: File) {
     if (!file.name.endsWith('.csv')) {
@@ -64,24 +66,49 @@ export function GoodreadsImport({ onComplete }: { onComplete?: () => void }) {
       </div>
 
       {!result && !busy && (
-        <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-neutral-700 bg-night p-6 text-center transition-colors hover:border-brass">
-          <label className="cursor-pointer text-sm font-medium text-brass hover:text-brass-bright">
-            <span>Select CSV File</span>
-            <input
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleFile(file);
-              }}
-            />
-          </label>
+        <div
+          className={`flex min-h-36 flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+            isDragging ? 'border-brass bg-brass/10' : 'border-neutral-700 bg-night hover:border-brass'
+          }`}
+          onDragEnter={(event) => {
+            event.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragOver={(event) => event.preventDefault()}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(event) => {
+            event.preventDefault();
+            setIsDragging(false);
+            const file = event.dataTransfer.files?.[0];
+            if (file) handleFile(file);
+          }}
+        >
+          <p className="text-sm text-neutral-300">Drop your Goodreads CSV here</p>
+          <p className="mt-1 text-xs text-neutral-500">or</p>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="mt-2 text-sm font-medium text-brass hover:text-brass-bright"
+          >
+            Select CSV file
+          </button>
+          <input
+            ref={inputRef}
+            aria-label="Select CSV file"
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) handleFile(file);
+            }}
+          />
+          <p className="mt-3 text-xs text-neutral-500">Goodreads export CSV · up to 5 MB</p>
         </div>
       )}
 
       {busy && (
-        <div className="flex items-center gap-3 text-sm text-brass">
+        <div role="status" className="flex items-center gap-3 text-sm text-brass">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-brass border-t-transparent" />
           Importing your library...
         </div>
@@ -96,6 +123,7 @@ export function GoodreadsImport({ onComplete }: { onComplete?: () => void }) {
             <ul className="mt-2 list-inside list-disc text-xs text-neutral-400">
               <li>{result.trackers_created} books added to your shelves</li>
               <li>{result.trackers_updated} books updated</li>
+              <li>{result.books_matched} existing books recognized</li>
             </ul>
           </div>
 

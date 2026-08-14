@@ -17,8 +17,7 @@ describe('GoodreadsImport', () => {
     render(<GoodreadsImport />);
 
     const file = new File(['{"bad": "json"}'], 'export.json', { type: 'application/json' });
-    // Label is "Select CSV File" in the UI
-    const input = screen.getByLabelText('Select CSV File');
+    const input = screen.getByLabelText('Select CSV file');
     fireEvent.change(input, { target: { files: [file] } });
 
     expect(await screen.findByText('Please select a CSV file.')).toBeTruthy();
@@ -44,7 +43,7 @@ describe('GoodreadsImport', () => {
     );
 
     const file = new File(['Title,Author\nBook,Bob\n'], 'goodreads_export.csv', { type: 'text/csv' });
-    const input = screen.getByLabelText('Select CSV File');
+    const input = screen.getByLabelText('Select CSV file');
     fireEvent.change(input, { target: { files: [file] } });
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/import/goodreads', expect.objectContaining({ method: 'POST' })));
@@ -56,6 +55,7 @@ describe('GoodreadsImport', () => {
     expect(await screen.findByText('Import complete!')).toBeTruthy();
     expect(screen.getByText('4 books added to your shelves')).toBeTruthy();
     expect(screen.getByText('2 books updated')).toBeTruthy();
+    expect(screen.getByText('5 existing books recognized')).toBeTruthy();
 
     expect(screen.getByText('Skipped items')).toBeTruthy();
     expect(screen.getByText('Row 12')).toBeTruthy();
@@ -75,9 +75,24 @@ describe('GoodreadsImport', () => {
     );
 
     const file = new File(['csvdata'], 'large.csv', { type: 'text/csv' });
-    const input = screen.getByLabelText('Select CSV File');
+    const input = screen.getByLabelText('Select CSV file');
     fireEvent.change(input, { target: { files: [file] } });
 
     expect(await screen.findByText('File too large for a Goodreads export')).toBeTruthy();
+  });
+
+  it('accepts a CSV dropped onto the upload area', async () => {
+    render(<GoodreadsImport />);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ books_created: 0, books_matched: 1, trackers_created: 1, trackers_updated: 0, skipped: [] })),
+    );
+
+    const file = new File(['Title,Author\nBook,Bob\n'], 'shelf.csv', { type: 'text/csv' });
+    fireEvent.drop(screen.getByText('Drop your Goodreads CSV here').parentElement!, {
+      dataTransfer: { files: [file] },
+    });
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/import/goodreads', expect.objectContaining({ method: 'POST' })));
+    expect(await screen.findByText('1 existing books recognized')).toBeTruthy();
   });
 });

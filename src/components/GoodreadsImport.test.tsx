@@ -35,8 +35,7 @@ describe('GoodreadsImport', () => {
           books_matched: 5,
           trackers_created: 4,
           trackers_updated: 2,
-          unplaced_rankings_count: 2,
-          next_unplaced_book_id: 'book-1',
+          unplaced_read_book_ids: ['book-1', 'book-2'],
           skipped: [
             { row: 12, reason: 'Missing title' }
           ]
@@ -94,8 +93,7 @@ describe('GoodreadsImport', () => {
         books_matched: 1,
         trackers_created: 1,
         trackers_updated: 0,
-        unplaced_rankings_count: 0,
-        next_unplaced_book_id: null,
+        unplaced_read_book_ids: [],
         skipped: [],
       })),
     );

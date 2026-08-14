@@ -15,8 +15,7 @@ type ImportResponse = {
   trackers_updated: number;
   skipped: SkippedRow[];
   /** Read books awaiting a duel after the API automatically places the first. */
-  unplaced_rankings_count?: number;
-  next_unplaced_book_id?: string | null;
+  unplaced_read_book_ids?: string[];
   error?: string;
 };
 
@@ -145,12 +144,12 @@ export function GoodreadsImport({ onComplete }: { onComplete?: () => void }) {
             </div>
           )}
 
-          {result.next_unplaced_book_id && (result.unplaced_rankings_count ?? 0) > 0 && (
+          {result.unplaced_read_book_ids && result.unplaced_read_book_ids.length > 0 && (
             <Link
-              href={`/books/ranking?item=${result.next_unplaced_book_id}`}
+              href={`/books/ranking?item=${result.unplaced_read_book_ids[0]}`}
               className="w-fit rounded bg-brass px-4 py-2 text-xs font-medium text-ink hover:bg-brass-bright"
             >
-              Rank {result.unplaced_rankings_count === 1 ? 'this book' : 'your imported books'} →
+              Rank {result.unplaced_read_book_ids.length === 1 ? 'this book' : 'your imported books'} →
             </Link>
           )}
 

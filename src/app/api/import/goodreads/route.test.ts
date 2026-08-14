@@ -26,8 +26,7 @@ describe('Goodreads import route', () => {
     const fetchMock = vi.fn().mockResolvedValue(
       Response.json({
         trackers_created: 2,
-        unplaced_rankings_count: 1,
-        next_unplaced_book_id: 'book-2',
+        unplaced_read_book_ids: ['book-2'],
         skipped: [],
       }),
     );
@@ -53,8 +52,7 @@ describe('Goodreads import route', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       trackers_created: 2,
-      unplaced_rankings_count: 1,
-      next_unplaced_book_id: 'book-2',
+      unplaced_read_book_ids: ['book-2'],
       skipped: [],
     });
   });

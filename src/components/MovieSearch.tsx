@@ -7,6 +7,7 @@ import { isRankable, isUnreleased, formatReleaseDate } from '@/lib/movies';
 import type { MovieSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
 import { useMultiAddMode } from './MultiAddMode';
+import { VoiceSearch } from './VoiceSearch';
 
 export function MovieSearch() {
   const router = useRouter();
@@ -17,14 +18,13 @@ export function MovieSearch() {
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState<Record<string, 'adding' | 'done' | 'error'>>({});
 
-  async function onSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!q.trim()) return;
+  async function search(query: string) {
+    if (!query.trim()) return;
     setError(null);
     setLoading(true);
     setResults([]);
     try {
-      const res = await fetch(`/api/movies/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/movies/search?q=${encodeURIComponent(query)}`);
       const data = await res.json();
       if (!res.ok) {
         setError(
@@ -39,6 +39,11 @@ export function MovieSearch() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function onSearch(e: React.FormEvent) {
+    e.preventDefault();
+    void search(q);
   }
 
   async function add(m: MovieSearchResult, list: 'watchlist' | 'rankings') {
@@ -82,6 +87,13 @@ export function MovieSearch() {
           onChange={(e) => setQ(e.target.value)}
           placeholder="e.g. The Matrix"
           className="flex-1 rounded border border-neutral-700 bg-panel px-3 py-2 outline-none focus:border-brass"
+        />
+        <VoiceSearch
+          onTranscript={(transcript) => {
+            setQ(transcript);
+            void search(transcript);
+          }}
+          className="rounded border border-neutral-700 bg-panel px-2 text-neutral-300 hover:text-paper focus:outline-none focus:ring-1 focus:ring-brass"
         />
         <button
           type="submit"

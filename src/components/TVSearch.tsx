@@ -6,6 +6,7 @@ import { catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import type { TVShowSearchResult } from '@/lib/types';
 import { TrackedBadge } from './TrackedBadge';
 import { useMultiAddMode } from './MultiAddMode';
+import { VoiceSearch } from './VoiceSearch';
 
 export function TVSearch() {
   const router = useRouter();
@@ -16,14 +17,13 @@ export function TVSearch() {
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState<Record<number, 'adding' | 'done' | 'error'>>({});
 
-  async function onSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!q.trim()) return;
+  async function search(query: string) {
+    if (!query.trim()) return;
     setError(null);
     setLoading(true);
     setResults([]);
     try {
-      const res = await fetch(`/api/tv/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/tv/search?q=${encodeURIComponent(query)}`);
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? 'Search failed');
@@ -34,6 +34,11 @@ export function TVSearch() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function onSearch(e: React.FormEvent) {
+    e.preventDefault();
+    void search(q);
   }
 
   async function add(s: TVShowSearchResult, list: 'watchlist' | 'rankings') {
@@ -79,6 +84,13 @@ export function TVSearch() {
           onChange={(e) => setQ(e.target.value)}
           placeholder="e.g. Severance"
           className="flex-1 rounded border border-neutral-700 bg-panel px-3 py-2 outline-none focus:border-brass"
+        />
+        <VoiceSearch
+          onTranscript={(transcript) => {
+            setQ(transcript);
+            void search(transcript);
+          }}
+          className="rounded border border-neutral-700 bg-panel px-2 text-neutral-300 hover:text-paper focus:outline-none focus:ring-1 focus:ring-brass"
         />
         <button
           type="submit"

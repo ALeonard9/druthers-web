@@ -35,6 +35,7 @@ describe('GoodreadsImport', () => {
           books_matched: 5,
           trackers_created: 4,
           trackers_updated: 2,
+          unplaced_read_book_ids: ['book-1', 'book-2'],
           skipped: [
             { row: 12, reason: 'Missing title' }
           ]
@@ -56,6 +57,9 @@ describe('GoodreadsImport', () => {
     expect(screen.getByText('4 books added to your shelves')).toBeTruthy();
     expect(screen.getByText('2 books updated')).toBeTruthy();
     expect(screen.getByText('5 existing books recognized')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Rank your imported books →' }).getAttribute('href')).toBe(
+      '/books/ranking?item=book-1',
+    );
 
     expect(screen.getByText('Skipped items')).toBeTruthy();
     expect(screen.getByText('Row 12')).toBeTruthy();
@@ -94,5 +98,6 @@ describe('GoodreadsImport', () => {
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/import/goodreads', expect.objectContaining({ method: 'POST' })));
     expect(await screen.findByText('1 existing books recognized')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /Rank .*book/ })).toBeNull();
   });
 });

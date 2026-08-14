@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 
 type SkippedRow = {
@@ -13,6 +14,11 @@ type ImportResponse = {
   trackers_created: number;
   trackers_updated: number;
   skipped: SkippedRow[];
+  /**
+   * Read books that the API placed on the rankings shelf but could not rank
+   * automatically. The first id gives the duel a sensible starting point.
+   */
+  unplaced_read_book_ids?: string[];
   error?: string;
 };
 
@@ -139,6 +145,15 @@ export function GoodreadsImport({ onComplete }: { onComplete?: () => void }) {
                 ))}
               </div>
             </div>
+          )}
+
+          {result.unplaced_read_book_ids && result.unplaced_read_book_ids.length > 0 && (
+            <Link
+              href={`/books/ranking?item=${result.unplaced_read_book_ids[0]}`}
+              className="w-fit rounded bg-brass px-4 py-2 text-xs font-medium text-ink hover:bg-brass-bright"
+            >
+              Rank {result.unplaced_read_book_ids.length === 1 ? 'this book' : 'your imported books'} →
+            </Link>
           )}
 
           <button

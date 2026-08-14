@@ -7,6 +7,9 @@ import type { Summary } from '@/lib/types';
 const navigation = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 
 vi.mock('next/navigation', () => ({ useRouter: () => navigation }));
+vi.mock('@/components/GoodreadsImport', () => ({
+  GoodreadsImport: () => <div>Goodreads importer</div>,
+}));
 
 const summary: Summary = {
   handle: 'new-reader',
@@ -50,6 +53,14 @@ describe('OnboardingWizard shelf setup', () => {
     ]);
     expect(screen.getByText('4 on')).toBeTruthy();
     expect(screen.getAllByRole('checkbox', { checked: true })).toHaveLength(4);
+  });
+
+  it('offers Goodreads import while the Books shelf is enabled', () => {
+    render(<OnboardingWizard summary={summary} />);
+
+    expect(screen.getByText('Goodreads importer')).toBeTruthy();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Turn Books off' }));
+    expect(screen.queryByText('Goodreads importer')).toBeNull();
   });
 
   it('saves shelf choices through preferences and skips an off shelf during ranking', async () => {

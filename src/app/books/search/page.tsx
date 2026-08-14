@@ -24,7 +24,13 @@ export default async function BookSearchPage({
       <div>
         <h1 className="font-display text-3xl font-medium tracking-tight text-paper">Add a book</h1>
         <p className="text-sm text-neutral-400">
-          Search Open Library and add a book to your list.
+          Search Open Library to add books one at a time.
+        </p>
+        <p className="mt-2 text-sm text-neutral-500">
+          Moving from Goodreads?{' '}
+          <Link href="/import/goodreads" className="text-brass hover:text-brass-bright">
+            Import your library.
+          </Link>
         </p>
       </div>
       <MultiAddMode>

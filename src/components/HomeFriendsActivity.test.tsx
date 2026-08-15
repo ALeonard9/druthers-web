@@ -46,8 +46,36 @@ describe('HomeFriendsActivity', () => {
     expect(screen.getAllByText('Friend')).toHaveLength(3);
     expect(preview.textContent).toContain('Ranked #1');
     expect(screen.getByRole('link', { name: 'Interstellar' }).getAttribute('href')).toBe('/movies/movie-1');
+    const actorLinks = screen.getAllByRole('link', { name: 'Friend' });
+    expect(actorLinks).toHaveLength(3);
+    for (const link of actorLinks) {
+      expect(link.getAttribute('href')).toBe('/u/friend');
+    }
     expect(screen.queryByText('Heat')).toBeNull();
     expect(screen.getByRole('link', { name: 'See all activity' }).getAttribute('href')).toBe('/activity');
+  });
+
+  it('links the actor name to their profile by id when no handle is claimed', async () => {
+    mocks.apiFetch.mockResolvedValue({
+      items: [item({ actor: { id: 'friend-1', display_name: 'Friend', handle: null } })],
+      next_cursor: null,
+    });
+
+    render(await HomeFriendsActivity());
+
+    expect(screen.getByRole('link', { name: 'Friend' }).getAttribute('href')).toBe('/u/friend-1');
+  });
+
+  it('renders an unregistered actor name as plain text', async () => {
+    mocks.apiFetch.mockResolvedValue({
+      items: [item({ actor: { id: '', display_name: null, handle: null } })],
+      next_cursor: null,
+    });
+
+    render(await HomeFriendsActivity());
+
+    expect(screen.getByText('A friend')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'A friend' })).toBeNull();
   });
 
   it('invites the viewer to add friends when the feed has no visible activity', async () => {

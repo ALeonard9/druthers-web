@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { activityHref, categoryLabel, describeActivity, groupActivityByDay } from '@/lib/activity';
+import { activityHref, categoryLabel, describeActivity, groupActivityByDay, profileHref } from '@/lib/activity';
 import type { ActivityItem, Friend, Follow, SocialActivityItem } from '@/lib/types';
 
 const SELECTION_KEY = 'druthers_activity_people';
@@ -309,12 +309,22 @@ export function ActivityFeed({
                     ? people.find((option) => option.id === socialItem.actor.id)
                     : null;
                   const group = person?.relationship === 'friend' ? 'friends' : 'following';
+                  const actorLink = 'actor' in socialItem ? profileHref(socialItem.actor) : null;
                   return (
                     <li key={`${item.category}-${item.entity_id}-${item.occurred_at}-${index}`} className={`flex items-center gap-3 border-b border-line/60 px-3 py-2 text-sm last:border-b-0 ${'actor' in socialItem ? GROUP_STYLE[group].row : 'bg-brass-wash/30'}`}>
                       <span className="w-20 shrink-0 text-xs uppercase tracking-wide text-neutral-500">{categoryLabel(item.category)}</span>
                       <Link href={activityHref(item)} className="flex-1 truncate hover:underline">{item.title}</Link>
                       {'actor' in socialItem ? (
-                        <span className="flex shrink-0 items-center gap-1 font-medium text-paper"><RelationshipIcon relationship={person?.relationship ?? 'following'} />{displayName(socialItem.actor)}</span>
+                        <span className="flex shrink-0 items-center gap-1 font-medium text-paper">
+                          <RelationshipIcon relationship={person?.relationship ?? 'following'} />
+                          {actorLink ? (
+                            <Link href={actorLink} className="hover:underline">
+                              {displayName(socialItem.actor)}
+                            </Link>
+                          ) : (
+                            displayName(socialItem.actor)
+                          )}
+                        </span>
                       ) : <span className="shrink-0 font-medium text-brass">You</span>}
                       {item.subtitle && <span className="shrink-0 text-xs text-neutral-500">{item.subtitle}</span>}
                       <span className="shrink-0 text-xs text-neutral-400">{describeActivity(item)}</span>

@@ -1,4 +1,4 @@
-import type { ActivityItem } from './types';
+import type { ActivityActor, ActivityItem } from './types';
 
 /** Group activity items by their occurred_at calendar day (UTC), newest first preserved. */
 export function groupActivityByDay(
@@ -76,4 +76,16 @@ export function activityHref(item: ActivityItem): string {
     default:
       return '/';
   }
+}
+
+/**
+ * Where an activity actor's name should link: their claimed handle, else
+ * their id when a handle has not been claimed yet. Null when neither is
+ * present, so an unregistered or deleted reference stays plain text instead
+ * of becoming a broken link.
+ */
+export function profileHref(actor: ActivityActor): string | null {
+  if (actor.handle) return `/u/${actor.handle}`;
+  if (actor.id) return `/u/${actor.id}`;
+  return null;
 }

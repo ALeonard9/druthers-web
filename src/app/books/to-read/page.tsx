@@ -12,6 +12,7 @@ import { BookWatchlistCard } from '@/components/BookWatchlistCard';
 import { WatchlistViewer } from '@/components/WatchlistViewer';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
+import { DomainIcon } from '@/components/DomainIcon';
 import { BOOK_TABS } from '@/lib/sectionTabs';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +43,7 @@ export default async function BooksToReadPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionTabs tabs={BOOK_TABS} />
+      <SectionTabs tabs={BOOK_TABS} icon={<DomainIcon domain="books" />} />
 
       <div className="flex items-end justify-between">
         <div>
@@ -62,9 +63,10 @@ export default async function BooksToReadPage({
           />
           <Link
             href="/books/search?from=watchlist"
-            className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
+            className="inline-flex items-center gap-1.5 rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
-            + Add a book
+            <DomainIcon domain="books" className="h-4 w-4" />
+            Add a book
           </Link>
         </div>
       </div>
@@ -100,7 +102,8 @@ export default async function BooksToReadPage({
             ) : (
               <>
                 Nothing queued —{' '}
-                <Link href="/books/search?from=watchlist" className="text-brass">
+                <Link href="/books/search?from=watchlist" className="inline-flex items-center gap-1 text-brass">
+                  <DomainIcon domain="books" className="h-4 w-4" />
                   add one
                 </Link>
                 .

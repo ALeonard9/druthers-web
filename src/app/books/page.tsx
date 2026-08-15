@@ -13,6 +13,7 @@ import { FilterBar } from '@/components/FilterBar';
 import { ProgressBanner } from '@/components/ProgressBanner';
 import { progressMessage } from '@/lib/progress';
 import { SectionTabs } from '@/components/SectionTabs';
+import { DomainIcon } from '@/components/DomainIcon';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,7 @@ export default async function BooksPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionTabs tabs={BOOK_TABS} />
+      <SectionTabs tabs={BOOK_TABS} icon={<DomainIcon domain="books" />} />
 
       <div className="flex items-end justify-between">
         <div>
@@ -66,9 +67,10 @@ export default async function BooksPage({
           />
           <Link
             href="/books/search"
-            className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
+            className="inline-flex items-center gap-1.5 rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
-            + Add a book
+            <DomainIcon domain="books" className="h-4 w-4" />
+            Add a book
           </Link>
         </div>
       </div>
@@ -100,7 +102,8 @@ export default async function BooksPage({
             ) : (
               <>
                 Nothing ranked yet —{' '}
-                <Link href="/books/search" className="text-brass">
+                <Link href="/books/search" className="inline-flex items-center gap-1 text-brass">
+                  <DomainIcon domain="books" className="h-4 w-4" />
                   add a book
                 </Link>{' '}
                 or promote one from your{' '}

@@ -23,6 +23,7 @@ import {
   type CatalogSearchResult,
 } from '@/components/CatalogSearchResults';
 import { TrackedBadge } from '@/components/TrackedBadge';
+import { DomainIcon } from '@/components/DomainIcon';
 
 type Step = 'handle' | 'shelves' | 'ranking';
 type DomainKey = keyof typeof SHELVES;
@@ -336,7 +337,10 @@ function DomainRankingStep({
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-display text-xl font-medium text-paper">Rank your {shelf.label}</h2>
+            <h2 className="inline-flex items-center gap-2 font-display text-xl font-medium text-paper">
+              <DomainIcon domain={domainKey} className="h-5 w-5" />
+              Rank your {shelf.label}
+            </h2>
             <p className="text-sm text-neutral-400">Place what you added.</p>
           </div>
           <div className="text-right">
@@ -395,7 +399,10 @@ function DomainRankingStep({
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="font-display text-2xl font-medium text-paper">Pick 5 {shelf.label}</h2>
+          <h2 className="inline-flex items-center gap-2 font-display text-2xl font-medium text-paper">
+            <DomainIcon domain={domainKey} className="h-5 w-5" />
+            Pick 5 {shelf.label}
+          </h2>
           <p className="text-sm text-neutral-400">Search and add at least 5 to your ranking.</p>
         </div>
         <div className="text-right">

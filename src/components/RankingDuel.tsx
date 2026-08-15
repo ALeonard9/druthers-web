@@ -272,7 +272,7 @@ export function RankingDuel({
       setQueue((prev) => prev.filter((queued) => queued.id !== entry.id));
       setAnswers(null);
       setConfirmingRemoveEntry(null);
-      router.refresh();
+      if (!onQueueEmpty) router.refresh();
     } catch {
       setError(`Couldn't remove that ${shelf.noun}. Try again.`);
     } finally {

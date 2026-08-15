@@ -153,4 +153,46 @@ describe('Onboarding second-title duel return (web#280)', () => {
     expect(screen.getByText('✓ Ranked')).toBeTruthy();
     expect(screen.getByText('Pick 5 Movies')).toBeTruthy();
   });
+
+  it('returns to retained onboarding search after removing the second title', async () => {
+    render(<OnboardingWizard summary={summary} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await screen.findByText('Pick 5 Movies');
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Dune' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Add Dune to Ranked List' }),
+    );
+
+    await screen.findByText('Which would you rather?');
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Remove Dune from rankings and watchlist',
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Remove from both' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Continue adding Movies' }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole('searchbox')).toHaveProperty('value', 'Dune'),
+    );
+    expect(window.location.pathname).toBe('/onboarding');
+    expect(navigation.refresh).not.toHaveBeenCalled();
+    expect(navigation.push).not.toHaveBeenCalled();
+    expect(screen.getByRole('img', { name: 'Dune' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Add Dune to Ranked List' })).toBeTruthy();
+    expect(screen.queryByText('✓ Ranked')).toBeNull();
+    expect(screen.getByText('Pick 5 Movies').parentElement?.parentElement?.textContent).toContain(
+      '1 / 5',
+    );
+    expect(fetch).toHaveBeenCalledWith('/api/movies/movie-2/track', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ on_rankings: false, on_watchlist: false }),
+    });
+  });
 });

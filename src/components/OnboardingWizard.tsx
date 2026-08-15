@@ -233,7 +233,7 @@ function DomainRankingStep({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [addingId, setAddingId] = useState<string | null>(null);
-  const [addedIds, setAddedIds] = useState<Set<string>>(() => new Set());
+  const [addedEntries, setAddedEntries] = useState<Map<string, string>>(() => new Map());
 
   // Load existing items (e.g. from prior failed attempts or MCP)
   useEffect(() => {
@@ -321,7 +321,7 @@ function DomainRankingStep({
       } else {
         setQueue((prev) => [...prev, entry]);
       }
-      setAddedIds((current) => new Set(current).add(resultId));
+      setAddedEntries((current) => new Map(current).set(resultId, entry.id));
     } catch {
     } finally {
       setAddingId(null);
@@ -351,6 +351,13 @@ function DomainRankingStep({
           onQueueEmpty={(newRanked) => {
             setRanked(newRanked);
             setQueue([]);
+            const rankedIds = new Set(newRanked.map((entry) => entry.id));
+            setAddedEntries(
+              (current) =>
+                new Map(
+                  [...current].filter(([, entryId]) => rankedIds.has(entryId)),
+                ),
+            );
           }}
         />
         {/* We need to clear the local queue once RankingDuel commits it, but RankingDuel manages its own local state.
@@ -411,7 +418,7 @@ function DomainRankingStep({
           results={searchItems}
           limit={8}
           actionFor={(result, item) => {
-            const isRanked = result.onRankings || addedIds.has(result.key);
+            const isRanked = result.onRankings || addedEntries.has(result.key);
             if (isRanked) {
               return <TrackedBadge onRankings rank={result.rank} />;
             }

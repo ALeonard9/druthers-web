@@ -135,7 +135,7 @@ describe('RankingDuel Component (web#136)', () => {
     expect(skipBtn).toBeTruthy();
   });
 
-  it('removes the current item from both rankings and watchlist', async () => {
+  it('removes the current item and refreshes its standalone page', async () => {
     render(
       <RankingDuel
         shelf={mockShelf}
@@ -164,6 +164,33 @@ describe('RankingDuel Component (web#136)', () => {
         body: JSON.stringify({ on_rankings: false, on_watchlist: false }),
       }),
     );
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it('returns a removed queue to its parent without refreshing', async () => {
+    const onQueueEmpty = vi.fn();
+    render(
+      <RankingDuel
+        shelf={mockShelf}
+        queue={[mockEntry]}
+        ranked={mockOpponents.slice(0, 1)}
+        onQueueEmpty={onQueueEmpty}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Remove Test Movie Title from rankings and watchlist',
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Remove from both' }));
+
+    await screen.findByRole('button', { name: 'Continue adding Movies' });
+    expect(refresh).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue adding Movies' }));
+    expect(onQueueEmpty).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'opp-1', rank: 1 }),
+    ]);
   });
 
   it('presents the board return as a prominent touch target', () => {

@@ -30,6 +30,10 @@ export type CatalogResult = {
   releaseLabel: string | null;
 };
 
+export function NotRankableMessage() {
+  return <span className="text-center text-xs text-neutral-500 italic">Not rankable yet</span>;
+}
+
 export function normalizeCatalogResult(
   domain: CatalogDomain,
   result: CatalogSearchResult,

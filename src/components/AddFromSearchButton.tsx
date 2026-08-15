@@ -6,6 +6,7 @@ import { playPop } from '@/lib/pop';
 import { SHELVES, catalogIdFrom, duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import { TrackedBadge } from './TrackedBadge';
 import { useMultiAddMode } from './MultiAddMode';
+import { NotRankableMessage } from './CatalogSearchResults';
 
 const DOMAIN_PAGE = {
   movies: '/movies',
@@ -26,6 +27,7 @@ export function AddFromSearchButton({
   rank = null,
   addable = true,
   rankable = true,
+  watchlistHref,
 }: {
   domain: 'movies' | 'tv' | 'games' | 'books';
   payload: Record<string, unknown>;
@@ -34,6 +36,7 @@ export function AddFromSearchButton({
   rank?: number | null;
   addable?: boolean;
   rankable?: boolean;
+  watchlistHref?: string;
 }) {
   const router = useRouter();
   const multiAddMode = useMultiAddMode();
@@ -54,7 +57,7 @@ export function AddFromSearchButton({
         // usually adds it unplaced, so the position still has to be decided.
         // Exception: the first title into an empty shelf auto-places at #1
         // (api#289), so there's nothing left to decide — go to the board.
-        if (list === 'rankings') {
+        if (list === 'rankings' && !multiAddMode) {
           const tracker = await res.json().catch(() => null);
           if (isAlreadyPlaced(tracker)) {
             router.push(SHELVES[domain].boardHref);
@@ -62,7 +65,7 @@ export function AddFromSearchButton({
             router.push(duelHrefFor(domain, catalogIdFrom(domain, tracker)));
           }
         } else if (!multiAddMode) {
-          router.push(DOMAIN_PAGE[domain]);
+          router.push(watchlistHref ?? DOMAIN_PAGE[domain]);
         }
       } else {
         setState('error');
@@ -93,7 +96,7 @@ export function AddFromSearchButton({
             → Add to Ranked List
           </button>
         ) : (
-          <span className="text-center text-xs text-neutral-500 italic">Not rankable yet</span>
+          <NotRankableMessage />
         )}
       </>
     );
@@ -120,7 +123,7 @@ export function AddFromSearchButton({
           {pending ? 'Adding…' : state === 'error' ? 'Retry Ranked List' : '+ Ranked List'}
         </button>
       ) : (
-        <span className="text-center text-xs text-neutral-500 italic">Not rankable yet</span>
+        <NotRankableMessage />
       )}
     </>
   );

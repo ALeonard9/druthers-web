@@ -261,4 +261,57 @@ describe('OnboardingWizard shelf setup', () => {
     expect(screen.getByText('✓ Ranked')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Watchlist|Read List|Play List/ })).toBeNull();
   });
+
+  it('explains when an onboarding result is not rankable yet', async () => {
+    vi.mocked(fetch).mockImplementation((input: string | URL | Request) => {
+      const url = input.toString();
+      if (url === '/api/user/movies') return Promise.resolve(new Response(JSON.stringify([])));
+      if (url === '/api/search?q=Doomsday') {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              query: 'Doomsday',
+              corrected: null,
+              movies: [
+                {
+                  tmdb: 100,
+                  imdb: null,
+                  title: 'Avengers: Doomsday',
+                  year: '2099',
+                  release_date: '2099-12-16',
+                  poster_url: '/doomsday.jpg',
+                  type: 'movie',
+                  popularity: 50,
+                  on_watchlist: false,
+                  on_rankings: false,
+                  rank: null,
+                },
+              ],
+              tv_shows: [],
+              books: [],
+              games: [],
+            }),
+          ),
+        );
+      }
+      return Promise.resolve(new Response(JSON.stringify({})));
+    });
+
+    render(
+      <OnboardingWizard
+        summary={{ ...summary, needs_onboarding: false }}
+        shelfToSetUp="movies"
+      />,
+    );
+
+    fireEvent.change(await screen.findByRole('searchbox'), {
+      target: { value: 'Doomsday' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+
+    expect(await screen.findByText('Not rankable yet')).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'Add Avengers: Doomsday to Ranked List' }),
+    ).toBeNull();
+  });
 });

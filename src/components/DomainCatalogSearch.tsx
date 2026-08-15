@@ -19,12 +19,22 @@ const DOMAIN_SEARCH = {
   movies: {
     placeholder: 'e.g. The Matrix',
     unavailable: 'Search is not configured (set OMDB_API_KEY on the API).',
+    watchlistHref: '/movies/watchlist',
   },
-  tv: { placeholder: 'e.g. Severance', unavailable: 'Search is not configured.' },
-  books: { placeholder: 'e.g. Project Hail Mary', unavailable: 'Search is not configured.' },
+  tv: {
+    placeholder: 'e.g. Severance',
+    unavailable: 'Search is not configured.',
+    watchlistHref: '/tv/watchlist',
+  },
+  books: {
+    placeholder: 'e.g. Project Hail Mary',
+    unavailable: 'Search is not configured.',
+    watchlistHref: '/books/to-read',
+  },
   games: {
     placeholder: 'e.g. Breath of the Wild',
     unavailable: 'Search is not configured (set TWITCH_CLIENT_ID/SECRET on the API).',
+    watchlistHref: '/games/backlog',
   },
 } as const;
 
@@ -85,6 +95,7 @@ export function DomainCatalogSearch({ domain }: { domain: CatalogDomain }) {
             rank={result.rank}
             addable={result.addable}
             rankable={result.rankable}
+            watchlistHref={config.watchlistHref}
           />
         )}
       />

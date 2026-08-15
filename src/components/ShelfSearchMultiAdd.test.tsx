@@ -16,6 +16,7 @@ const cases = [
     component: <DomainCatalogSearch domain="movies" />,
     placeholder: 'e.g. The Matrix',
     addLabel: '+ Watchlist',
+    destination: '/movies/watchlist',
     result: {
       tmdb: 603,
       imdb: null,
@@ -35,6 +36,7 @@ const cases = [
     component: <DomainCatalogSearch domain="tv" />,
     placeholder: 'e.g. Severance',
     addLabel: '+ Watchlist',
+    destination: '/tv/watchlist',
     result: {
       tvmaze: 1,
       imdb: 'tt1',
@@ -53,6 +55,7 @@ const cases = [
     component: <DomainCatalogSearch domain="books" />,
     placeholder: 'e.g. Project Hail Mary',
     addLabel: '+ Read List',
+    destination: '/books/to-read',
     result: {
       isbn: '9780593135204',
       title: 'Project Hail Mary',
@@ -69,6 +72,7 @@ const cases = [
     component: <DomainCatalogSearch domain="games" />,
     placeholder: 'e.g. Breath of the Wild',
     addLabel: '+ Play List',
+    destination: '/games/backlog',
     result: {
       igdb: 1,
       title: 'Breath of the Wild',
@@ -106,4 +110,24 @@ describe('Shelf search multi-add mode (web#168)', () => {
     await waitFor(() => expect(screen.getByText('✓ On your list')).toBeTruthy());
     expect(push).not.toHaveBeenCalled();
   });
+
+  it.each(cases)(
+    'routes $name unranked-list adds to $destination when keep-adding is off',
+    async ({ component, placeholder, addLabel, destination, result }) => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => [result] })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ id: 'tracker-1' }) });
+
+      render(<MultiAddMode>{component}</MultiAddMode>);
+
+      fireEvent.change(screen.getByPlaceholderText(placeholder), {
+        target: { value: result.title },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+      fireEvent.click(await screen.findByRole('button', { name: addLabel }));
+
+      await waitFor(() => expect(push).toHaveBeenCalledWith(destination));
+    },
+  );
 });

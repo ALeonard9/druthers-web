@@ -18,6 +18,7 @@ import { GoodreadsImport } from '@/components/GoodreadsImport';
 import { CatalogSearchForm } from '@/components/CatalogSearchForm';
 import {
   CatalogSearchResults,
+  NotRankableMessage,
   normalizeCatalogResult,
   type CatalogSearchResult,
 } from '@/components/CatalogSearchResults';
@@ -414,9 +415,10 @@ function DomainRankingStep({
             if (isRanked) {
               return <TrackedBadge onRankings rank={result.rank} />;
             }
+            if (!result.rankable) return <NotRankableMessage />;
             return (
               <button
-                disabled={!result.addable || !result.rankable || addingId === result.key}
+                disabled={!result.addable || addingId === result.key}
                 onClick={() => void addAndQueue(item, result.key)}
                 aria-label={`Add ${result.title} to Ranked List`}
                 className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"

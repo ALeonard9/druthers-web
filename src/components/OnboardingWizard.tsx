@@ -158,6 +158,13 @@ export function OnboardingWizard({
               {handleBusy ? 'Saving…' : 'Continue'}
             </button>
           </form>
+          <button
+            type="button"
+            onClick={() => setStep('shelves')}
+            className="self-start text-sm text-neutral-500 hover:text-white"
+          >
+            Set this up later
+          </button>
           {handleError && <p className="text-sm text-red-400">{handleError}</p>}
         </div>
       )}

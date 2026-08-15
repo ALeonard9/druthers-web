@@ -72,6 +72,19 @@ describe('OnboardingWizard shelf setup', () => {
     vi.unstubAllGlobals();
   });
 
+  it('lets a new user defer claiming a handle until they want to share', () => {
+    render(<OnboardingWizard summary={{ ...summary, handle: null, display_name: 'Ada Lovelace' }} />);
+
+    expect(screen.getByText('Claim your handle')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Set this up later' }));
+
+    expect(screen.getByText('Arrange your shelves')).toBeTruthy();
+    expect(fetch).not.toHaveBeenCalledWith(
+      '/api/visibility',
+      expect.objectContaining({ method: 'PUT' }),
+    );
+  });
+
   it('starts with every shelf on in the movies, TV, games, books order', () => {
     render(<OnboardingWizard summary={summary} />);
 

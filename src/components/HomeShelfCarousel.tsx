@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { SummaryShelf } from '@/lib/types';
 import type { DeckItem } from '@/lib/deck';
 import { RankedPosterDeck } from './RankedPosterDeck';
+import { DomainIcon } from './DomainIcon';
 
 const HREF: Record<SummaryShelf['category'], string> = {
   movies: '/movies',
@@ -35,8 +36,9 @@ export function HomeShelfCarousel({ shelf }: { shelf: SummaryShelf }) {
       <div className="flex items-baseline justify-between border-b border-line px-4 py-3">
         <Link
           href={base}
-          className="font-display text-lg text-paper hover:text-brass"
+          className="inline-flex items-center gap-2 font-display text-lg text-paper hover:text-brass"
         >
+          <DomainIcon domain={shelf.category} className="h-4 w-4" />
           {shelf.label}
         </Link>
         <span className="font-mono text-[11px] uppercase tracking-wide text-neutral-500">

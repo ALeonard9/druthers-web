@@ -12,6 +12,7 @@ import { GameWatchlistCard } from '@/components/GameWatchlistCard';
 import { WatchlistViewer } from '@/components/WatchlistViewer';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
+import { DomainIcon } from '@/components/DomainIcon';
 import { GAME_TABS } from '@/lib/sectionTabs';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +43,7 @@ export default async function GamesBacklogPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionTabs tabs={GAME_TABS} />
+      <SectionTabs tabs={GAME_TABS} icon={<DomainIcon domain="games" />} />
 
       <div className="flex items-end justify-between">
         <div>
@@ -62,9 +63,10 @@ export default async function GamesBacklogPage({
           />
           <Link
             href="/games/search?from=watchlist"
-            className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
+            className="inline-flex items-center gap-1.5 rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
-            + Add a game
+            <DomainIcon domain="games" className="h-4 w-4" />
+            Add a game
           </Link>
         </div>
       </div>
@@ -106,7 +108,8 @@ export default async function GamesBacklogPage({
             ) : (
               <>
                 Nothing queued —{' '}
-                <Link href="/games/search?from=watchlist" className="text-brass">
+                <Link href="/games/search?from=watchlist" className="inline-flex items-center gap-1 text-brass">
+                  <DomainIcon domain="games" className="h-4 w-4" />
                   add one
                 </Link>
                 .

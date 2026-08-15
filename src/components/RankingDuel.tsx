@@ -31,6 +31,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
 import { DuelShareButton } from '@/components/DuelShareButton';
+import { DomainIcon } from '@/components/DomainIcon';
 import type { DuelEntry, ShelfConfig } from '@/lib/duelShelves';
 import type { DuelShareCard } from '@/lib/duelShareCardRender';
 import {
@@ -617,9 +618,10 @@ function EscapeHatch({
       <div className="flex flex-wrap items-center gap-3 sm:justify-between">
         <Link
           href={shelf.addHref}
-          className="text-sm text-neutral-400 hover:text-white"
+          className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-white"
         >
-          + {shelf.addLabel}
+          <DomainIcon domain={shelf.id} className="h-4 w-4" />
+          {shelf.addLabel}
         </Link>
         <div className="flex flex-wrap items-center gap-4">
           <span className="hidden font-mono text-[11px] uppercase tracking-[0.2em] text-neutral-600 sm:block">
@@ -820,8 +822,9 @@ function Done({
         </Link>
         <Link
           href={shelf.addHref}
-          className="rounded border border-line px-3 py-2 text-sm text-neutral-300 hover:border-brass hover:text-paper"
+          className="inline-flex items-center gap-1.5 rounded border border-line px-3 py-2 text-sm text-neutral-300 hover:border-brass hover:text-paper"
         >
+          <DomainIcon domain={shelf.id} className="h-4 w-4" />
           {shelf.addLabel}
         </Link>
       </div>

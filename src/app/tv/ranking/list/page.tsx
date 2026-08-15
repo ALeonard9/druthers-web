@@ -12,6 +12,7 @@ import type { UserTVShow, Summary } from '@/lib/types';
 import { TVRankingsBoard } from '@/components/TVRankingsBoard';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
+import { DomainIcon } from '@/components/DomainIcon';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +44,7 @@ export default async function TVRankingListPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionTabs tabs={TV_TABS} />
+      <SectionTabs tabs={TV_TABS} icon={<DomainIcon domain="tv" />} />
 
       <div className="flex items-end justify-between">
         <div>
@@ -66,9 +67,10 @@ export default async function TVRankingListPage({
           </Link>
           <Link
             href="/tv/search"
-            className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
+            className="inline-flex items-center gap-1.5 rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
-            + Add a show
+            <DomainIcon domain="tv" className="h-4 w-4" />
+            Add a show
           </Link>
         </div>
       </div>
@@ -93,7 +95,8 @@ export default async function TVRankingListPage({
             ) : (
               <>
                 Nothing ranked yet —{' '}
-                <Link href="/tv/search" className="text-brass">
+                <Link href="/tv/search" className="inline-flex items-center gap-1 text-brass">
+                  <DomainIcon domain="tv" className="h-4 w-4" />
                   add a show
                 </Link>{' '}
                 or promote one from your{' '}

@@ -19,6 +19,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { SHELVES, type ShelfId } from '@/lib/duelShelves';
 import type { ShelfPreferences } from '@/lib/shelfPreferences';
+import { DomainIcon } from './DomainIcon';
 
 function ShelfRow({
   id,
@@ -47,7 +48,10 @@ function ShelfRow({
       >
         ⠿
       </button>
-      <span className="flex-1 text-sm text-neutral-200">{SHELVES[id].label}</span>
+      <span className="flex flex-1 items-center gap-2 text-sm text-neutral-200">
+        <DomainIcon domain={id} className="h-4 w-4 text-neutral-500" />
+        {SHELVES[id].label}
+      </span>
       <label className="flex items-center gap-2 text-xs text-neutral-400">
         <input
           type="checkbox"

@@ -45,9 +45,9 @@ describe('DomainCatalogSearch movie policy (web#180)', () => {
 
     expect(screen.getByText(/Release: Dec 16, 2099/)).toBeTruthy();
     expect(screen.getByText('Not rankable yet')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: '+ Ranked List' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Rank' })).toBeNull();
     // Still addable to the watchlist even though it isn't rankable yet.
-    expect(screen.getByRole('button', { name: '+ Watchlist' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Watch' })).toBeTruthy();
   });
 
   it('offers rankings normally for an already-released movie', async () => {
@@ -60,7 +60,7 @@ describe('DomainCatalogSearch movie policy (web#180)', () => {
     await search('The Matrix');
 
     expect(screen.queryByText('Not rankable yet')).toBeNull();
-    expect(screen.getByRole('button', { name: '+ Ranked List' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Rank' })).toBeTruthy();
   });
 });
 
@@ -79,7 +79,7 @@ describe('DomainCatalogSearch on-watchlist indicator', () => {
     await search('Casablanca');
 
     expect(screen.getAllByText(/On Watchlist/)).toHaveLength(1);
-    expect(screen.queryByRole('button', { name: /Watchlist/ })).toBeNull();
-    expect(screen.getByRole('button', { name: '→ Add to Ranked List' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Watch List/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Rank' })).toBeTruthy();
   });
 });

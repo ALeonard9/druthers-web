@@ -52,7 +52,8 @@ describe('MultiAddMode (web#168)', () => {
     );
 
     fireEvent.click(screen.getByRole('switch'));
-    fireEvent.click(screen.getByRole('button', { name: /^\+ (Watchlist|Read List|Play List)$/ }));
+    const listLabel = domain === 'books' ? 'Read' : domain === 'games' ? 'Play' : 'Watch';
+    fireEvent.click(screen.getByRole('button', { name: listLabel }));
 
     await waitFor(() => expect(screen.getByText('✓ On your list')).toBeTruthy());
     expect(global.fetch).toHaveBeenCalledWith(`/api/${domain}/add`, expect.anything());
@@ -66,7 +67,7 @@ describe('MultiAddMode (web#168)', () => {
       </MultiAddMode>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '+ Watchlist' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch' }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith('/movies'));
   });
@@ -83,7 +84,7 @@ describe('MultiAddMode (web#168)', () => {
     );
 
     fireEvent.click(screen.getByRole('switch'));
-    fireEvent.click(screen.getByRole('button', { name: '+ Ranked List' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rank' }));
 
     await waitFor(() => expect(screen.getByText('✓ On your list')).toBeTruthy());
     expect(push).not.toHaveBeenCalled();
@@ -104,7 +105,7 @@ describe('MultiAddMode (web#168)', () => {
       </MultiAddMode>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '+ Ranked List' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rank' }));
 
     await waitFor(() =>
       expect(push).toHaveBeenCalledWith('/movies/ranking?item=movie-1'),
@@ -122,7 +123,7 @@ describe('MultiAddMode (web#168)', () => {
       </MultiAddMode>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '+ Ranked List' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rank' }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith('/movies/ranking/list'));
   });

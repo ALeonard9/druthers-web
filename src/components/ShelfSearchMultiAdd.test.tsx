@@ -15,7 +15,7 @@ const cases = [
     name: 'movies',
     component: <DomainCatalogSearch domain="movies" />,
     placeholder: 'e.g. The Matrix',
-    addLabel: '+ Watchlist',
+    addLabel: 'Watch',
     destination: '/movies/watchlist',
     result: {
       tmdb: 603,
@@ -35,7 +35,7 @@ const cases = [
     name: 'tv',
     component: <DomainCatalogSearch domain="tv" />,
     placeholder: 'e.g. Severance',
-    addLabel: '+ Watchlist',
+    addLabel: 'Watch',
     destination: '/tv/watchlist',
     result: {
       tvmaze: 1,
@@ -54,7 +54,7 @@ const cases = [
     name: 'books',
     component: <DomainCatalogSearch domain="books" />,
     placeholder: 'e.g. Project Hail Mary',
-    addLabel: '+ Read List',
+    addLabel: 'Read',
     destination: '/books/to-read',
     result: {
       isbn: '9780593135204',
@@ -71,7 +71,7 @@ const cases = [
     name: 'games',
     component: <DomainCatalogSearch domain="games" />,
     placeholder: 'e.g. Breath of the Wild',
-    addLabel: '+ Play List',
+    addLabel: 'Play',
     destination: '/games/backlog',
     result: {
       igdb: 1,

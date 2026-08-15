@@ -17,7 +17,7 @@ const cases: Array<{
   result: CatalogSearchResult;
   metadata: string;
   sourceUrl: string;
-  watchlistAction: string;
+  watchlistLabel: string;
 }> = [
   {
     domain: 'movies',
@@ -36,7 +36,7 @@ const cases: Array<{
     },
     metadata: '1999',
     sourceUrl: 'https://www.imdb.com/title/tt0133093/',
-    watchlistAction: '+ Watchlist',
+    watchlistLabel: 'Watch',
   },
   {
     domain: 'tv',
@@ -54,7 +54,7 @@ const cases: Array<{
     },
     metadata: '2022 · Apple TV+ · Running',
     sourceUrl: 'https://www.imdb.com/title/tt11280740/',
-    watchlistAction: '+ Watchlist',
+    watchlistLabel: 'Watch',
   },
   {
     domain: 'books',
@@ -70,7 +70,7 @@ const cases: Array<{
     },
     metadata: 'Andy Weir · 2021',
     sourceUrl: 'https://openlibrary.org/isbn/9780593135204',
-    watchlistAction: '+ Read List',
+    watchlistLabel: 'Read',
   },
   {
     domain: 'games',
@@ -87,7 +87,7 @@ const cases: Array<{
     },
     metadata: '2017 · Switch',
     sourceUrl: 'https://www.igdb.com/games/the-legend-of-zelda-breath-of-the-wild',
-    watchlistAction: '+ Play List',
+    watchlistLabel: 'Play',
   },
 ];
 
@@ -96,7 +96,7 @@ describe('CatalogSearchResults shared contract (web#280)', () => {
 
   it.each(cases)(
     'renders the full $domain card with domain metadata and both list destinations',
-    ({ domain, result, metadata, sourceUrl, watchlistAction }) => {
+    ({ domain, result, metadata, sourceUrl, watchlistLabel }) => {
       render(
         <CatalogSearchResults
           domain={domain}
@@ -118,8 +118,8 @@ describe('CatalogSearchResults shared contract (web#280)', () => {
       const source = screen.getByRole('link', { name: result.title });
       expect(source.getAttribute('href')).toBe(sourceUrl);
       expect(source.getAttribute('target')).toBe('_blank');
-      expect(screen.getByRole('button', { name: watchlistAction })).toBeTruthy();
-      expect(screen.getByRole('button', { name: '+ Ranked List' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: watchlistLabel }).querySelector('svg')).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Rank' }).querySelector('svg')).toBeTruthy();
     },
   );
 });

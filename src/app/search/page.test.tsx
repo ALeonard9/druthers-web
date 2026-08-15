@@ -66,7 +66,8 @@ describe('global search page', () => {
       await SearchPage({ searchParams: Promise.resolve({ q: 'private', scope: 'users' }) }),
     );
 
-    expect(mocks.apiFetch).toHaveBeenCalledTimes(1);
+    expect(mocks.apiFetch).toHaveBeenCalledTimes(2);
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/users/me/preferences');
     expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/search/users?q=private');
     expect(screen.getByRole('heading', { name: /People 0/ })).toBeTruthy();
     expect(screen.getByText('No people found.')).toBeTruthy();

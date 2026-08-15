@@ -7,6 +7,9 @@ import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { getSessionUser } from '@/lib/session';
 import { SITE_URL } from '@/lib/shareCards';
 import { GENERIC_OG_IMAGE_PATH } from '@/lib/ogCards';
+import { apiFetch } from '@/lib/api';
+import { normalizeShelfPreferences, orderedEnabledShelves } from '@/lib/shelfPreferences';
+import type { Preferences } from '@/lib/types';
 
 // Display face: bookish, characterful — wordmark, page titles, rank numerals.
 const fraunces = Fraunces({
@@ -81,6 +84,17 @@ export default async function RootLayout({
   // than per-page, is what lets the public landing page (#27) go chrome-free
   // without a route-group refactor of every existing page.
   const user = await getSessionUser();
+  let activeShelves;
+  if (user) {
+    try {
+      const preferences = await apiFetch<Preferences>('/v1/users/me/preferences');
+      activeShelves = orderedEnabledShelves(
+        normalizeShelfPreferences({ order: preferences.shelf_order, enabled: preferences.enabled_shelves }),
+      );
+    } catch {
+      activeShelves = undefined;
+    }
+  }
 
   return (
     <html
@@ -91,7 +105,7 @@ export default async function RootLayout({
         {/* Environment warning sits above the app shell so signed-out visitors
             on the public landing page see it too. Renders nothing in dev. */}
         <EnvBanner />
-        <AppShell user={user}>{children}</AppShell>
+        <AppShell user={user} activeShelves={activeShelves}>{children}</AppShell>
         <ServiceWorkerRegister />
       </body>
     </html>

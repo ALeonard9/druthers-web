@@ -241,18 +241,18 @@ describe('RankingDuel Component (web#136)', () => {
 // returns any JSX, so these call it as a plain function rather than rendering
 // it. That keeps the assertion on the guard itself and out of React's render
 // and error handling.
-describe('RankingDuelPage default to the list when nothing is left to rank (web#212)', () => {
+describe('RankingDuelPage returns to the shelf icons when nothing is left to rank (web#296)', () => {
   beforeEach(() => redirect.mockClear());
 
-  it('redirects every fully-ranked shelf to its own board', () => {
+  it('redirects every fully-ranked shelf to its own icon view', () => {
     // Two ranked entries, nothing queued - a matchup is impossible, so the
-    // duel must hand off to the board instead of showing an empty duel.
+    // duel must hand off to shelf browsing instead of another ranking screen.
     // Parametrised over all four shelves so a config typo can't strand one.
     const cases = [
-      ['movies', '/movies/ranking/list'],
-      ['tv', '/tv/ranking/list'],
-      ['books', '/books/ranking/list'],
-      ['games', '/games/ranking/list'],
+      ['movies', '/movies?view=icons'],
+      ['tv', '/tv?view=icons'],
+      ['books', '/books?view=icons'],
+      ['games', '/games?view=icons'],
     ] as const;
     for (const [id, href] of cases) {
       redirect.mockClear();
@@ -261,11 +261,11 @@ describe('RankingDuelPage default to the list when nothing is left to rank (web#
     }
   });
 
-  it('redirects a fully empty shelf to the board, which owns the empty state', () => {
-    // Zero entries is the same queue-empty case; the board already renders
-    // its "nothing ranked yet" empty list, so that behavior stays intact.
+  it('redirects a fully empty shelf to the shelf icon view', () => {
+    // Zero entries is the same queue-empty case; the shelf owns that empty
+    // state too, so the ranking route still never renders an empty duel.
     RankingDuelPage({ shelf: mockShelf, entries: [] });
-    expect(redirect).toHaveBeenCalledWith('/movies/ranking/list');
+    expect(redirect).toHaveBeenCalledWith('/movies?view=icons');
   });
 
   it('does not redirect when a title is still waiting to be placed', () => {

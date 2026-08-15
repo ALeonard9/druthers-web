@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
+import { imdbTitleUrl } from '@/lib/imdb';
 import { bestScore, rankResults } from '@/lib/similarity';
 import { includesCatalogScope, includesPeopleScope, searchScope } from '@/lib/searchScope';
 import type { GlobalSearch, UserSearchResponse } from '@/lib/types';
@@ -175,7 +176,7 @@ export default async function SearchPage({
                       <Thumb url={m.poster_url} title={m.title} />
                       <span className="flex-1 truncate">
                         <SourceLink
-                          href={`https://www.imdb.com/title/${m.imdb}/`}
+                          href={imdbTitleUrl(m.imdb)}
                         >
                           {m.title}
                         </SourceLink>
@@ -211,11 +212,10 @@ export default async function SearchPage({
                       <span className="flex-1 truncate">
                         <SourceLink
                           href={
-                            s.imdb
-                              ? `https://www.imdb.com/title/${s.imdb}/`
-                              : s.tvmaze
+                            imdbTitleUrl(s.imdb) ??
+                            (s.tvmaze
                                 ? `https://www.tvmaze.com/shows/${s.tvmaze}`
-                                : null
+                                : null)
                           }
                         >
                           {s.title}

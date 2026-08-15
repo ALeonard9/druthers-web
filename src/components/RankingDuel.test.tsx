@@ -55,13 +55,19 @@ afterEach(cleanup);
 describe('RankingDuel Component (web#136)', () => {
   beforeEach(() => {
     refresh.mockClear();
+    replace.mockClear();
     vi.mocked(global.fetch).mockClear();
   });
 
-  it('renders FirstOneIn empty state when no opponents exist and refreshes its standalone page after placement', async () => {
+  it.each([
+    ['movies', '/movies?view=icons'],
+    ['tv', '/tv?view=icons'],
+    ['books', '/books?view=icons'],
+    ['games', '/games?view=icons'],
+  ] as const)('offers the %s shelf icons after placing the final standalone title', async (domain, href) => {
     render(
       <RankingDuel
-        shelf={mockShelf}
+        shelf={SHELVES[domain]}
         queue={[mockEntry]}
         ranked={[]}
       />
@@ -73,7 +79,10 @@ describe('RankingDuel Component (web#136)', () => {
     const placeBtn = screen.getByRole('button', { name: 'Make it #1' });
     fireEvent.click(placeBtn);
     await waitFor(() => expect(global.fetch).toHaveBeenCalled());
-    expect(refresh).toHaveBeenCalledOnce();
+    const listLink = await screen.findByRole('link', { name: 'See list' });
+    expect(listLink.getAttribute('href')).toBe(href);
+    expect(replace).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it('does not refresh a parent-managed flow after placement', async () => {
@@ -96,6 +105,7 @@ describe('RankingDuel Component (web#136)', () => {
 
     await screen.findByRole('button', { name: 'Continue adding Movies' });
     expect(refresh).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Continue adding Movies' }));
     expect(onQueueEmpty).toHaveBeenCalledWith({
       ranked: [

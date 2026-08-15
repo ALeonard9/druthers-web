@@ -5,6 +5,7 @@ import type { Preferences } from './types';
 const mocks = vi.hoisted(() => ({
   getSessionUser: vi.fn(),
   apiFetch: vi.fn(),
+  headers: vi.fn(),
   redirect: vi.fn(() => {
     // Next.js redirect throws an error to stop execution
     throw new Error('NEXT_REDIRECT');
@@ -14,10 +15,12 @@ const mocks = vi.hoisted(() => ({
 vi.mock('./session', () => ({ getSessionUser: mocks.getSessionUser }));
 vi.mock('./api', () => ({ apiFetch: mocks.apiFetch, ApiError: class extends Error { status: number; constructor(status: number, message: string) { super(message); this.status = status; } } }));
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
+vi.mock('next/headers', () => ({ headers: mocks.headers }));
 
 describe('requireShelf', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.headers.mockResolvedValue(new Headers({ 'x-druthers-path': '/movies/ranking?item=42' }));
   });
 
   it('does not redirect if there is no logged-in user', async () => {
@@ -29,7 +32,7 @@ describe('requireShelf', () => {
     expect(mocks.apiFetch).not.toHaveBeenCalled();
   });
 
-  it('redirects to settings if the shelf is not enabled', async () => {
+  it('redirects to a contextual prompt with the original deep link', async () => {
     mocks.getSessionUser.mockResolvedValue({ handle: 'test' });
     const prefs: Preferences = {
       shelf_order: ['tv', 'games', 'books', 'movies'],
@@ -41,7 +44,9 @@ describe('requireShelf', () => {
 
     await expect(requireShelf('movies')).rejects.toThrow('NEXT_REDIRECT');
 
-    expect(mocks.redirect).toHaveBeenCalledWith('/settings#shelves');
+    expect(mocks.redirect).toHaveBeenCalledWith(
+      '/settings/shelves/enable?shelf=movies&next=%2Fmovies%2Franking%3Fitem%3D42',
+    );
   });
 
   it('does not redirect if the shelf is enabled', async () => {

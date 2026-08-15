@@ -17,10 +17,8 @@ export function SectionTabs({
   icon?: ReactNode;
 }) {
   const pathname = usePathname();
-  // Exact match first (e.g. Ranking now defaults to the duel at
-  // `/movies/ranking`); otherwise fall back to the longest href that's a
-  // path prefix, so a nested route like `/movies/ranking/list` still lights
-  // up the Ranking tab rather than defaulting to the first tab.
+  // Exact match first; otherwise fall back to the longest href that's a path
+  // prefix so nested section routes still light up their owning tab.
   const active =
     tabs.find((t) => t.href === pathname)?.href ??
     [...tabs]

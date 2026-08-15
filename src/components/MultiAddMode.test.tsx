@@ -127,4 +127,38 @@ describe('MultiAddMode (web#168)', () => {
 
     await waitFor(() => expect(push).toHaveBeenCalledWith('/movies/ranking/list'));
   });
+
+  it('keeps failed actions distinct and names the action being retried', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false });
+    render(
+      <MultiAddMode>
+        <AddFromSearchButton domain="movies" payload={{ tmdb: 1, title: 'Movie' }} />
+      </MultiAddMode>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rank' }));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Retry Rank' })).toBeTruthy());
+    expect(screen.getByRole('button', { name: 'Watch' })).toBeTruthy();
+    expect(screen.queryAllByRole('button', { name: 'Retry' })).toHaveLength(0);
+  });
+
+  it.each([
+    ['books', { isbn: '123', title: 'Book' }, 'Retry Read'],
+    ['games', { igdb: 1, title: 'Game' }, 'Retry Play'],
+    ['tv', { tvmaze: 1, title: 'Show' }, 'Retry Watch'],
+  ] as const)('uses the %s shelf verb after a list failure', async (domain, payload, retryLabel) => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false });
+    render(
+      <MultiAddMode>
+        <AddFromSearchButton domain={domain} payload={payload} />
+      </MultiAddMode>,
+    );
+
+    const listLabel = domain === 'books' ? 'Read' : domain === 'games' ? 'Play' : 'Watch';
+    fireEvent.click(screen.getByRole('button', { name: listLabel }));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: retryLabel })).toBeTruthy());
+    expect(screen.getByRole('button', { name: 'Rank' })).toBeTruthy();
+  });
 });

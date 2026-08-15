@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { API_BASE_URL } from '@/lib/apiBase';
+import { contentSecurityPolicy } from '@/lib/contentSecurityPolicy';
 import {
   REFRESH_COOKIE,
   SESSION_COOKIE,
@@ -23,12 +24,17 @@ import {
  */
 export async function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
-  const isDev = process.env.NODE_ENV === 'development';
-  // strict-dynamic propagates the nonce trust to any scripts dynamically added by nonced scripts.
-  const cspHeader = `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''} https://accounts.google.com;`;
+  const cspHeader = contentSecurityPolicy({
+    nonce,
+    development: process.env.NODE_ENV === 'development',
+  });
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set(
+    'x-druthers-path',
+    `${request.nextUrl.pathname}${request.nextUrl.search}`,
+  );
   requestHeaders.set('Content-Security-Policy', cspHeader);
 
   const reqInit = { request: { headers: requestHeaders } };

@@ -22,4 +22,20 @@ describe('saveShelfPreferences', () => {
       }),
     });
   });
+
+  it('rejects a failed save instead of announcing unsaved preferences', async () => {
+    const listener = vi.fn();
+    window.addEventListener('druthers:shelf-preferences', listener);
+    vi.spyOn(global, 'fetch').mockResolvedValue(new Response('{}', { status: 500 }));
+
+    await expect(
+      saveShelfPreferences({
+        order: ['movies', 'tv', 'games', 'books'],
+        enabled: ['movies', 'books'],
+      }),
+    ).rejects.toThrow('Could not save shelf preferences');
+
+    expect(listener).not.toHaveBeenCalled();
+    window.removeEventListener('druthers:shelf-preferences', listener);
+  });
 });

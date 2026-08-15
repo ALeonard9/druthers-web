@@ -63,4 +63,21 @@ describe('ShelfManager', () => {
       enabled_shelves: ['movies', 'tv', 'games', 'books'],
     });
   });
+
+  it('does not leave settings when enabling a shelf fails to save', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({
+          shelf_order: ['movies', 'tv', 'games', 'books'],
+          enabled_shelves: ['movies', 'tv', 'games'],
+        })),
+      )
+      .mockResolvedValueOnce(new Response('{}', { status: 500 }));
+    render(<ShelfManager />);
+
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Turn Books on' }));
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    expect(navigation.push).not.toHaveBeenCalled();
+  });
 });

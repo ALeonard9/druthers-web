@@ -1,9 +1,11 @@
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { getSessionUser } from '@/lib/session';
 import { apiFetch, ApiError } from '@/lib/api';
 import { normalizeShelfPreferences, isShelfEnabled } from '@/lib/shelfPreferences';
 import type { Preferences } from '@/lib/types';
 import type { ShelfId } from '@/lib/duelShelves';
+import { safeShelfDestination } from '@/lib/shelfDestination';
 
 /**
  * Ensures the logged-in user has the specified shelf enabled.
@@ -21,7 +23,13 @@ export async function requireShelf(shelf: ShelfId) {
     });
 
     if (!isShelfEnabled(normalized, shelf)) {
-      redirect('/settings#shelves');
+      const requestHeaders = await headers();
+      const destination = safeShelfDestination(
+        requestHeaders.get('x-druthers-path') ?? undefined,
+        shelf,
+      );
+      const params = new URLSearchParams({ shelf, next: destination });
+      redirect(`/settings/shelves/enable?${params}`);
     }
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {

@@ -107,7 +107,7 @@ export default async function MoviesRankingListPage({
               'No ranked movies match the filter.'
             ) : (
               <>
-                Nothing ranked yet —{' '}
+                Nothing ranked yet -{' '}
                 <Link href="/movies/search" className="inline-flex items-center gap-1 text-brass">
                   <DomainIcon domain="movies" className="h-4 w-4" />
                   add a movie

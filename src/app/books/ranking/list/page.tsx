@@ -99,7 +99,7 @@ export default async function BooksRankingListPage({
               'No ranked books match the filter.'
             ) : (
               <>
-                Nothing ranked yet —{' '}
+                Nothing ranked yet -{' '}
                 <Link href="/books/search" className="inline-flex items-center gap-1 text-brass">
                   <DomainIcon domain="books" className="h-4 w-4" />
                   add a book

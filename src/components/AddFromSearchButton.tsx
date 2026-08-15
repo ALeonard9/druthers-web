@@ -80,7 +80,7 @@ export function AddFromSearchButton({
         // Straight to the duel when it's going on the rankings - the API
         // usually adds it unplaced, so the position still has to be decided.
         // Exception: the first title into an empty shelf auto-places at #1
-        // (api#289), so there's nothing left to decide — go to the board.
+        // (api#289), so there's nothing left to decide - go to the board.
         if (list === 'rankings' && !multiAddMode) {
           const tracker = await res.json().catch(() => null);
           if (isAlreadyPlaced(tracker)) {

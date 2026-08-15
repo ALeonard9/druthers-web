@@ -96,7 +96,7 @@ export default async function TVPage({
               'No ranked shows match the filter.'
             ) : (
               <>
-                Nothing ranked yet —{' '}
+                Nothing ranked yet -{' '}
                 <Link href="/tv/search" className="inline-flex items-center gap-1 text-brass">
                   <DomainIcon domain="tv" className="h-4 w-4" />
                   add a show

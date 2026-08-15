@@ -80,6 +80,6 @@ describe('DomainCatalogSearch on-watchlist indicator', () => {
 
     expect(screen.getAllByText(/On Watchlist/)).toHaveLength(1);
     expect(screen.queryByRole('button', { name: /Watch List/ })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Rank' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Rank' }).className).toContain('w-full');
   });
 });

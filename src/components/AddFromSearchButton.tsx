@@ -109,13 +109,13 @@ export function AddFromSearchButton({
   }
   if (onWatchlist) {
     return (
-      <>
+      <div className="flex w-full flex-col gap-1">
         <TrackedBadge onRankings={false} rank={null} domain={domain} />
         {rankable ? (
           <button
             onClick={() => add('rankings')}
             disabled={pending || !addable}
-            className="inline-flex flex-1 items-center justify-center gap-1 rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
+            className="inline-flex w-full items-center justify-center gap-1 rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
           >
             <SearchActionIcon kind="rank" />
             Rank
@@ -123,7 +123,7 @@ export function AddFromSearchButton({
         ) : (
           <NotRankableMessage />
         )}
-      </>
+      </div>
     );
   }
 

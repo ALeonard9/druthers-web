@@ -1,6 +1,6 @@
 /** @vitest-environment happy-dom */
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { cleanup, render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { afterEach, describe, it, expect, vi, beforeEach } from 'vitest';
 import { RankingDuel } from './RankingDuel';
 import { RankingDuelPage } from './RankingDuelPage';
 import { SHELVES, duelLists, type DuelEntry } from '@/lib/duelShelves';
@@ -50,8 +50,15 @@ const mockOpponents: DuelEntry[] = [
   { id: 'opp-2', title: 'Opponent Two', subtitle: '2020', imageUrl: 'https://example.com/2.jpg', emoji: '🎞️', rank: 2 },
 ];
 
+afterEach(cleanup);
+
 describe('RankingDuel Component (web#136)', () => {
-  it('renders FirstOneIn empty state when no opponents exist and handles placement', () => {
+  beforeEach(() => {
+    refresh.mockClear();
+    vi.mocked(global.fetch).mockClear();
+  });
+
+  it('renders FirstOneIn empty state when no opponents exist and refreshes its standalone page after placement', async () => {
     render(
       <RankingDuel
         shelf={mockShelf}
@@ -65,7 +72,35 @@ describe('RankingDuel Component (web#136)', () => {
 
     const placeBtn = screen.getByRole('button', { name: 'Make it #1' });
     fireEvent.click(placeBtn);
-    expect(global.fetch).toHaveBeenCalled();
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it('does not refresh a parent-managed flow after placement', async () => {
+    const onQueueEmpty = vi.fn();
+    render(
+      <RankingDuel
+        shelf={mockShelf}
+        queue={[mockEntry]}
+        ranked={mockOpponents.slice(0, 1)}
+        onQueueEmpty={onQueueEmpty}
+      />,
+    );
+
+    const candidate = screen
+      .getAllByRole('button')
+      .find((button) =>
+        !button.getAttribute('aria-label') && button.textContent?.includes('Test Movie Title'),
+      );
+    fireEvent.click(candidate!);
+
+    await screen.findByRole('button', { name: 'Continue adding Movies' });
+    expect(refresh).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue adding Movies' }));
+    expect(onQueueEmpty).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'item-1', rank: 1 }),
+      expect.objectContaining({ id: 'opp-1', rank: 2 }),
+    ]);
   });
 
   it('renders duel comparison pair and responds to skip action', () => {

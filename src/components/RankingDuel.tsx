@@ -216,15 +216,18 @@ export function RankingDuel({
         setQueue((prev) => prev.filter((e) => e.id !== entry.id));
         setAnswers(null);
         playPop();
-        // Keep the board (and the counts on it) honest behind this page.
-        router.refresh();
+        // Standalone duel pages refresh their server-owned list and counts.
+        // A parent with onQueueEmpty owns that state itself. Refreshing there
+        // can make the server route redirect before the parent resumes its
+        // search flow, as onboarding did after placing its second title.
+        if (!onQueueEmpty) router.refresh();
       } catch {
         setError(`Couldn't save that placement. Try again.`);
       } finally {
         setCommitting(false);
       }
     },
-    [router, shelf.id],
+    [onQueueEmpty, router, shelf.id],
   );
 
   const answer = useCallback(

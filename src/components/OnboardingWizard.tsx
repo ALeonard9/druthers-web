@@ -15,6 +15,14 @@ import {
 } from '@/lib/shelfPreferences';
 import { saveShelfPreferences } from '@/lib/shelfPreferencesClient';
 import { GoodreadsImport } from '@/components/GoodreadsImport';
+import { CatalogSearchForm } from '@/components/CatalogSearchForm';
+import {
+  CatalogSearchResults,
+  NotRankableMessage,
+  normalizeCatalogResult,
+  type CatalogSearchResult,
+} from '@/components/CatalogSearchResults';
+import { TrackedBadge } from '@/components/TrackedBadge';
 
 type Step = 'handle' | 'shelves' | 'ranking';
 type DomainKey = keyof typeof SHELVES;
@@ -222,8 +230,10 @@ function DomainRankingStep({
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<GlobalSearch | null>(null);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [addedEntries, setAddedEntries] = useState<Map<string, string>>(() => new Map());
 
   // Load existing items (e.g. from prior failed attempts or MCP)
   useEffect(() => {
@@ -256,52 +266,46 @@ function DomainRankingStep({
     return () => { active = false; };
   }, [domainKey]);
 
-  useEffect(() => {
-    if (!search.trim()) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setResults(null);
-      return;
-    }
-    const timer = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(search)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setResults(data);
-        }
-      } catch {} finally {
-        setSearching(false);
+  async function runSearch(query: string) {
+    if (!query.trim()) return;
+    setSearching(true);
+    setSearchError(null);
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setSearchError(data.error ?? 'Search failed');
+        return;
       }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [search]);
+      setResults(data);
+      const domainResults = domainKey === 'movies' ? data.movies :
+                            domainKey === 'tv' ? data.tv_shows :
+                            domainKey === 'books' ? data.books : data.games;
+      if (domainResults.length === 0) setSearchError('No results.');
+    } catch {
+      setSearchError('Search failed');
+    } finally {
+      setSearching(false);
+    }
+  }
 
   const totalPlaced = ranked.length;
   const isDone = totalPlaced >= 5;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function addAndQueue(item: any) {
+  async function addAndQueue(item: CatalogSearchResult, resultId: string) {
     if (addingId) return;
 
     // Play sound immediately for quick reaction
     playPop();
 
-    const id = item.tmdb || item.tvmaze || item.isbn || item.igdb;
-    setAddingId(id);
+    const normalized = normalizeCatalogResult(domainKey, item);
+    setAddingId(resultId);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let payload: any = {};
-      if (domainKey === 'movies') payload = { tmdb: item.tmdb, title: item.title, poster_url: item.poster_url };
-      else if (domainKey === 'tv') payload = { tvmaze: item.tvmaze, imdb: item.imdb, title: item.title, poster_url: item.poster_url };
-      else if (domainKey === 'books') payload = { isbn: item.isbn, title: item.title, poster_url: item.poster_url };
-      else payload = { igdb: item.igdb, title: item.title, poster_url: item.poster_url };
-
       const res = await fetch(`/api/${domainKey}/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...payload, list: 'rankings' })
+        body: JSON.stringify({ ...normalized.payload, list: 'rankings' })
       });
       if (!res.ok) return;
 
@@ -317,8 +321,7 @@ function DomainRankingStep({
       } else {
         setQueue((prev) => [...prev, entry]);
       }
-      setSearch('');
-      setResults(null);
+      setAddedEntries((current) => new Map(current).set(resultId, entry.id));
     } catch {
     } finally {
       setAddingId(null);
@@ -345,9 +348,18 @@ function DomainRankingStep({
           shelf={shelf}
           ranked={ranked}
           queue={queue}
-          onQueueEmpty={(newRanked) => {
+          onQueueEmpty={({ ranked: newRanked, skipped }) => {
             setRanked(newRanked);
             setQueue([]);
+            const trackedIds = new Set(
+              [...newRanked, ...skipped].map((entry) => entry.id),
+            );
+            setAddedEntries(
+              (current) =>
+                new Map(
+                  [...current].filter(([, entryId]) => trackedIds.has(entryId)),
+                ),
+            );
           }}
         />
         {/* We need to clear the local queue once RankingDuel commits it, but RankingDuel manages its own local state.
@@ -392,46 +404,39 @@ function DomainRankingStep({
         </div>
       </div>
 
-      <div className="relative">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={`Search for ${shelf.label.toLowerCase()}…`}
-          className="w-full rounded-lg border border-neutral-700 bg-panel px-4 py-3 text-sm outline-none focus:border-brass"
-        />
-        {searching && <span className="absolute right-4 top-3.5 text-xs text-neutral-500">Searching…</span>}
-      </div>
+      <CatalogSearchForm
+        query={search}
+        onQueryChange={setSearch}
+        onSearch={(query) => void runSearch(query)}
+        placeholder={`Search for ${shelf.label.toLowerCase()}…`}
+        loading={searching}
+      />
+
+      {searchError && <p className="text-sm text-amber-400">{searchError}</p>}
 
       {searchItems && searchItems.length > 0 && (
-        <div className="flex max-h-[400px] flex-col gap-2 overflow-y-auto rounded-lg border border-line bg-panel p-2">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {searchItems.slice(0, 8).map((item: any, i) => {
-            const isRanked = item.on_rankings;
+        <CatalogSearchResults
+          domain={domainKey}
+          results={searchItems}
+          limit={8}
+          actionFor={(result, item) => {
+            const isRanked = result.onRankings || addedEntries.has(result.key);
+            if (isRanked) {
+              return <TrackedBadge onRankings rank={result.rank} />;
+            }
+            if (!result.rankable) return <NotRankableMessage />;
             return (
-              <div key={i} className="flex items-center gap-3 rounded p-2 hover:bg-night">
-                {item.poster_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.poster_url} alt={item.title} className="h-14 w-10 rounded object-cover" />
-                ) : (
-                  <div className="h-14 w-10 rounded bg-line" />
-                )}
-                <div className="flex-1 truncate">
-                  <p className="truncate text-sm font-medium text-neutral-200">{item.title}</p>
-                  <p className="truncate text-xs text-neutral-500">{item.year}</p>
-                </div>
-                <button
-                  disabled={isRanked || addingId === (item.tmdb || item.tvmaze || item.isbn || item.igdb)}
-                  onClick={() => addAndQueue(item)}
-                  className={`shrink-0 rounded px-3 py-1.5 text-xs font-medium ${
-                    isRanked ? 'bg-line text-neutral-500' : 'bg-brass text-ink hover:bg-brass-bright'
-                  } disabled:opacity-50 min-w-[65px]`}
-                >
-                  {isRanked ? 'Added' : addingId === (item.tmdb || item.tvmaze || item.isbn || item.igdb) ? 'Adding…' : 'Add'}
-                </button>
-              </div>
+              <button
+                disabled={!result.addable || addingId === result.key}
+                onClick={() => void addAndQueue(item, result.key)}
+                aria-label={`Add ${result.title} to Ranked List`}
+                className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
+              >
+                {addingId === result.key ? 'Adding…' : '+ Ranked List'}
+              </button>
             );
-          })}
-        </div>
+          }}
+        />
       )}
 
       {!requireFive && (

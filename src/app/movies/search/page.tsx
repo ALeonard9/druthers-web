@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
-import { MovieSearch } from '@/components/MovieSearch';
+import { DomainCatalogSearch } from '@/components/DomainCatalogSearch';
 import { MultiAddMode } from '@/components/MultiAddMode';
 
 export default async function MovieSearchPage({
@@ -28,7 +28,7 @@ export default async function MovieSearchPage({
         </p>
       </div>
       <MultiAddMode>
-        <MovieSearch />
+        <DomainCatalogSearch domain="movies" />
       </MultiAddMode>
     </div>
   );

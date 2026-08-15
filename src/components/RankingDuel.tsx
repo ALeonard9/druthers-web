@@ -52,6 +52,11 @@ interface Placement {
   imageUrl?: string | null;
 }
 
+export interface QueueEmptyResult {
+  ranked: DuelEntry[];
+  skipped: DuelEntry[];
+}
+
 /**
  * The tallest the contenders should ever get, whatever the screen. Not a
  * guess about the viewport — a design ceiling, so a large monitor gets a
@@ -149,12 +154,13 @@ export function RankingDuel({
   rerankId?: string;
   /** Its rank just before that — the candidate's own `rank` is already null. */
   priorRank?: number;
-  /** Callback fired when the queue is emptied, useful for parent components that manage their own state. */
-  onQueueEmpty?: (newRanked: DuelEntry[]) => void;
+  /** Callback fired when a parent-managed queue empties. Removed entries are in neither collection. */
+  onQueueEmpty?: (result: QueueEmptyResult) => void;
 }) {
   const router = useRouter();
   const [ranked, setRanked] = useState(initialRanked);
   const [queue, setQueue] = useState(initialQueue);
+  const [skipped, setSkipped] = useState<DuelEntry[]>([]);
   const [answers, setAnswers] = useState<PairwiseSession<DuelEntry> | null>(
     null,
   );
@@ -216,15 +222,18 @@ export function RankingDuel({
         setQueue((prev) => prev.filter((e) => e.id !== entry.id));
         setAnswers(null);
         playPop();
-        // Keep the board (and the counts on it) honest behind this page.
-        router.refresh();
+        // Standalone duel pages refresh their server-owned list and counts.
+        // A parent with onQueueEmpty owns that state itself. Refreshing there
+        // can make the server route redirect before the parent resumes its
+        // search flow, as onboarding did after placing its second title.
+        if (!onQueueEmpty) router.refresh();
       } catch {
         setError(`Couldn't save that placement. Try again.`);
       } finally {
         setCommitting(false);
       }
     },
-    [router, shelf.id],
+    [onQueueEmpty, router, shelf.id],
   );
 
   const answer = useCallback(
@@ -251,6 +260,7 @@ export function RankingDuel({
 
   function skip() {
     if (!candidate) return;
+    setSkipped((prev) => [...prev, candidate]);
     setQueue((prev) => prev.slice(1));
     setAnswers(null);
   }
@@ -269,7 +279,7 @@ export function RankingDuel({
       setQueue((prev) => prev.filter((queued) => queued.id !== entry.id));
       setAnswers(null);
       setConfirmingRemoveEntry(null);
-      router.refresh();
+      if (!onQueueEmpty) router.refresh();
     } catch {
       setError(`Couldn't remove that ${shelf.noun}. Try again.`);
     } finally {
@@ -308,7 +318,7 @@ export function RankingDuel({
           <p className="font-display text-2xl font-medium text-paper">
             Placed!
           </p>
-          <button onClick={() => onQueueEmpty(ranked)} className="rounded bg-brass px-6 py-3 text-sm font-medium text-ink hover:bg-brass-bright">
+          <button onClick={() => onQueueEmpty({ ranked, skipped })} className="rounded bg-brass px-6 py-3 text-sm font-medium text-ink hover:bg-brass-bright">
             Continue adding {shelf.label}
           </button>
         </div>

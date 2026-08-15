@@ -19,7 +19,11 @@ vi.mock('@/components/MultiAddMode', () => ({
   MultiAddMode: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-describe('global search page people results', () => {
+vi.mock('@/components/AddFromSearchButton', () => ({
+  AddFromSearchButton: () => null,
+}));
+
+describe('global search page', () => {
   beforeEach(() => {
     mocks.getSessionUser.mockResolvedValue({ user_id: 'viewer', email: 'viewer@example.com' });
     mocks.apiFetch.mockReset();
@@ -98,5 +102,118 @@ describe('global search page people results', () => {
     expect(mocks.apiFetch).not.toHaveBeenCalledWith('/v1/search/users?q=ada');
     expect(screen.queryByText('Ada Movie')).toBeNull();
     expect(screen.getByText(/Nothing found for “ada” in books/)).toBeTruthy();
+  });
+
+  it('links valid movie and TV IMDb IDs to canonical title pages in new tabs', async () => {
+    mocks.apiFetch.mockResolvedValue({
+      query: 'arrival',
+      corrected: null,
+      movies: [
+        {
+          tmdb: 329865,
+          imdb: 'tt2543164',
+          title: 'Arrival',
+          year: '2016',
+          release_date: '2016-11-11',
+          poster_url: null,
+          type: 'movie',
+          popularity: 50,
+          on_watchlist: false,
+          on_rankings: false,
+          rank: null,
+        },
+      ],
+      tv_shows: [
+        {
+          tvmaze: 61812,
+          imdb: 'tt20869502',
+          title: 'Arrival Point',
+          year: '2024',
+          status: 'Running',
+          network: 'Example',
+          poster_url: null,
+          on_watchlist: false,
+          on_rankings: false,
+          rank: null,
+        },
+      ],
+      games: [],
+      books: [],
+    });
+
+    render(
+      await SearchPage({ searchParams: Promise.resolve({ q: 'arrival', scope: 'all' }) }),
+    );
+
+    for (const [name, href] of [
+      ['Arrival', 'https://www.imdb.com/title/tt2543164/'],
+      ['Arrival Point', 'https://www.imdb.com/title/tt20869502/'],
+    ]) {
+      const link = screen.getByRole('link', { name });
+      expect(link.getAttribute('href')).toBe(href);
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    }
+  });
+
+  it('hides invalid movie IMDb links and falls TV results back to TVMaze', async () => {
+    mocks.apiFetch.mockResolvedValue({
+      query: 'broken',
+      corrected: null,
+      movies: [
+        {
+          tmdb: 1,
+          imdb: null,
+          title: 'Missing Movie ID',
+          year: null,
+          release_date: null,
+          poster_url: null,
+          type: null,
+          popularity: null,
+          on_watchlist: false,
+          on_rankings: false,
+          rank: null,
+        },
+        {
+          tmdb: 2,
+          imdb: 'not-an-imdb-id',
+          title: 'Malformed Movie ID',
+          year: null,
+          release_date: null,
+          poster_url: null,
+          type: null,
+          popularity: null,
+          on_watchlist: false,
+          on_rankings: false,
+          rank: null,
+        },
+      ],
+      tv_shows: [
+        {
+          tvmaze: 99,
+          imdb: 'ttbad',
+          title: 'TVMaze Fallback',
+          year: null,
+          status: null,
+          network: null,
+          poster_url: null,
+          on_watchlist: false,
+          on_rankings: false,
+          rank: null,
+        },
+      ],
+      games: [],
+      books: [],
+    });
+
+    render(
+      await SearchPage({ searchParams: Promise.resolve({ q: 'broken', scope: 'all' }) }),
+    );
+
+    expect(screen.queryByRole('link', { name: 'Missing Movie ID' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Malformed Movie ID' })).toBeNull();
+    const fallback = screen.getByRole('link', { name: 'TVMaze Fallback' });
+    expect(fallback.getAttribute('href')).toBe('https://www.tvmaze.com/shows/99');
+    expect(fallback.getAttribute('target')).toBe('_blank');
   });
 });

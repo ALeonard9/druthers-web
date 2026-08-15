@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
-import { GameSearch } from '@/components/GameSearch';
+import { DomainCatalogSearch } from '@/components/DomainCatalogSearch';
 import { MultiAddMode } from '@/components/MultiAddMode';
 
 export default async function GameSearchPage({
@@ -28,7 +28,7 @@ export default async function GameSearchPage({
         </p>
       </div>
       <MultiAddMode>
-        <GameSearch />
+        <DomainCatalogSearch domain="games" />
       </MultiAddMode>
     </div>
   );

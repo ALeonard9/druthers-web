@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
-import { BookSearch } from '@/components/BookSearch';
+import { DomainCatalogSearch } from '@/components/DomainCatalogSearch';
 import { MultiAddMode } from '@/components/MultiAddMode';
 
 export default async function BookSearchPage({
@@ -34,7 +34,7 @@ export default async function BookSearchPage({
         </p>
       </div>
       <MultiAddMode>
-        <BookSearch />
+        <DomainCatalogSearch domain="books" />
       </MultiAddMode>
     </div>
   );

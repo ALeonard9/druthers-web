@@ -31,3 +31,7 @@ export function normalizeShelfPreferences(value: unknown): ShelfPreferences {
 export function orderedEnabledShelves(preferences: ShelfPreferences): ShelfId[] {
   return preferences.order.filter((id) => preferences.enabled.includes(id));
 }
+
+export function isShelfEnabled(preferences: ShelfPreferences, shelf: ShelfId): boolean {
+  return preferences.enabled.includes(shelf);
+}

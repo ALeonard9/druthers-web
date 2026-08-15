@@ -97,13 +97,16 @@ describe('RankingDuel Component (web#136)', () => {
     await screen.findByRole('button', { name: 'Continue adding Movies' });
     expect(refresh).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Continue adding Movies' }));
-    expect(onQueueEmpty).toHaveBeenCalledWith([
-      expect.objectContaining({ id: 'item-1', rank: 1 }),
-      expect.objectContaining({ id: 'opp-1', rank: 2 }),
-    ]);
+    expect(onQueueEmpty).toHaveBeenCalledWith({
+      ranked: [
+        expect.objectContaining({ id: 'item-1', rank: 1 }),
+        expect.objectContaining({ id: 'opp-1', rank: 2 }),
+      ],
+      skipped: [],
+    });
   });
 
-  it('renders duel comparison pair and responds to skip action', () => {
+  it('renders a standalone duel and keeps its existing local skip behavior', async () => {
     render(
       <RankingDuel
         shelf={mockShelf}
@@ -132,7 +135,8 @@ describe('RankingDuel Component (web#136)', () => {
 
     const skipBtn = screen.getAllByRole('button', { name: 'Skip for now' })[0];
     fireEvent.click(skipBtn);
-    expect(skipBtn).toBeTruthy();
+    expect(await screen.findByText('Nothing waiting to be placed.')).toBeTruthy();
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it('removes the current item and refreshes its standalone page', async () => {
@@ -188,9 +192,33 @@ describe('RankingDuel Component (web#136)', () => {
     await screen.findByRole('button', { name: 'Continue adding Movies' });
     expect(refresh).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Continue adding Movies' }));
-    expect(onQueueEmpty).toHaveBeenCalledWith([
-      expect.objectContaining({ id: 'opp-1', rank: 1 }),
-    ]);
+    expect(onQueueEmpty).toHaveBeenCalledWith({
+      ranked: [expect.objectContaining({ id: 'opp-1', rank: 1 })],
+      skipped: [],
+    });
+  });
+
+  it('returns skipped entries separately to its parent without refreshing', async () => {
+    const onQueueEmpty = vi.fn();
+    render(
+      <RankingDuel
+        shelf={mockShelf}
+        queue={[mockEntry]}
+        ranked={mockOpponents.slice(0, 1)}
+        onQueueEmpty={onQueueEmpty}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Skip for now' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Continue adding Movies' }),
+    );
+
+    expect(refresh).not.toHaveBeenCalled();
+    expect(onQueueEmpty).toHaveBeenCalledWith({
+      ranked: [expect.objectContaining({ id: 'opp-1', rank: 1 })],
+      skipped: [expect.objectContaining({ id: 'item-1', rank: null })],
+    });
   });
 
   it('presents the board return as a prominent touch target', () => {

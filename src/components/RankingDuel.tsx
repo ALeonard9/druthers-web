@@ -52,6 +52,11 @@ interface Placement {
   imageUrl?: string | null;
 }
 
+export interface QueueEmptyResult {
+  ranked: DuelEntry[];
+  skipped: DuelEntry[];
+}
+
 /**
  * The tallest the contenders should ever get, whatever the screen. Not a
  * guess about the viewport — a design ceiling, so a large monitor gets a
@@ -149,12 +154,13 @@ export function RankingDuel({
   rerankId?: string;
   /** Its rank just before that — the candidate's own `rank` is already null. */
   priorRank?: number;
-  /** Callback fired when the queue is emptied, useful for parent components that manage their own state. */
-  onQueueEmpty?: (newRanked: DuelEntry[]) => void;
+  /** Callback fired when a parent-managed queue empties. Removed entries are in neither collection. */
+  onQueueEmpty?: (result: QueueEmptyResult) => void;
 }) {
   const router = useRouter();
   const [ranked, setRanked] = useState(initialRanked);
   const [queue, setQueue] = useState(initialQueue);
+  const [skipped, setSkipped] = useState<DuelEntry[]>([]);
   const [answers, setAnswers] = useState<PairwiseSession<DuelEntry> | null>(
     null,
   );
@@ -254,6 +260,7 @@ export function RankingDuel({
 
   function skip() {
     if (!candidate) return;
+    setSkipped((prev) => [...prev, candidate]);
     setQueue((prev) => prev.slice(1));
     setAnswers(null);
   }
@@ -311,7 +318,7 @@ export function RankingDuel({
           <p className="font-display text-2xl font-medium text-paper">
             Placed!
           </p>
-          <button onClick={() => onQueueEmpty(ranked)} className="rounded bg-brass px-6 py-3 text-sm font-medium text-ink hover:bg-brass-bright">
+          <button onClick={() => onQueueEmpty({ ranked, skipped })} className="rounded bg-brass px-6 py-3 text-sm font-medium text-ink hover:bg-brass-bright">
             Continue adding {shelf.label}
           </button>
         </div>

@@ -348,14 +348,16 @@ function DomainRankingStep({
           shelf={shelf}
           ranked={ranked}
           queue={queue}
-          onQueueEmpty={(newRanked) => {
+          onQueueEmpty={({ ranked: newRanked, skipped }) => {
             setRanked(newRanked);
             setQueue([]);
-            const rankedIds = new Set(newRanked.map((entry) => entry.id));
+            const trackedIds = new Set(
+              [...newRanked, ...skipped].map((entry) => entry.id),
+            );
             setAddedEntries(
               (current) =>
                 new Map(
-                  [...current].filter(([, entryId]) => rankedIds.has(entryId)),
+                  [...current].filter(([, entryId]) => trackedIds.has(entryId)),
                 ),
             );
           }}

@@ -23,11 +23,19 @@ vi.mock('@/components/RankingDuel', () => ({
     onQueueEmpty,
   }: {
     queue: Array<Record<string, unknown>>;
-    onQueueEmpty: (ranked: Array<Record<string, unknown>>) => void;
+    onQueueEmpty: (result: {
+      ranked: Array<Record<string, unknown>>;
+      skipped: Array<Record<string, unknown>>;
+    }) => void;
   }) => (
     <button
       type="button"
-      onClick={() => onQueueEmpty(queue.map((item, index) => ({ ...item, rank: index + 1 })))}
+      onClick={() =>
+        onQueueEmpty({
+          ranked: queue.map((item, index) => ({ ...item, rank: index + 1 })),
+          skipped: [],
+        })
+      }
     >
       Finish duel
     </button>

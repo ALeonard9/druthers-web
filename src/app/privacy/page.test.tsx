@@ -37,7 +37,7 @@ describe('Privacy Policy page', () => {
     expect(screen.getAllByText(/independently run personal project/).length).toBeGreaterThan(0);
   });
 
-  it('explicitly mentions the required data flows', () => {
+  it('explicitly mentions the required data flows and provider responsibilities', () => {
     render(<PrivacyPage />);
 
     // Check for Google OAuth
@@ -46,10 +46,15 @@ describe('Privacy Policy page', () => {
     // Check for Goodreads import
     expect(screen.getAllByText(/Goodreads/).length).toBeGreaterThan(0);
 
-    // Check for APIs
-    expect(screen.getAllByText(/TMDB/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Open Library/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/IGDB/).length).toBeGreaterThan(0);
+    // Check for APIs and their specific descriptions
+    expect(screen.getByText(/movie metadata and movie\/TV streaming availability/i)).toBeTruthy();
+    expect(screen.getByText(/TV show and episode metadata/i)).toBeTruthy();
+    expect(screen.getByText(/Primary source for book metadata/i)).toBeTruthy();
+    expect(screen.getByText(/Fallback for book editions Open Library cannot resolve/i)).toBeTruthy();
+    expect(screen.getByText(/video game metadata/i)).toBeTruthy();
+
+    // Verify personal account information is not shared
+    expect(screen.getByText(/we do not share your personal account information/i)).toBeTruthy();
 
     // Check for Neon hosting
     expect(screen.getAllByText(/Neon-hosted/).length).toBeGreaterThan(0);

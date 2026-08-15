@@ -1,12 +1,26 @@
 /** @vitest-environment happy-dom */
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { GlobalSearch } from '@/lib/types';
 import SearchPage from './page';
 
 const mocks = vi.hoisted(() => ({
   apiFetch: vi.fn(),
   getSessionUser: vi.fn(),
 }));
+
+const EMPTY_CATALOG_RESULTS: GlobalSearch = {
+  query: 'ada',
+  corrected: null,
+  movies: [],
+  tv_shows: [],
+  games: [],
+  books: [],
+};
+
+let enabledShelves: string[];
+let catalogResults: GlobalSearch;
+let peopleResults: { id: string; display_name: string; handle: string | null }[];
 
 vi.mock('@/lib/api', () => ({
   ApiError: class ApiError extends Error {},
@@ -27,18 +41,33 @@ describe('global search page', () => {
   beforeEach(() => {
     mocks.getSessionUser.mockResolvedValue({ user_id: 'viewer', email: 'viewer@example.com' });
     mocks.apiFetch.mockReset();
+    enabledShelves = ['movies', 'tv', 'games', 'books'];
+    catalogResults = EMPTY_CATALOG_RESULTS;
+    peopleResults = [];
+    mocks.apiFetch.mockImplementation((path: string) => {
+      if (path === '/v1/users/me/preferences') {
+        return Promise.resolve({ shelf_order: ['movies', 'tv', 'games', 'books'], enabled_shelves: enabledShelves });
+      }
+      if (path.startsWith('/v1/movies/search')) return Promise.resolve(catalogResults.movies);
+      if (path.startsWith('/v1/tv-shows/search')) return Promise.resolve(catalogResults.tv_shows);
+      if (path.startsWith('/v1/games/search')) return Promise.resolve(catalogResults.games);
+      if (path.startsWith('/v1/books/search')) return Promise.resolve(catalogResults.books);
+      if (path.startsWith('/v1/search/users')) {
+        return Promise.resolve({ query: 'ada', corrected: null, users: peopleResults });
+      }
+      throw new Error(`Unexpected API path: ${path}`);
+    });
   });
 
   afterEach(cleanup);
 
   it('uses only the protected people endpoint for the Users scope and shows its empty state', async () => {
-    mocks.apiFetch.mockResolvedValue({ query: 'private', corrected: null, users: [] });
-
     render(
       await SearchPage({ searchParams: Promise.resolve({ q: 'private', scope: 'users' }) }),
     );
 
-    expect(mocks.apiFetch).toHaveBeenCalledTimes(1);
+    expect(mocks.apiFetch).toHaveBeenCalledTimes(2);
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/users/me/preferences');
     expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/search/users?q=private');
     expect(screen.getByRole('heading', { name: /People 0/ })).toBeTruthy();
     expect(screen.getByText('No people found.')).toBeTruthy();
@@ -46,34 +75,22 @@ describe('global search page', () => {
   });
 
   it('combines catalog and people results for All, linking people to their profiles', async () => {
-    mocks.apiFetch.mockImplementation((path: string) => {
-      if (path === '/v1/search/users?q=ada') {
-        return Promise.resolve({
-          query: 'ada',
-          corrected: null,
-          users: [{ id: 'user-1', display_name: 'Ada Lovelace', handle: 'ada' }],
-        });
-      }
-      return Promise.resolve({
-        query: 'ada',
-        corrected: null,
-        movies: [],
-        tv_shows: [],
-        games: [],
-        books: [],
-      });
-    });
+    peopleResults = [{ id: 'user-1', display_name: 'Ada Lovelace', handle: 'ada' }];
 
     render(await SearchPage({ searchParams: Promise.resolve({ q: 'ada', scope: 'all' }) }));
 
-    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/search?q=ada');
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/users/me/preferences');
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/movies/search?q=ada');
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/tv-shows/search?q=ada');
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/games/search?q=ada');
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/books/search?q=ada');
     expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/search/users?q=ada');
     expect(screen.getByRole('link', { name: 'Ada Lovelace' }).getAttribute('href')).toBe('/u/ada');
     expect(screen.queryByText('No people found.')).toBeNull();
   });
 
   it('keeps other catalog domains out of a scoped search', async () => {
-    mocks.apiFetch.mockResolvedValue({
+    catalogResults = {
       query: 'ada',
       corrected: null,
       movies: [
@@ -94,18 +111,53 @@ describe('global search page', () => {
       tv_shows: [],
       games: [],
       books: [],
-    });
+    };
 
     render(await SearchPage({ searchParams: Promise.resolve({ q: 'ada', scope: 'books' }) }));
 
-    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/search?q=ada');
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/users/me/preferences');
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/books/search?q=ada');
+    expect(mocks.apiFetch).not.toHaveBeenCalledWith('/v1/movies/search?q=ada');
+    expect(mocks.apiFetch).not.toHaveBeenCalledWith('/v1/tv-shows/search?q=ada');
+    expect(mocks.apiFetch).not.toHaveBeenCalledWith('/v1/games/search?q=ada');
     expect(mocks.apiFetch).not.toHaveBeenCalledWith('/v1/search/users?q=ada');
     expect(screen.queryByText('Ada Movie')).toBeNull();
     expect(screen.getByText(/Nothing found for “ada” in books/)).toBeTruthy();
   });
 
+  it('queries and renders only enabled shelves', async () => {
+    enabledShelves = ['books'];
+    catalogResults = {
+      ...EMPTY_CATALOG_RESULTS,
+      movies: [
+        {
+          tmdb: 1,
+          imdb: null,
+          title: 'Disabled Movie',
+          year: null,
+          release_date: null,
+          poster_url: null,
+          type: null,
+          popularity: null,
+          on_watchlist: false,
+          on_rankings: false,
+          rank: null,
+        },
+      ],
+    };
+
+    render(await SearchPage({ searchParams: Promise.resolve({ q: 'ada', scope: 'all' }) }));
+
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/books/search?q=ada');
+    expect(mocks.apiFetch).not.toHaveBeenCalledWith('/v1/movies/search?q=ada');
+    expect(mocks.apiFetch).not.toHaveBeenCalledWith('/v1/tv-shows/search?q=ada');
+    expect(mocks.apiFetch).not.toHaveBeenCalledWith('/v1/games/search?q=ada');
+    expect(screen.queryByText('Disabled Movie')).toBeNull();
+    expect(screen.queryByRole('heading', { name: /Movies|TV Shows|Games|Books/ })).toBeNull();
+  });
+
   it('links valid movie and TV IMDb IDs to canonical title pages in new tabs', async () => {
-    mocks.apiFetch.mockResolvedValue({
+    catalogResults = {
       query: 'arrival',
       corrected: null,
       movies: [
@@ -139,7 +191,7 @@ describe('global search page', () => {
       ],
       games: [],
       books: [],
-    });
+    };
 
     render(
       await SearchPage({ searchParams: Promise.resolve({ q: 'arrival', scope: 'all' }) }),
@@ -157,7 +209,7 @@ describe('global search page', () => {
   });
 
   it('hides invalid movie IMDb links and falls TV results back to TVMaze', async () => {
-    mocks.apiFetch.mockResolvedValue({
+    catalogResults = {
       query: 'broken',
       corrected: null,
       movies: [
@@ -204,7 +256,7 @@ describe('global search page', () => {
       ],
       games: [],
       books: [],
-    });
+    };
 
     render(
       await SearchPage({ searchParams: Promise.resolve({ q: 'broken', scope: 'all' }) }),

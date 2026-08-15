@@ -6,6 +6,7 @@ import {
   SEARCH_SCOPE_LABELS,
   type SearchScope,
 } from '@/lib/searchScope';
+import type { ShelfId } from '@/lib/duelShelves';
 import { VoiceSearch } from './VoiceSearch';
 
 type CatalogSearchFormProps = {
@@ -15,6 +16,7 @@ type CatalogSearchFormProps = {
   compact?: boolean;
   scope?: SearchScope;
   showScope?: boolean;
+  activeShelves?: ShelfId[];
   onQueryChange?: (query: string) => void;
   onSearch?: (query: string) => void;
 };
@@ -26,12 +28,16 @@ export function CatalogSearchForm({
   compact = false,
   scope = 'all',
   showScope = false,
+  activeShelves,
   onQueryChange,
   onSearch,
 }: CatalogSearchFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const controlled = Boolean(onQueryChange);
+  const scopeOptions: SearchScope[] = activeShelves
+    ? ['all', ...activeShelves, 'users']
+    : [...SEARCH_SCOPES];
 
   function submit(event: FormEvent<HTMLFormElement>) {
     if (!onSearch) return;
@@ -68,7 +74,7 @@ export function CatalogSearchForm({
             defaultValue={scope}
             className="shrink-0 rounded-l border border-r-0 border-neutral-700 bg-panel px-2 py-1.5 text-sm text-neutral-200 outline-none focus:border-brass"
           >
-            {SEARCH_SCOPES.map((option) => (
+            {scopeOptions.map((option) => (
               <option key={option} value={option}>
                 {SEARCH_SCOPE_LABELS[option]}
               </option>

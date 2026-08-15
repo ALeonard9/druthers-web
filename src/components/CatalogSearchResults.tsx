@@ -182,7 +182,7 @@ export function CatalogSearchResults({
                   {result.releaseLabel}
                 </span>
               )}
-              <div className="mt-auto flex flex-col gap-1">{actionFor(result, source)}</div>
+              <div className="mt-auto flex flex-row gap-1 md:flex-col">{actionFor(result, source)}</div>
             </div>
           </li>
         );

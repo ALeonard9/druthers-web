@@ -4,7 +4,16 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
 import { bestScore, rankResults } from '@/lib/similarity';
 import { includesCatalogScope, includesPeopleScope, searchScope } from '@/lib/searchScope';
-import type { GlobalSearch, UserSearchResponse } from '@/lib/types';
+import { normalizeShelfPreferences, orderedEnabledShelves } from '@/lib/shelfPreferences';
+import type {
+  BookSearchResult,
+  GameSearchResult,
+  GlobalSearch,
+  MovieSearchResult,
+  Preferences,
+  TVShowSearchResult,
+  UserSearchResponse,
+} from '@/lib/types';
 import { AddFromSearchButton } from '@/components/AddFromSearchButton';
 import { MultiAddMode } from '@/components/MultiAddMode';
 import { SearchForm } from '@/components/SearchForm';
@@ -15,6 +24,47 @@ import {
 } from '@/components/CatalogSearchResults';
 
 export const dynamic = 'force-dynamic';
+
+const CATALOG_ENDPOINTS = {
+  movies: '/v1/movies/search',
+  tv: '/v1/tv-shows/search',
+  games: '/v1/games/search',
+  books: '/v1/books/search',
+} as const;
+
+async function searchActiveCatalogDomains(
+  query: string,
+  scope: ReturnType<typeof searchScope>,
+  activeDomains: ReturnType<typeof orderedEnabledShelves>,
+) {
+  const scopedDomains = activeDomains.filter((domain) => scope === 'all' || scope === domain);
+  const searchUrl = (domain: keyof typeof CATALOG_ENDPOINTS) =>
+    `${CATALOG_ENDPOINTS[domain]}?q=${encodeURIComponent(query)}`;
+
+  const [movies, tvShows, games, books] = await Promise.all([
+    scopedDomains.includes('movies')
+      ? apiFetch<MovieSearchResult[]>(searchUrl('movies'))
+      : Promise.resolve([]),
+    scopedDomains.includes('tv')
+      ? apiFetch<TVShowSearchResult[]>(searchUrl('tv'))
+      : Promise.resolve([]),
+    scopedDomains.includes('games')
+      ? apiFetch<GameSearchResult[]>(searchUrl('games'))
+      : Promise.resolve([]),
+    scopedDomains.includes('books')
+      ? apiFetch<BookSearchResult[]>(searchUrl('books'))
+      : Promise.resolve([]),
+  ]);
+
+  return {
+    query,
+    corrected: null,
+    movies,
+    tv_shows: tvShows,
+    games,
+    books,
+  } satisfies GlobalSearch;
+}
 
 function Section({
   title,
@@ -72,7 +122,14 @@ export default async function SearchPage({
   const user = await getSessionUser();
   if (!user) redirect('/login');
   const { q, scope: requestedScope } = await searchParams;
-  const scope = searchScope(requestedScope);
+  const preferences = await apiFetch<Preferences>('/v1/users/me/preferences');
+  const activeDomains = orderedEnabledShelves(
+    normalizeShelfPreferences({ order: preferences.shelf_order, enabled: preferences.enabled_shelves }),
+  );
+  const requested = searchScope(requestedScope);
+  const scope = requested === 'all' || requested === 'users' || activeDomains.includes(requested)
+    ? requested
+    : 'all';
 
   let results: GlobalSearch | null = null;
   let peopleResults: UserSearchResponse | null = null;
@@ -80,7 +137,7 @@ export default async function SearchPage({
     try {
       [results, peopleResults] = await Promise.all([
         includesCatalogScope(scope)
-          ? apiFetch<GlobalSearch>(`/v1/search?q=${encodeURIComponent(q)}`)
+          ? searchActiveCatalogDomains(q, scope, activeDomains)
           : Promise.resolve(null),
         includesPeopleScope(scope)
           ? apiFetch<UserSearchResponse>(`/v1/search/users?q=${encodeURIComponent(q)}`)
@@ -119,7 +176,7 @@ export default async function SearchPage({
         </p>
       </div>
 
-      <SearchForm query={q ?? ''} scope={scope} />
+      <SearchForm query={q ?? ''} scope={scope} activeShelves={activeDomains} />
 
       {results?.corrected && (
         <p className="text-sm text-neutral-400">

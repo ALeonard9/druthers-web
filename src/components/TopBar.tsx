@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { greetingAt } from '@/lib/viewerTime';
 import { getViewerTimeZone } from '@/lib/viewerTimeZone';
 import type { SessionUser } from '@/lib/types';
+import type { ShelfId } from '@/lib/duelShelves';
 import { LogoutButton } from './LogoutButton';
 import { EnvBadge } from './EnvBadge';
 import { UnreadBadge } from './UnreadBadge';
@@ -20,7 +21,7 @@ async function ViewerGreeting() {
   return <>{greeting}.</>;
 }
 
-export function TopBar({ user }: { user: SessionUser }) {
+export function TopBar({ user, activeShelves }: { user: SessionUser; activeShelves?: ShelfId[] }) {
   return (
     <header
       className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-night px-4 py-3 sm:flex-nowrap sm:gap-4 md:px-8"
@@ -52,7 +53,7 @@ export function TopBar({ user }: { user: SessionUser }) {
         <EnvBadge />
       </div>
       <div className="order-3 basis-full sm:order-none sm:mx-2 sm:flex-1 sm:basis-auto sm:max-w-lg">
-        <SearchForm compact />
+        <SearchForm compact activeShelves={activeShelves} />
       </div>
       <div className="flex items-center gap-3 text-sm">
           <Link

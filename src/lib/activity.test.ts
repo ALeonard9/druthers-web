@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { groupActivityByDay, describeActivity, categoryLabel, activityHref } from './activity';
+import { groupActivityByDay, describeActivity, categoryLabel, activityHref, profileHref } from './activity';
 import type { ActivityItem } from './types';
 
 function item(partial: Partial<ActivityItem> & { entity_id: string }): ActivityItem {
@@ -70,5 +70,19 @@ describe('activityHref', () => {
     expect(activityHref(item({ entity_id: 'm1', category: 'movie' }))).toBe('/movies/m1');
     expect(activityHref(item({ entity_id: 's1', category: 'tv_show' }))).toBe('/tv/s1');
     expect(activityHref(item({ entity_id: 's1', category: 'tv_episode' }))).toBe('/tv/s1');
+  });
+});
+
+describe('profileHref', () => {
+  it('links an actor to their claimed handle', () => {
+    expect(profileHref({ id: 'u1', handle: 'grace', display_name: null })).toBe('/u/grace');
+  });
+
+  it('falls back to the actor id when no handle is claimed', () => {
+    expect(profileHref({ id: 'u1', handle: null, display_name: null })).toBe('/u/u1');
+  });
+
+  it('returns null when neither handle nor id is linkable', () => {
+    expect(profileHref({ id: '', handle: null, display_name: null })).toBeNull();
   });
 });

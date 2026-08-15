@@ -15,6 +15,30 @@ const DOMAIN_PAGE = {
   books: '/books',
 } as const;
 
+function SearchActionIcon({ kind }: { kind: 'list' | 'rank' }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3.5 w-3.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {kind === 'list' ? (
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+      ) : (
+        <>
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <path d="m8 12 3 3 5-6" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 // One-click "add to my list" for a global-search result row. Adds to the
 // domain's watchlist via its existing add route. If the result is already
 // tracked (server-driven, web#31), shows a badge instead — ranked items get
@@ -91,9 +115,10 @@ export function AddFromSearchButton({
           <button
             onClick={() => add('rankings')}
             disabled={pending || !addable}
-            className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
+            className="inline-flex flex-1 items-center justify-center gap-1 rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
           >
-            → Add to Ranked List
+            <SearchActionIcon kind="rank" />
+            Rank
           </button>
         ) : (
           <NotRankableMessage />
@@ -102,25 +127,40 @@ export function AddFromSearchButton({
     );
   }
 
-  const watchlistLabel =
-    domain === 'books' ? '+ Read List' : domain === 'games' ? '+ Play List' : '+ Watchlist';
-
   return (
     <>
       <button
         onClick={() => add('watchlist')}
         disabled={pending || !addable}
-        className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-50"
+        className="inline-flex flex-1 items-center justify-center gap-1 rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-50"
       >
-        {pending ? 'Adding…' : state === 'error' ? 'Retry' : watchlistLabel}
+        {pending ? (
+          'Adding…'
+        ) : state === 'error' ? (
+          'Retry'
+        ) : (
+          <>
+            <SearchActionIcon kind="list" />
+            {domain === 'books' ? 'Read' : domain === 'games' ? 'Play' : 'Watch'}
+          </>
+        )}
       </button>
       {rankable ? (
         <button
           onClick={() => add('rankings')}
           disabled={pending || !addable}
-          className="rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
+          className="inline-flex flex-1 items-center justify-center gap-1 rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
         >
-          {pending ? 'Adding…' : state === 'error' ? 'Retry Ranked List' : '+ Ranked List'}
+          {pending ? (
+            'Adding…'
+          ) : state === 'error' ? (
+            'Retry'
+          ) : (
+            <>
+              <SearchActionIcon kind="rank" />
+              Rank
+            </>
+          )}
         </button>
       ) : (
         <NotRankableMessage />

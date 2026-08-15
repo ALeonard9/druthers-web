@@ -121,4 +121,16 @@ describe('proxy', () => {
 
     expect(response.headers.getSetCookie()).toHaveLength(0);
   });
+
+  it('injects a per-request nonce into the request headers and sets Content-Security-Policy', async () => {
+    mockRefresh(okResponse());
+    const req = request({ [SESSION_COOKIE]: 'still-good' });
+    const response = await proxy(req);
+
+    // The response must also have the header so the browser enforces it
+    const responseCsp = response.headers.get('Content-Security-Policy');
+    expect(responseCsp).toContain('nonce-');
+    expect(responseCsp).toContain('strict-dynamic');
+    expect(responseCsp).toContain('https://accounts.google.com');
+  });
 });

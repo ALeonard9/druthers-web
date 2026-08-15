@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
-import { activityHref, describeActivity } from '@/lib/activity';
+import { activityHref, describeActivity, profileHref } from '@/lib/activity';
 import type { SocialActivityItem, SocialActivityPage } from '@/lib/types';
 
 const PREVIEW_LIMIT = 3;
@@ -68,21 +68,33 @@ export async function HomeFriendsActivity() {
         </p>
       ) : (
         <ul aria-label="Latest friend activity">
-          {items.map((item, index) => (
-            <li
-              key={`${item.actor.id}-${item.category}-${item.entity_id}-${item.occurred_at}-${index}`}
-              className="flex items-baseline gap-2 border-b border-line/60 px-4 py-2.5 text-sm last:border-b-0"
-            >
-              <span className="shrink-0 font-medium text-paper">{actorName(item)}</span>
-              <span className="min-w-0 flex-1 truncate text-neutral-400">
-                {describeActivity(item)}
-                {' · '}
-                <Link href={activityHref(item)} className="text-neutral-200 hover:underline">
-                  {item.title}
-                </Link>
-              </span>
-            </li>
-          ))}
+          {items.map((item, index) => {
+            const actorLink = profileHref(item.actor);
+            return (
+              <li
+                key={`${item.actor.id}-${item.category}-${item.entity_id}-${item.occurred_at}-${index}`}
+                className="flex items-baseline gap-2 border-b border-line/60 px-4 py-2.5 text-sm last:border-b-0"
+              >
+                {actorLink ? (
+                  <Link
+                    href={actorLink}
+                    className="shrink-0 font-medium text-paper hover:underline"
+                  >
+                    {actorName(item)}
+                  </Link>
+                ) : (
+                  <span className="shrink-0 font-medium text-paper">{actorName(item)}</span>
+                )}
+                <span className="min-w-0 flex-1 truncate text-neutral-400">
+                  {describeActivity(item)}
+                  {' · '}
+                  <Link href={activityHref(item)} className="text-neutral-200 hover:underline">
+                    {item.title}
+                  </Link>
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </Frame>

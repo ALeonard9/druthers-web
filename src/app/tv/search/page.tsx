@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
-import { TVSearch } from '@/components/TVSearch';
+import { DomainCatalogSearch } from '@/components/DomainCatalogSearch';
 import { MultiAddMode } from '@/components/MultiAddMode';
 
 export default async function TVSearchPage({
@@ -28,7 +28,7 @@ export default async function TVSearchPage({
         </p>
       </div>
       <MultiAddMode>
-        <TVSearch />
+        <DomainCatalogSearch domain="tv" />
       </MultiAddMode>
     </div>
   );

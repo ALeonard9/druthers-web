@@ -1,10 +1,7 @@
 /** @vitest-environment happy-dom */
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BookSearch } from './BookSearch';
-import { GameSearch } from './GameSearch';
-import { MovieSearch } from './MovieSearch';
-import { TVSearch } from './TVSearch';
+import { DomainCatalogSearch } from './DomainCatalogSearch';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -30,10 +27,10 @@ class MockSpeechRecognition {
 }
 
 const cases = [
-  { name: 'movies', component: <MovieSearch />, endpoint: '/api/movies/search?q=The%20Matrix' },
-  { name: 'tv', component: <TVSearch />, endpoint: '/api/tv/search?q=The%20Matrix' },
-  { name: 'books', component: <BookSearch />, endpoint: '/api/books/search?q=The%20Matrix' },
-  { name: 'games', component: <GameSearch />, endpoint: '/api/games/search?q=The%20Matrix' },
+  { name: 'movies', component: <DomainCatalogSearch domain="movies" />, endpoint: '/api/movies/search?q=The%20Matrix' },
+  { name: 'tv', component: <DomainCatalogSearch domain="tv" />, endpoint: '/api/tv/search?q=The%20Matrix' },
+  { name: 'books', component: <DomainCatalogSearch domain="books" />, endpoint: '/api/books/search?q=The%20Matrix' },
+  { name: 'games', component: <DomainCatalogSearch domain="games" />, endpoint: '/api/games/search?q=The%20Matrix' },
 ] as const;
 
 describe('per-domain voice search (web#242)', () => {
@@ -58,6 +55,6 @@ describe('per-domain voice search (web#242)', () => {
     });
 
     await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(endpoint));
-    expect(screen.getByRole('textbox')).toHaveProperty('value', 'The Matrix');
+    expect(screen.getByRole('searchbox')).toHaveProperty('value', 'The Matrix');
   });
 });

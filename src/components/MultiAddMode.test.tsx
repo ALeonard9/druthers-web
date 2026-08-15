@@ -52,7 +52,7 @@ describe('MultiAddMode (web#168)', () => {
     );
 
     fireEvent.click(screen.getByRole('switch'));
-    fireEvent.click(screen.getByRole('button', { name: '+ Add' }));
+    fireEvent.click(screen.getByRole('button', { name: /^\+ (Watchlist|Read List|Play List)$/ }));
 
     await waitFor(() => expect(screen.getByText('✓ On your list')).toBeTruthy());
     expect(global.fetch).toHaveBeenCalledWith(`/api/${domain}/add`, expect.anything());
@@ -66,7 +66,7 @@ describe('MultiAddMode (web#168)', () => {
       </MultiAddMode>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '+ Add' }));
+    fireEvent.click(screen.getByRole('button', { name: '+ Watchlist' }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith('/movies'));
   });

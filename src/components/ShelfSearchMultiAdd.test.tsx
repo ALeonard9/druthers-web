@@ -1,11 +1,8 @@
 /** @vitest-environment happy-dom */
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BookSearch } from './BookSearch';
-import { GameSearch } from './GameSearch';
-import { MovieSearch } from './MovieSearch';
+import { DomainCatalogSearch } from './DomainCatalogSearch';
 import { MultiAddMode } from './MultiAddMode';
-import { TVSearch } from './TVSearch';
 
 const push = vi.fn();
 
@@ -16,7 +13,7 @@ vi.mock('next/navigation', () => ({
 const cases = [
   {
     name: 'movies',
-    component: <MovieSearch />,
+    component: <DomainCatalogSearch domain="movies" />,
     placeholder: 'e.g. The Matrix',
     addLabel: '+ Watchlist',
     result: {
@@ -35,7 +32,7 @@ const cases = [
   },
   {
     name: 'tv',
-    component: <TVSearch />,
+    component: <DomainCatalogSearch domain="tv" />,
     placeholder: 'e.g. Severance',
     addLabel: '+ Watchlist',
     result: {
@@ -53,7 +50,7 @@ const cases = [
   },
   {
     name: 'books',
-    component: <BookSearch />,
+    component: <DomainCatalogSearch domain="books" />,
     placeholder: 'e.g. Project Hail Mary',
     addLabel: '+ Read List',
     result: {
@@ -69,7 +66,7 @@ const cases = [
   },
   {
     name: 'games',
-    component: <GameSearch />,
+    component: <DomainCatalogSearch domain="games" />,
     placeholder: 'e.g. Breath of the Wild',
     addLabel: '+ Play List',
     result: {
@@ -106,7 +103,7 @@ describe('Shelf search multi-add mode (web#168)', () => {
     fireEvent.click(screen.getByRole('switch'));
     fireEvent.click(screen.getByRole('button', { name: addLabel }));
 
-    await waitFor(() => expect(screen.getByText('Added ✓')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('✓ On your list')).toBeTruthy());
     expect(push).not.toHaveBeenCalled();
   });
 });

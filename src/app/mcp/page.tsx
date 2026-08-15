@@ -7,8 +7,6 @@ export const metadata: Metadata = {
     'Connect your Druthers library to an MCP client with the Model Context Protocol.',
 };
 
-const MCP_GUIDE_URL =
-  'https://github.com/ALeonard9/druthers-api/blob/main/docs/mcp-usage.md';
 const MCP_REPO_URL = 'https://github.com/ALeonard9/druthers-mcp';
 
 import { McpClientSnippet } from '../../components/McpClientSnippet';

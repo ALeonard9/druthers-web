@@ -16,7 +16,7 @@ export default async function BookDetailPage({
   if (!user) redirect('/login');
   const { id } = await params;
 
-  // The tracker 404s when the book isn't on any list — that's not an error.
+  // The tracker 404s when the book isn't on any list - that's not an error.
   const trackerOrNull = apiFetch<UserBook>(`/v1/users/me/books/${id}`).catch(
     (err) => {
       if (err instanceof ApiError && err.status === 404) return null;

@@ -5,7 +5,7 @@ interface Ctx {
   params: Promise<{ id: string }>;
 }
 
-// Revoke (delete) a key — takes effect immediately.
+// Revoke (delete) a key - takes effect immediately.
 export async function DELETE(_request: Request, { params }: Ctx) {
   const { id } = await params;
   try {

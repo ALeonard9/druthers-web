@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 
-// One-way follow toggle for a public profile (#276/#121). Grants nothing —
-// it's just a bookmark with a courtesy notification — so there's no
+// One-way follow toggle for a public profile (#276/#121). Grants nothing -
+// it's just a bookmark with a courtesy notification - so there's no
 // confirmation step the way unfriending has one.
 export function FollowButton({
   handle,

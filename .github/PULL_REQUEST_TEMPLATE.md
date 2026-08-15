@@ -1,7 +1,7 @@
 ## Summary
 
 <!--
-Bullets. Lead with the cause, then the fix — not a changelog of files touched.
+Bullets. Lead with the cause, then the fix - not a changelog of files touched.
 Say what does NOT change if that's load-bearing.
 -->
 
@@ -15,7 +15,7 @@ and what you verified in the browser against the local dev stack. Screenshots
 for visual changes; a `.webp` recording for multi-step UX flows.
 -->
 
-- [ ] `npm test` — N passed, including <the new cases>
+- [ ] `npm test` - N passed, including <the new cases>
 - [ ] `npm run lint` clean
 - [ ] Verified in browser at `http://localhost:3000/<path>`: <what you clicked and what happened>
 

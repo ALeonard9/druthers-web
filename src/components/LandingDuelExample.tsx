@@ -14,7 +14,7 @@ function Poster({ url, className }: { url: string | null; className: string }) {
 }
 
 /**
- * A tappable but consequence-free "which would you rather" — real titles,
+ * A tappable but consequence-free "which would you rather" - real titles,
  * real poster art, no session or ranking write behind it. Landing-page
  * visitors are anonymous, so this can only gesture at the real duel flow
  * (`RankingDuel.tsx`), not run it.
@@ -59,7 +59,7 @@ export function LandingDuelExample({ a, b }: { a: DuelMovie; b: DuelMovie }) {
       </div>
       <p className="text-center text-sm text-neutral-400">
         {picked
-          ? "That's a duel — the pick gets slotted into your shelf, no stars involved."
+          ? "That's a duel - the pick gets slotted into your shelf, no stars involved."
           : 'Tap one. This is the whole ranking mechanic.'}
       </p>
     </div>

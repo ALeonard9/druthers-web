@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 // Environment warning strip pinned to the very top of every page. Keyed off
 // the same NEXT_PUBLIC_APP_ENV (dev | qa | prod) that EnvBadge and the
 // <title> already use, so the banner tracks whatever stage the bundle was
-// baked for. dev deliberately has no entry — local work stays clean unless a
+// baked for. dev deliberately has no entry - local work stays clean unless a
 // QA/prod build is explicitly baked in.
 interface EnvBannerConfig {
   /** Short all-caps chip label. */
@@ -14,20 +14,20 @@ interface EnvBannerConfig {
   message: string;
   /** When set, a mailto link is appended (the QA banner's contact point). */
   contactEmail?: string;
-  /** Tailwind colors — mirrors EnvBadge's per-env tints. */
+  /** Tailwind colors - mirrors EnvBadge's per-env tints. */
   style: string;
 }
 
 const BANNERS: Record<string, EnvBannerConfig> = {
   qa: {
     label: 'QA',
-    message: 'For testing purposes only — no entry permitted.',
+    message: 'For testing purposes only - no entry permitted.',
     contactEmail: 'admin@druthers.io',
     style: 'bg-sky-500 text-black',
   },
   prod: {
     label: 'Beta',
-    message: 'Druthers is in beta — expect frequent changes.',
+    message: 'Druthers is in beta - expect frequent changes.',
     style: 'bg-brass text-ink',
   },
 };
@@ -58,7 +58,7 @@ export function EnvBanner() {
   }
 
   // The standalone PWA window starts at the OS status bar / notch, so the
-  // strip pads below it via env(safe-area-inset-top) — same trick as AppShell's
+  // strip pads below it via env(safe-area-inset-top) - same trick as AppShell's
   // bottom inset. env() resolves to 0 in a browser tab, so the extra pt- class
   // just re-states py-2's 0.5rem there and nothing shifts.
   return (

@@ -2,7 +2,7 @@ import type { DeckItem } from './deck';
 
 /**
  * Fixed sets of widely recognisable movies for the signed-out landing page
- * (web#134) — deliberately not tied to any one account's real rankings
+ * (web#134) - deliberately not tied to any one account's real rankings
  * (Adam: "this should not be tied to a user"), so it can't end up showing a
  * stranger's obscure or mismatched titles. Poster paths are real TMDB
  * assets, hand-picked for recognisability rather than fetched live.

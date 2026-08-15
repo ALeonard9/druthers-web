@@ -1,12 +1,12 @@
-# Druthers — design system & product direction
+# Druthers - design system & product direction
 
-*(dru·thers: "if I had my druthers" — one's own preferences. A contraction of
+*(dru·thers: "if I had my druthers" - one's own preferences. A contraction of
 "would rathers," which is why the brand mark is an apostrophe: the mark of
 what's left out, because ranking is choosing.)*
 
 ## What this product is
 
-A window into someone's taste — everything they've watched, read, and played,
+A window into someone's taste - everything they've watched, read, and played,
 ranked. Not a private hoard: the long-term arc is social. The signature future
 artifact is the **shareable Top 5 card** (per category, Wordle-grid energy):
 a formatted, instantly recognizable post of someone's all-timers, signed
@@ -29,7 +29,7 @@ are unlisted.)
 - **Home** is a dashboard: Tonight (airing soon + catch-up count), Surprise
   me, per-category ranked/queued counts, recent activity.
 
-## Visual identity — "after-hours archive"
+## Visual identity - "after-hours archive"
 
 Dark room; the collection's artifacts (posters, covers) provide the color.
 Two materials carry the brand:
@@ -39,11 +39,11 @@ Two materials carry the brand:
 | `night` | `#101014` | page ground |
 | `panel` | `#17171d` | raised surfaces |
 | `line` | `#26262e` | hairlines |
-| `paper` | `#f2ead8` | ticket stock — headings, wordmark, highlights |
+| `paper` | `#f2ead8` | ticket stock - headings, wordmark, highlights |
 | `ink` | `#1c1917` | text on paper/brass |
 | `brass` | `#c9a86a` (+`-bright`, `-wash`) | actions, rank numerals, active states |
 
-Type: **Fraunces** (display — wordmark, titles, rank numerals, used with
+Type: **Fraunces** (display - wordmark, titles, rank numerals, used with
 restraint) + **Instrument Sans** (body) + system mono (ticket labels, dates).
 
 Signature elements: brass Fraunces **rank numerals** on shelf-plate chips;
@@ -55,7 +55,7 @@ tokens must become semantic CSS variables first (including replacing raw
 
 ## Mobile plan
 
-1. **Now**: this web app is fully responsive — sidebar hides below `md`,
+1. **Now**: this web app is fully responsive - sidebar hides below `md`,
    bottom tabs appear, touch targets ≥ 44px on interactive rows.
 2. **Later**: an Expo/React Native app consumes the same `/v1` API (the BFF
    pattern keeps the JWT server-side on web; mobile holds its own token).

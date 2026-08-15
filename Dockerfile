@@ -33,7 +33,7 @@ RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
 # Harden the runtime image: patch OS crypto libs and drop npm/npx. The Next.js
 # standalone server runs via `node server.js` and never invokes npm, so npm's
-# bundled (and vulnerable) deps — tar, minimatch, sigstore, glob, cross-spawn —
+# bundled (and vulnerable) deps - tar, minimatch, sigstore, glob, cross-spawn -
 # should not ship in the runtime image.
 RUN apk -U upgrade --no-cache libcrypto3 libssl3 \
  && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx

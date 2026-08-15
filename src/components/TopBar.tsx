@@ -12,7 +12,7 @@ import { SearchForm } from './SearchForm';
 
 async function ViewerGreeting() {
   // This runs on the server, so the greeting has to be told which clock to
-  // read — `new Date().getHours()` here is the container's hour, which is how
+  // read - `new Date().getHours()` here is the container's hour, which is how
   // a reader in Sydney got "Good evening" with their breakfast. It streams
   // separately because a preference lookup must not hold up the whole bar.
   const timeZone = await getViewerTimeZone();

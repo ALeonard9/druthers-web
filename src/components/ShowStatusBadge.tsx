@@ -9,7 +9,7 @@ const STYLES: Record<WatchStatus, string> = {
 };
 
 // The per-show progress badge from the legacy series list. Tooltip carries
-// the counts (native title — works on hover and long-press).
+// the counts (native title - works on hover and long-press).
 export function ShowStatusBadge({ show }: { show: UserTVShow }) {
   const status = show.watch_status ?? 'not_started';
   return (

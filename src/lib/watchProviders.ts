@@ -36,7 +36,7 @@ const CANONICAL_NAME: Record<string, string> = {
 };
 
 // TMDB's /watch/providers response carries only one link per region (a
-// JustWatch listing page, already surfaced as `providers.link`) — there's no
+// JustWatch listing page, already surfaced as `providers.link`) - there's no
 // per-title deep link to hand each provider chip. Absent that, a chip links
 // to the service's own site; this is a small static map of the providers
 // druthers actually sees, not an attempt at exhaustive coverage. Anything
@@ -71,8 +71,8 @@ const PROVIDER_HOME: Record<string, string> = {
 
 /**
  * The deduped list of chips for the Stream tier only (TMDB's `flatrate` +
- * `free`/`ads` buckets) — Rent and Buy are dropped from the UI entirely, and
- * a title with nothing in Stream renders nothing (see WhereToWatch). Pure —
+ * `free`/`ads` buckets) - Rent and Buy are dropped from the UI entirely, and
+ * a title with nothing in Stream renders nothing (see WhereToWatch). Pure -
  * safe to test.
  */
 export function streamingProviders(

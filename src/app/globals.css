@@ -3,7 +3,7 @@
 /*
  * "After-hours archive" tokens. The dark room is warm-shifted (night/panel/
  * line), the collection's artifacts provide the color, and two materials
- * carry the identity: paper (ticket stock — wordmark, badges, highlights)
+ * carry the identity: paper (ticket stock - wordmark, badges, highlights)
  * and brass (shelf-plate numerals, primary actions).
  */
 @theme {
@@ -72,7 +72,7 @@ body {
 }
 
 /* Ranked poster deck (RankedPosterDeck.tsx). Poster width lives here rather
-   than in the component so the overlap transform can be pure CSS calc — the
+   than in the component so the overlap transform can be pure CSS calc - the
    deck paints correctly on the server render with nothing measured.
    --deck-step is under one poster width, which is what makes them overlap. */
 .poster-deck {

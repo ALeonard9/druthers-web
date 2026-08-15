@@ -12,7 +12,7 @@ import {
  * Silent session refresh (#246).
  *
  * The session cookie is sized to the access token, so its absence is the
- * signal that the token has expired — no decoding needed. When a refresh
+ * signal that the token has expired - no decoding needed. When a refresh
  * token is still around we spend it here, before the request reaches any
  * page, and hand the fresh access token to the render in the same pass.
  * The user never sees a sign-in screen; the installed PWA can sit closed for
@@ -36,7 +36,7 @@ export async function proxy(request: NextRequest) {
       cache: 'no-store',
     });
   } catch {
-    // API unreachable — leave the cookies alone so a blip doesn't sign
+    // API unreachable - leave the cookies alone so a blip doesn't sign
     // anyone out, and let the page handle its own failure.
     return NextResponse.next();
   }
@@ -44,7 +44,7 @@ export async function proxy(request: NextRequest) {
   if (!refreshed.ok) {
     // Revoked, expired, or replayed. Clearing the cookies drops the visitor
     // to signed-out, which the app already renders properly (landing page at
-    // `/`, /login from anything protected) — a redirect from here would fight
+    // `/`, /login from anything protected) - a redirect from here would fight
     // that and risk a loop on public routes.
     //
     // Cleared on the request as well, so this render sees a signed-out
@@ -70,7 +70,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except static assets and the auth routes themselves — those
+  // Everything except static assets and the auth routes themselves - those
   // mint their own cookies, and /api/auth/logout must not have its token
   // silently rotated out from under it mid-request.
   matcher: [

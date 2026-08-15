@@ -45,7 +45,7 @@ export function byRank(a: UserVideoGame, b: UserVideoGame): number {
  *  - watchlist:      on_watchlist (backlog), by title
  *  - rankingsPlaced: on_rankings with a rank position, ordered by rank
  *  - rankingsUnplaced: on_rankings but not yet positioned ("to rank" bucket)
- * A game may appear in the backlog and the rankings. Pure — safe to test.
+ * A game may appear in the backlog and the rankings. Pure - safe to test.
  */
 export function partitionGames(games: UserVideoGame[]): {
   watchlist: UserVideoGame[];

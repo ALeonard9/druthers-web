@@ -18,7 +18,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = await params;
   return {
-    title: `@${handle} — Druthers`,
+    title: `@${handle} - Druthers`,
     description: `@${handle}’s druthers: their favorites, ranked.`,
     openGraph: {
       title: `@${handle}’s druthers`,
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // A clone of the signed-in home page (#121), rescoped from the old compact
 // hub (#93): Top 5 per shelf this viewer may see, minus the activity and
 // schedule boxes those don't apply to a visitor. Which shelves show up, and
-// whether this 404s at all, is entirely the API's call (#277) — resolved
+// whether this 404s at all, is entirely the API's call (#277) - resolved
 // once into `profile.viewer` rather than re-derived here, so the page can't
 // disagree with the endpoint about who gets to see what.
 export default async function PublicProfilePage({ params }: Props) {
@@ -126,7 +126,7 @@ export default async function PublicProfilePage({ params }: Props) {
       </div>
 
       <p className="text-center font-mono text-[11px] uppercase tracking-[0.18em] text-neutral-600">
-        www.druthers.io — your favorites, ranked
+        www.druthers.io - your favorites, ranked
       </p>
     </div>
   );

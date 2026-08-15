@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 // calendar date the broadcaster published, not an instant. Rendering
 // `2026-08-15T00:00:00Z` in the reader's zone would move it to the 14th for
 // anyone west of Greenwich. What *does* follow the reader is which days the
-// API puts in the window, and which of them is "today" — both below.
+// API puts in the window, and which of them is "today" - both below.
 const DAY_LABEL = new Intl.DateTimeFormat('en-US', {
   weekday: 'long',
   month: '2-digit',
@@ -30,7 +30,7 @@ function dayLabel(day: string, now: Date, timeZone: string): string {
   if (day === 'unknown') return 'Unknown date';
   const absolute = DAY_LABEL.format(new Date(`${day}T00:00:00Z`));
   const relative = relativeDayLabel(day, now, timeZone);
-  return relative ? `${relative} — ${absolute}` : absolute;
+  return relative ? `${relative} - ${absolute}` : absolute;
 }
 
 export default async function SchedulePage() {
@@ -114,7 +114,7 @@ export default async function SchedulePage() {
               <span className="text-neutral-400">{schedule.catch_up.length}</span>
             </h2>
             <p className="mb-4 text-xs text-neutral-500">
-              Everything overdue, grouped by show — how far behind you are.
+              Everything overdue, grouped by show - how far behind you are.
             </p>
             {catchUpByShow.length === 0 ? (
               <p className="text-sm text-neutral-500">Nothing overdue.</p>

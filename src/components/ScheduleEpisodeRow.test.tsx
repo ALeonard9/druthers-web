@@ -22,7 +22,7 @@ describe('ScheduleEpisodeRow', () => {
     render(<ScheduleEpisodeRow item={item} showTitle />);
 
     const link = screen.getByRole('link', {
-      name: 'The Example Show — 2.3 The Linked Episode',
+      name: 'The Example Show - 2.3 The Linked Episode',
     });
     expect(link.getAttribute('href')).toBe('/tv/show-42');
   });

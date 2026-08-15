@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { notificationHref } from '@/lib/notifications';
 import type { Notification } from '@/lib/types';
 
-// One notification line — links to its entity and marks read in place
+// One notification line - links to its entity and marks read in place
 // (the badge and list re-fetch via router.refresh()).
 export function NotificationRow({ notification }: { notification: Notification }) {
   const router = useRouter();
@@ -31,7 +31,7 @@ export function NotificationRow({ notification }: { notification: Notification }
   );
 
   // An incoming friend request is something to act on; everything else
-  // (including its own "accepted" follow-up) is just news (#127) — the pill
+  // (including its own "accepted" follow-up) is just news (#127) - the pill
   // is what tells them apart at a glance rather than identical rows.
   const actionNeeded = notification.type === 'friend_request';
 

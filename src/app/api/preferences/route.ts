@@ -3,7 +3,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import type { Preferences } from '@/lib/types';
 
 // Read the caller's display preferences, including account-owned shelf layout.
-// Writes are partial — only sent fields change.
+// Writes are partial - only sent fields change.
 export async function GET() {
   try {
     const preferences = await apiFetch<Preferences>('/v1/users/me/preferences');

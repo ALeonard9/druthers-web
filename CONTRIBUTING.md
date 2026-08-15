@@ -1,6 +1,6 @@
 # Contributing
 
-This repo follows the shared druthers.io SDLC — see
+This repo follows the shared druthers.io SDLC - see
 [`SDLC.md`](https://github.com/ALeonard9/druthers-api/blob/main/SDLC.md) in the
 API repo (canonical).
 

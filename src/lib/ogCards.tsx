@@ -18,7 +18,7 @@ export interface OgCardData {
 export const GENERIC_OG_IMAGE_PATH = '/opengraph-image?v=web-200';
 
 /**
- * The unbranded-by-user card. Served for the home page, and — byte-identical —
+ * The unbranded-by-user card. Served for the home page, and - byte-identical -
  * for any profile URL the caller may not see: friends-only, private, and
  * handles that do not exist. Keeping the three indistinguishable is what stops
  * the card from becoming a way to enumerate accounts, so this must never take
@@ -28,7 +28,7 @@ export function genericOgData(): OgCardData {
   return {
     eyebrow: 'YOUR FAVORITES',
     title: 'What would you rather?',
-    description: 'Movies, TV, books, and games — ranked by the choices you actually make.',
+    description: 'Movies, TV, books, and games - ranked by the choices you actually make.',
     items: [
       { rank: 1, title: 'The Matrix', year: 1999, posterUrl: 'https://image.tmdb.org/t/p/w500/dXNAPwY7VrqMAo51EKhhCJfaGb5.jpg' },
       { rank: 2, title: 'The Godfather', year: 1972, posterUrl: 'https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg' },

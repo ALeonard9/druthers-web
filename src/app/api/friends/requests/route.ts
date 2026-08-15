@@ -17,7 +17,7 @@ export async function GET() {
 }
 
 // Send a request to an exact handle. The API answers the same 202 whether or
-// not the handle resolved to anybody — this proxy passes that straight
+// not the handle resolved to anybody - this proxy passes that straight
 // through rather than trying to distinguish the cases itself.
 export async function POST(request: Request) {
   const body = await request.json();

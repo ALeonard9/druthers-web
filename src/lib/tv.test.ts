@@ -103,7 +103,7 @@ describe('byRank', () => {
   });
 });
 
-describe('filterShows — TV-specific fields', () => {
+describe('filterShows - TV-specific fields', () => {
   const shows = [
     us({
       id: '1',

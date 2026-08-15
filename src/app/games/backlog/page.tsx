@@ -107,7 +107,7 @@ export default async function GamesBacklogPage({
               'No games on your Play List match the filter.'
             ) : (
               <>
-                Nothing queued —{' '}
+                Nothing queued -{' '}
                 <Link href="/games/search?from=watchlist" className="inline-flex items-center gap-1 text-brass">
                   <DomainIcon domain="games" className="h-4 w-4" />
                   add one

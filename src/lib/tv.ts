@@ -46,7 +46,7 @@ export function byRank(a: UserTVShow, b: UserTVShow): number {
  *  - watchlist:      on_watchlist, by title
  *  - rankingsPlaced: on_rankings with a rank position, ordered by rank
  *  - rankingsUnplaced: on_rankings but not yet positioned ("to rank" bucket)
- * A show may appear in the watchlist and the rankings. Pure — safe to test.
+ * A show may appear in the watchlist and the rankings. Pure - safe to test.
  */
 export function partitionShows(shows: UserTVShow[]): {
   watchlist: UserTVShow[];

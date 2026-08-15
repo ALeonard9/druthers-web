@@ -1,16 +1,16 @@
 /**
  * Places one new title into an already-ranked list by asking "which would you
- * rather?" — the engine behind the comparison screen.
+ * rather?" - the engine behind the comparison screen.
  *
  * This is a binary insertion. The ranked list is, by definition, already in
  * the user's preferred order, so each answer halves the range the candidate
  * can land in. That gives ceil(log2(n+1)) questions to place something in a
- * list of n — 11 questions against a 1300-title shelf, rather than 1300.
+ * list of n - 11 questions against a 1300-title shelf, rather than 1300.
  *
  * Ported from the iOS app's `PairwiseRanking`, with one change: the session is
  * an immutable value and `answer` returns a new one, so it can live in React
  * state without a mutation escaping the render. Deliberately has no API
- * surface and no UI — it is driven by `answer` and read through `currentPair`,
+ * surface and no UI - it is driven by `answer` and read through `currentPair`,
  * so it can be exhaustively tested without a network or a screen.
  *
  * The API needs no new endpoint for this. The final index commits through the
@@ -48,7 +48,7 @@ export function isComplete<T>(s: PairwiseSession<T>): boolean {
 
 /**
  * Computed as an offset from `low` rather than (low + high) / 2 to match the
- * iOS engine exactly — the two have to agree on where a title lands.
+ * iOS engine exactly - the two have to agree on where a title lands.
  */
 function midpoint<T>(s: PairwiseSession<T>): number {
   return s.low + Math.floor((s.high - s.low) / 2);
@@ -69,7 +69,7 @@ export function insertionIndex<T>(s: PairwiseSession<T>): number {
 
 /**
  * The insertion indices still in play, as an inclusive `[lo, hi]`. Narrows
- * with every answer, and is a single value once complete — the progress
+ * with every answer, and is a single value once complete - the progress
  * readout ("narrowed to #14–#38") is this range, made 1-based.
  */
 export function possibleIndices<T>(s: PairwiseSession<T>): [number, number] {

@@ -260,7 +260,7 @@ function DomainPanel({
               Nothing to compare
               <AlignmentHelp
                 label="Why there is no alignment score"
-                method={`Alignment compares titles you have both ranked. You have none in common in ${domain.label} yet — rank a few of the same titles and a score appears here.`}
+                method={`Alignment compares titles you have both ranked. You have none in common in ${domain.label} yet - rank a few of the same titles and a score appears here.`}
               />
             </p>
           ) : (

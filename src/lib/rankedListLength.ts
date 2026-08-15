@@ -24,10 +24,10 @@ function readLocal(): RankedListLength {
  * is a client component but still server-rendered for the initial HTML, and
  * `window` isn't there to read at that point. Reading localStorage in a
  * `useState` initializer would make the client's first render disagree with
- * that server markup — a hydration mismatch, not just a cosmetic flash. The
+ * that server markup - a hydration mismatch, not just a cosmetic flash. The
  * effect below reconciles it after hydration: localStorage first (fast,
- * covers an API blip), then the server preference — the actual cross-device
- * source of truth — once that fetch resolves.
+ * covers an API blip), then the server preference - the actual cross-device
+ * source of truth - once that fetch resolves.
  */
 export function useRankedListLength(): [
   RankedListLength,
@@ -47,7 +47,7 @@ export function useRankedListLength(): [
           return;
         }
       }
-      // The server preference is unset or unreachable — fall back to
+      // The server preference is unset or unreachable - fall back to
       // whatever's cached on this device rather than staying at the default.
       const local = readLocal();
       if (local !== DEFAULT_LENGTH) setLength(local);

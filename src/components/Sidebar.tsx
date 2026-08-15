@@ -98,7 +98,7 @@ export function Sidebar() {
     <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-line bg-night px-3 py-4 md:flex">
       <Link
         href="/"
-        title="druthers — as in “if I had my druthers”"
+        title="druthers - as in “if I had my druthers”"
         className="mb-6 flex items-center gap-1 px-3"
       >
         <span className="font-display text-3xl font-semibold leading-none text-brass">

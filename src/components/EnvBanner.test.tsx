@@ -37,7 +37,7 @@ describe('EnvBanner', () => {
     process.env.NEXT_PUBLIC_APP_ENV = 'prod';
     render(<EnvBanner />);
 
-    // /beta/i alone matches twice — the chip label and the sentence — and
+    // /beta/i alone matches twice - the chip label and the sentence - and
     // getByText throws on multiple matches. Assert each element separately so
     // the test says which one it means.
     expect(screen.getByText('Beta')).toBeTruthy();
@@ -58,7 +58,7 @@ describe('EnvBanner', () => {
 
     // happy-dom's CSS parser can't round-trip env() through inline styles
     // (the style attribute comes back empty), so the safe-area padding rides
-    // a Tailwind arbitrary-value class — same as AppShell's bottom inset.
+    // a Tailwind arbitrary-value class - same as AppShell's bottom inset.
     // The string pins both halves of the fix: the 0.5rem py-2 baseline (no
     // layout shift in a browser tab, where env() is 0) and the env() inset.
     expect(screen.getByRole('note').className).toContain(

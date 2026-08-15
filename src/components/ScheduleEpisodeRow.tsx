@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { playPop } from '@/lib/pop';
 import type { ScheduleEpisodeItem } from '@/lib/types';
 
-// One episode line on the Schedule page — links to its show and marks
+// One episode line on the Schedule page - links to its show and marks
 // watched in place (the list re-fetches via router.refresh(), so a watched
 // episode simply drops out of the schedule).
 export function ScheduleEpisodeRow({
@@ -42,16 +42,16 @@ export function ScheduleEpisodeRow({
         {showTitle && (
           item.show_title
         )}
-        {showTitle && ' — '}
+        {showTitle && ' - '}
         <span className="text-neutral-500">
           {item.season}.{item.season_number}
         </span>{' '}
         {item.episode_title}
       </Link>
-      {error && <span className="shrink-0 text-xs text-red-400">Failed — retry</span>}
+      {error && <span className="shrink-0 text-xs text-red-400">Failed - retry</span>}
       {/* Every row on this page is unwatched, so it wears the "behind" plum
           and the same label EpisodeList uses. Green is reserved for done
-          (globals.css) — a green "Watched" here read as state, not action. */}
+          (globals.css) - a green "Watched" here read as state, not action. */}
       <button
         onClick={markWatched}
         disabled={pending}

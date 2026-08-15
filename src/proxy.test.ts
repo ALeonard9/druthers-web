@@ -115,7 +115,7 @@ describe('proxy', () => {
   });
 
   it('leaves cookies alone when the API is unreachable', async () => {
-    // A blip shouldn't sign anyone out — the token is still good.
+    // A blip shouldn't sign anyone out - the token is still good.
     mockRefresh(new Error('ECONNREFUSED'));
     const response = await proxy(request({ [REFRESH_COOKIE]: 'drr_stored' }));
 

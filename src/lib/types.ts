@@ -57,7 +57,7 @@ export interface WatchProvider {
 }
 
 /**
- * Where a title can be watched in one region. Live TMDB/JustWatch data — the
+ * Where a title can be watched in one region. Live TMDB/JustWatch data - the
  * API never 404s here, it returns empty buckets, so callers check the tiers
  * rather than the response.
  */
@@ -334,7 +334,7 @@ export interface ApiKey {
 }
 
 export interface ApiKeyCreated extends ApiKey {
-  /** Plaintext secret — present only in the creation response, never again. */
+  /** Plaintext secret - present only in the creation response, never again. */
   key: string;
 }
 
@@ -342,7 +342,7 @@ export type RankedListLength = '25' | '50' | '100' | 'all';
 
 export interface Preferences {
   ranked_list_length: RankedListLength;
-  /** IANA zone. Always concrete — the API resolves an unset column server-side. */
+  /** IANA zone. Always concrete - the API resolves an unset column server-side. */
   time_zone: string;
   shelf_order: string[];
   enabled_shelves: string[];
@@ -365,7 +365,7 @@ export interface Visibility {
   visibility_watchlist_games: VisibilityTier | null;
 }
 
-// A friend or follow's counterpart — never email or visibility settings, only
+// A friend or follow's counterpart - never email or visibility settings, only
 // as much as a relationship should expose.
 export interface RelatedUser {
   id: string;
@@ -417,13 +417,13 @@ export interface PublicShelf {
   ranked_count: number;
   items: PublicShelfItem[];
   watchlist?: PublicWatchlistItem[];
-  // Present alongside `watchlist` (#279) — the true watchlist total,
+  // Present alongside `watchlist` (#279) - the true watchlist total,
   // independent of however many items this response actually carries.
   watchlist_count?: number;
 }
 
 // Who the caller is to the profile owner (#277). ANONYMOUS is not signed in
-// at all; NONE is signed in with no relationship — both see the same
+// at all; NONE is signed in with no relationship - both see the same
 // shelves, but only ANONYMOUS can't act on a follow button without signing
 // in first.
 export type ViewerRelationship = 'anonymous' | 'none' | 'friend' | 'self';
@@ -492,7 +492,7 @@ export interface SummaryShelf {
 
 /**
  * Everything the home page renders, in one request. Replaced four
- * full-collection fetches — see the API's app/services/summary.py.
+ * full-collection fetches - see the API's app/services/summary.py.
  */
 export interface Summary {
   handle: string | null;
@@ -501,7 +501,7 @@ export interface Summary {
   profile_public: boolean;
   shelves: SummaryShelf[];
   total_ranked: number;
-  /** Ranked + queued across every shelf — zero means a genuinely empty account. */
+  /** Ranked + queued across every shelf - zero means a genuinely empty account. */
   total_items: number;
   onboarding_completed: boolean;
   /** Whether the onboarding wizard should show: unfinished AND zero items added. */

@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 
 // Sub-navigation within a section (e.g. Movies → Rankings · Watchlist). The
 // active tab is matched exactly so nested detail routes fall back to the first
-// tab. Each tab filters independently — switching tabs drops the current
+// tab. Each tab filters independently - switching tabs drops the current
 // filter rather than carrying it across. An optional `icon` (the domain glyph,
 // web#282) sits at the leading edge of the rail as a section marker.
 export function SectionTabs({

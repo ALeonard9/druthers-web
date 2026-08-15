@@ -3,7 +3,7 @@
  * component (movies/tv/books/games).
  *
  * `start` is a 1-based position within whatever list is currently rendered
- * (filtered or not) — never an item's real rank. Real ranks go sparse once a
+ * (filtered or not) - never an item's real rank. Real ranks go sparse once a
  * filter is applied (or a legacy row carries a 0-based rank), which made
  * "Showing #X–#Y of Z" windowed-by-rank read as inconsistent with the total
  * even though every individual number was correct (api#225 / web#80).

@@ -6,7 +6,7 @@ interface Ctx {
   params: Promise<{ id: string }>;
 }
 
-// Add a book to a list (idempotent merge) — used when it isn't tracked yet.
+// Add a book to a list (idempotent merge) - used when it isn't tracked yet.
 export async function POST(request: Request, { params }: Ctx) {
   const { id } = await params;
   const body = await request.json();

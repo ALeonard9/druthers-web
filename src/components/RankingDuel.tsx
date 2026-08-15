@@ -1,12 +1,12 @@
 'use client';
 
 /**
- * "Which would you rather?" — places titles into an already-ranked shelf by
+ * "Which would you rather?" - places titles into an already-ranked shelf by
  * comparison instead of by dragging.
  *
  * The engine is `pairwiseRanking`: a binary insertion, so a shelf of 1,300
  * takes ~11 picks rather than a scroll to the right row. This component is
- * only the presentation of it — every decision about where a candidate lands
+ * only the presentation of it - every decision about where a candidate lands
  * lives in the engine, which is exhaustively tested without a network or a
  * screen.
  *
@@ -60,7 +60,7 @@ export interface QueueEmptyResult {
 
 /**
  * The tallest the contenders should ever get, whatever the screen. Not a
- * guess about the viewport — a design ceiling, so a large monitor gets a
+ * guess about the viewport - a design ceiling, so a large monitor gets a
  * comfortable card rather than a billboard.
  */
 const MAX_STAGE = 340;
@@ -72,19 +72,19 @@ const GUTTER = 16;
 
 /**
  * Sizes the contenders so the controls beneath them are always fully on
- * screen — by checking where those controls actually land, not by predicting
+ * screen - by checking where those controls actually land, not by predicting
  * it.
  *
  * The earlier version added up everything it thought was on the page and
  * derived a height from the leftovers. That has to know about the top bar, the
- * bottom tabs, safe-area insets, browser zoom, wrapped text — and it was wrong
+ * bottom tabs, safe-area insets, browser zoom, wrapped text - and it was wrong
  * whenever any of those differed from the guess. This instead reads the
  * controls' real bottom edge, compares it to the bottom of the *visual*
  * viewport (the one that accounts for PWA standalone chrome, zoom and mobile
  * toolbars), and corrects the stage by exactly the overshoot. One pass lands
  * it; the tolerance stops it oscillating.
  *
- * The measured element must not be `position: sticky` — a stuck element
+ * The measured element must not be `position: sticky` - a stuck element
  * reports where it's pinned rather than where it sits, which makes an
  * overflowing page look like a fitting one.
  *
@@ -94,7 +94,7 @@ const GUTTER = 16;
 function useFittedStage(
   stageRef: React.RefObject<HTMLDivElement | null>,
   footerRef: React.RefObject<HTMLDivElement | null>,
-  // Whether the comparison UI (and so the footer) is actually on screen —
+  // Whether the comparison UI (and so the footer) is actually on screen -
   // it isn't for the "nothing to compare against yet" and "nothing left to
   // place" states, and `footerRef.current` is null until it is (web#110).
   active: boolean,
@@ -123,7 +123,7 @@ function useFittedStage(
     }
 
     measure();
-    // The stage's own height is what we set, so observing it would loop —
+    // The stage's own height is what we set, so observing it would loop -
     // watch what moves it instead: the page around it and the controls below.
     const observer = new ResizeObserver(measure);
     observer.observe(document.body);
@@ -153,7 +153,7 @@ export function RankingDuel({
   queue: DuelEntry[];
   /** The one entry in `queue` that got here via "Rerank", if any. */
   rerankId?: string;
-  /** Its rank just before that — the candidate's own `rank` is already null. */
+  /** Its rank just before that - the candidate's own `rank` is already null. */
   priorRank?: number;
   /** Callback fired when a parent-managed queue empties. Removed entries are in neither collection. */
   onQueueEmpty?: (result: QueueEmptyResult) => void;
@@ -177,7 +177,7 @@ export function RankingDuel({
 
   // The session is derived rather than stored: a candidate plus the answers so
   // far is all there is to one, so reaching a new candidate produces a fresh
-  // session on its own — no effect needed to reset it between placements.
+  // session on its own - no effect needed to reset it between placements.
   const session =
     candidate && ranked.length > 0
       ? answers?.candidate.id === candidate.id
@@ -190,7 +190,7 @@ export function RankingDuel({
 
   /**
    * Writes the placement, then folds it into the local ranked list so the next
-   * candidate is compared against a list that already includes it — the same
+   * candidate is compared against a list that already includes it - the same
    * order the server now holds, without a round trip to re-read it.
    */
   const commit = useCallback(
@@ -288,7 +288,7 @@ export function RankingDuel({
     }
   }
 
-  // Arrow keys pick a side, Enter takes the estimate — the whole point is to
+  // Arrow keys pick a side, Enter takes the estimate - the whole point is to
   // get through a pile quickly, and reaching for the mouse each time is the
   // slow part.
   useEffect(() => {
@@ -418,7 +418,7 @@ export function RankingDuel({
 
           {/* Deliberately not sticky: this is the element `useFittedStage`
               measures, and a stuck element reports where it's pinned rather
-              than where it sits — which would hide exactly the overflow we're
+              than where it sits - which would hide exactly the overflow we're
               trying to correct. */}
           <div ref={footerRef}>
             <EscapeHatch
@@ -431,7 +431,7 @@ export function RankingDuel({
           </div>
         </>
       ) : (
-        // Nothing placed yet, so there is nothing to compare against — the
+        // Nothing placed yet, so there is nothing to compare against - the
         // first title in is #1 by definition. Still an explicit action rather
         // than a silent write, so the shelf never starts itself.
         <FirstOneIn
@@ -455,7 +455,7 @@ export function RankingDuel({
 }
 
 /**
- * How far along, and — the part that makes stopping early a real option —
+ * How far along, and - the part that makes stopping early a real option -
  * the band of positions the candidate can still land in.
  */
 function Progress({
@@ -513,7 +513,7 @@ function Contender({
         className="group flex h-full min-h-0 w-full flex-col items-center gap-2 rounded-xl border border-line bg-panel p-3 text-center transition-colors hover:border-brass hover:bg-brass-wash/40 focus:outline-none focus-visible:border-brass focus-visible:ring-2 focus-visible:ring-brass"
       >
         {/* Sized off the viewport, not the column, so the question, both posters
-          and the placement button stay on one screen without scrolling — the
+          and the placement button stay on one screen without scrolling - the
           whole flow is "glance, pick, repeat". */}
       <div className="relative min-h-0 flex-1">
         {entry.imageUrl ? (
@@ -560,12 +560,12 @@ function Contender({
 }
 
 /**
- * "Good enough" — stop answering and take the midpoint of what's left, which
+ * "Good enough" - stop answering and take the midpoint of what's left, which
  * is the least-wrong guess available. Sits under the question alongside the
  * two titles the candidate would land between, so the estimate can be judged
  * before it's accepted.
  *
- * Both bounds always show a number, even before the first answer — "landing
+ * Both bounds always show a number, even before the first answer - "landing
  * between #1 and #208" reads as a real range; "anywhere" doesn't tell you
  * how long a shelf you're actually placing into.
  */
@@ -613,7 +613,7 @@ function EscapeHatch({
 
       {/* No justify-between below sm: on a narrow/PWA viewport that pushes
           the two halves onto separate lines, "+ Add a movie" ends up alone
-          on line one with nothing to its right — dead space, not a layout.
+          on line one with nothing to its right - dead space, not a layout.
           Left-aligned stacking there reads as one flow instead. */}
       <div className="flex flex-wrap items-center gap-3 sm:justify-between">
         <Link
@@ -649,7 +649,7 @@ function EscapeHatch({
   );
 }
 
-/** A boundary with no real neighbouring title — the very top or bottom of the shelf. */
+/** A boundary with no real neighbouring title - the very top or bottom of the shelf. */
 function Bound({ rank, label }: { rank: number; label: string }) {
   return (
     <span className="flex min-w-0 items-center gap-2 text-sm">
@@ -678,7 +678,7 @@ function Neighbour({ entry, shelf }: { entry: DuelEntry; shelf: ShelfConfig }) {
 }
 
 /**
- * What's been placed this sitting — reassurance that the picks stuck. One line
+ * What's been placed this sitting - reassurance that the picks stuck. One line
  * so it never pushes the placement button off the screen.
  */
 function Trail({
@@ -766,7 +766,7 @@ function FirstOneIn({
   );
 }
 
-/** Nothing left in the queue — either it was empty, or it just got emptied. */
+/** Nothing left in the queue - either it was empty, or it just got emptied. */
 function Done({
   shelf,
   placements,

@@ -6,7 +6,7 @@ interface Ctx {
   params: Promise<{ id: string }>;
 }
 
-// Accept an incoming request — both sides count as friends from here.
+// Accept an incoming request - both sides count as friends from here.
 export async function PUT(_request: Request, { params }: Ctx) {
   const { id } = await params;
   try {

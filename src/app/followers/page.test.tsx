@@ -85,7 +85,7 @@ describe('followers page', () => {
     expect(screen.getByRole('link', { name: 'Go to sharing settings' }).getAttribute('href')).toBe('/settings#sharing');
   });
 
-  // A session cookie outlives the account it names — a stale cookie from an
+  // A session cookie outlives the account it names - a stale cookie from an
   // earlier local database renders a valid-looking user whose API row is gone.
   // That has to bounce to /login, not blow up the route with a 500.
   it.each([

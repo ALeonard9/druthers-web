@@ -1,10 +1,10 @@
-# TEMPLATE — copy to druthers-web/.github/workflows/deploy_qa.yaml
+# TEMPLATE - copy to druthers-web/.github/workflows/deploy_qa.yaml
 name: Deploy to QA
 
 # QA deploys are main-driven (see druthers-infra/docs/PROMOTION.md): every
 # push to main builds the image (dedicated QA OAuth client + APP_ENV=qa baked
 # into the client bundle) into the QA project's Artifact Registry and rolls
-# the druthers-web service in the QA project. Prod is untouched — it
+# the druthers-web service in the QA project. Prod is untouched - it
 # deploys only on releases via deploy_cloud_run.yaml.
 # No-ops until the GCP_*_QA repo variables exist (docs/QA-ENVIRONMENT.md).
 
@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       # An empty client id bakes into the bundle and breaks sign-in
-      # SILENTLY (PROMOTION.md) — fail loudly instead.
+      # SILENTLY (PROMOTION.md) - fail loudly instead.
       - name: Fail if QA OAuth client id is missing
         if: vars.GOOGLE_CLIENT_ID_QA == ''
         run: |

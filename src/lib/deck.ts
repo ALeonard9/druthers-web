@@ -11,7 +11,7 @@ import { isRankable } from './movies';
 /**
  * How many of the top ranked titles a domain's poster deck runs through.
  * Lives here rather than beside the component because RankedPosterDeck is a
- * client module — a server component importing a plain value out of one gets a
+ * client module - a server component importing a plain value out of one gets a
  * client reference back, not the number.
  */
 export const DECK_SIZE = 25;
@@ -132,7 +132,7 @@ export function publicDeckItems(shelf: PublicShelf): DeckItem[] {
 
 /**
  * Watchlist rows have no rank to anchor a deck plate against, so `rank` here
- * is just the row's position (list order) — callers render these with
+ * is just the row's position (list order) - callers render these with
  * `showRank={false}` on RankedPosterDeck rather than trusting the number.
  */
 function buildUnranked<T>(rows: T[], to: (row: T) => Omit<DeckItem, 'rank'>): DeckItem[] {

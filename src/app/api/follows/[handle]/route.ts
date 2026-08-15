@@ -21,7 +21,7 @@ export async function PUT(_request: Request, { params }: Ctx) {
   }
 }
 
-// Stop following someone — allowed even if they're no longer public.
+// Stop following someone - allowed even if they're no longer public.
 export async function DELETE(_request: Request, { params }: Ctx) {
   const { handle } = await params;
   try {

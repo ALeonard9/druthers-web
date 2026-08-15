@@ -34,7 +34,7 @@ export function TutorialModal({ onDismiss }: { onDismiss: () => void }) {
   const steps = [
     {
       title: 'Welcome to druthers',
-      body: 'Your favorites — watched, read, played, and ranked. Let’s take a quick look around.',
+      body: 'Your favorites - watched, read, played, and ranked. Let’s take a quick look around.',
       emoji: '👋',
     },
     {

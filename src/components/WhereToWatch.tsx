@@ -4,10 +4,10 @@ import type { WatchProviders } from '@/lib/types';
 /**
  * Streaming availability for a movie or show (#26).
  *
- * Stream only — Rent/Buy are pay-per-title noise, not "watching" (#78).
+ * Stream only - Rent/Buy are pay-per-title noise, not "watching" (#78).
  * Renders nothing when there's nothing to show: the API answers with empty
  * buckets for a title that streams nowhere, one that's rent/buy-only, one it
- * couldn't resolve upstream, and one where TMDB was unreachable — none of
+ * couldn't resolve upstream, and one where TMDB was unreachable - none of
  * which is worth an empty state on a detail page.
  */
 export function WhereToWatch({
@@ -64,7 +64,7 @@ export function WhereToWatch({
       {/*
         TMDB licenses this availability data from JustWatch and requires the
         source be credited wherever it's displayed. Keep this line next to the
-        providers — the TMDB attribution on /about doesn't cover it.
+        providers - the TMDB attribution on /about doesn't cover it.
       */}
       <p className="mt-3 text-[11px] text-neutral-600">
         Availability data by {providers.attribution}, via TMDB.

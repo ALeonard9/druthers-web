@@ -19,7 +19,7 @@ export type ShelfId = 'movies' | 'tv' | 'books' | 'games';
 
 /** One contender in a duel, stripped of everything the screen doesn't show. */
 export interface DuelEntry {
-  /** The catalog id — what `PUT /api/{shelf}/{id}/rank` takes. */
+  /** The catalog id - what `PUT /api/{shelf}/{id}/rank` takes. */
   id: string;
   title: string;
   /** The quiet line under the title: usually a year. */
@@ -37,7 +37,7 @@ export interface ShelfConfig {
   label: string;
   /** Singular, lower-case, for prose: "a movie", "the next movie". */
   noun: string;
-  /** Where the drag-and-drop board lives — the duel always links back to it. */
+  /** Where the drag-and-drop board lives - the duel always links back to it. */
   boardHref: string;
   /** This shelf's comparison screen. */
   duelHref: string;
@@ -105,7 +105,7 @@ const CATALOG_KEY: Record<ShelfId, string> = {
 
 /**
  * The catalog id inside an add/track response (`{ movie: { id } }`, …), or
- * null if the shape isn't what we expected — a missing id costs the caller the
+ * null if the shape isn't what we expected - a missing id costs the caller the
  * `?item=` hint, nothing more.
  */
 export function catalogIdFrom(shelf: ShelfId, tracker: unknown): string | null {
@@ -120,12 +120,12 @@ export function catalogIdFrom(shelf: ShelfId, tracker: unknown): string | null {
  * Where to land after putting something on the rankings.
  *
  * Normally the API admits a title to the rankings *unplaced*, so adding it is
- * only half the gesture — deciding where it goes is the other half, and
+ * only half the gesture - deciding where it goes is the other half, and
  * that's the duel. Same handoff the phone makes, where "+ Rank it" goes
  * straight to the comparison screen rather than dropping you on a list.
  *
  * Exception: the first title into an empty shelf auto-places at #1 (api#289)
- * — see {@link isAlreadyPlaced}, which callers check before reaching for this.
+ * - see {@link isAlreadyPlaced}, which callers check before reaching for this.
  */
 export function duelHrefFor(shelf: ShelfId, catalogId?: string | null): string {
   const { duelHref } = SHELVES[shelf];
@@ -133,7 +133,7 @@ export function duelHrefFor(shelf: ShelfId, catalogId?: string | null): string {
 }
 
 /**
- * True when an add/track response already carries a rank — the auto-place
+ * True when an add/track response already carries a rank - the auto-place
  * case for the first title into an empty shelf (api#289). Nothing's left to
  * decide, so callers should skip the duel rather than send someone to a
  * comparison screen with nothing queued.
@@ -191,7 +191,7 @@ export function gameToDuelEntry(g: UserVideoGame): DuelEntry {
 
 /**
  * Split a shelf into the two lists the duel needs: what's already placed (in
- * rank order — the duel's whole premise is that this list is already correct)
+ * rank order - the duel's whole premise is that this list is already correct)
  * and what's waiting for a position.
  *
  * `focusId` is the title being placed. It's excluded from the ranked side even

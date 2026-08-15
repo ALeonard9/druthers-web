@@ -46,7 +46,7 @@ export function byRank(a: UserBook, b: UserBook): number {
  *  - watchlist:      on_watchlist (to-read), by title
  *  - rankingsPlaced: on_rankings with a rank position, ordered by rank
  *  - rankingsUnplaced: on_rankings but not yet positioned ("to rank" bucket)
- * A book may appear in the watchlist and the rankings. Pure — safe to test.
+ * A book may appear in the watchlist and the rankings. Pure - safe to test.
  */
 export function partitionBooks(books: UserBook[]): {
   watchlist: UserBook[];

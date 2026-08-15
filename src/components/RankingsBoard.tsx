@@ -33,7 +33,7 @@ function Poster({ url, className }: { url: string | null; className: string }) {
   return <img src={url} alt="" loading="lazy" className={`${className} object-cover`} />;
 }
 
-// A movie in the "to rank" bucket — drag it (by the grip) into the ranked list,
+// A movie in the "to rank" bucket - drag it (by the grip) into the ranked list,
 // or send it back to the watchlist.
 function ToRankChip({
   item,
@@ -100,7 +100,7 @@ function ToRankChip({
   );
 }
 
-// Always-present drop target for "#1" — the only way to place a movie when
+// Always-present drop target for "#1" - the only way to place a movie when
 // the ranked list is empty (with no ranked rows, there's nothing else to
 // drop onto), and a quick way to jump one to the top otherwise.
 function DropToTop({ label }: { label: string }) {
@@ -119,7 +119,7 @@ function DropToTop({ label }: { label: string }) {
   );
 }
 
-// A ranked row — sortable (drag to move) and a drop target for to-rank chips.
+// A ranked row - sortable (drag to move) and a drop target for to-rank chips.
 function RankedRow({
   item,
   onConfirmRemove,
@@ -195,11 +195,11 @@ export function RankingsBoard({
   const router = useRouter();
   const [length, setLength] = useRankedListLength();
   // `start` is a 1-based position within `placed` (whatever's currently
-  // displayed — filtered or not), not the item's real rank — see
+  // displayed - filtered or not), not the item's real rank - see
   // pagerWindow for why (api#225 / web#80).
   const [start, setStart] = useState(1);
   // Reset the window to the top when the length control changes, rather than
-  // keeping whatever position happened to be showing under the old size —
+  // keeping whatever position happened to be showing under the old size -
   // adjusted during render (React's pattern for "reset state when a prop
   // changes") instead of an effect, so it takes effect before paint.
   const [lengthAtLastStart, setLengthAtLastStart] = useState(length);
@@ -213,7 +213,7 @@ export function RankingsBoard({
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
 
-  // "All" doesn't page by window — it reveals more of the already-fetched
+  // "All" doesn't page by window - it reveals more of the already-fetched
   // list as the viewer scrolls, since mounting 2000 draggable rows at once
   // (not fetching them; `placed` already holds everything) is the actual
   // cost (#122).
@@ -285,7 +285,7 @@ export function RankingsBoard({
       {unplaced.length > 0 && (
         <div className="mb-4 rounded-lg border border-dashed border-neutral-700 bg-panel/50 p-3">
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
-            To rank ({unplaced.length}) — drag into the list below
+            To rank ({unplaced.length}) - drag into the list below
           </p>
           <div className="flex flex-col gap-2">
             {unplaced.map((m) => (

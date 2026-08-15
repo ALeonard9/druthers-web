@@ -55,9 +55,9 @@ export function TVShowDetail({
         body: JSON.stringify(body),
       });
       // It usually goes on the rankings unplaced, so the position still has
-      // to be decided — hand straight to the duel rather than leaving it in
+      // to be decided - hand straight to the duel rather than leaving it in
       // limbo. Exception: the first show into an empty shelf auto-places at
-      // #1 (api#289) — nothing to decide, so just refresh in place.
+      // #1 (api#289) - nothing to decide, so just refresh in place.
       if (body.on_rankings === true) {
         const tracker = await res.json().catch(() => null);
         if (isAlreadyPlaced(tracker)) {
@@ -78,7 +78,7 @@ export function TVShowDetail({
 
   // Clears the position (closing the gap it leaves) without leaving
   // Rankings, so it re-enters the "to rank" queue and completed_at is
-  // untouched — only a fresh entry into Rankings stamps that date.
+  // untouched - only a fresh entry into Rankings stamps that date.
   function rerank() {
     const wasRank = tracker?.rank;
     startTransition(async () => {
@@ -181,7 +181,7 @@ export function TVShowDetail({
               <span className="text-sm text-neutral-300">
                 {tracker?.rank
                   ? `Ranked #${tracker.rank}`
-                  : 'In “to rank” — drag it into place on the TV page'}
+                  : 'In “to rank” - drag it into place on the TV page'}
               </span>
               {tracker?.rank && !confirmRemove && (
                 <button

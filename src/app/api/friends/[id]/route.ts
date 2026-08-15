@@ -5,7 +5,7 @@ interface Ctx {
   params: Promise<{ id: string }>;
 }
 
-// End a friendship. Symmetric — either side may call this.
+// End a friendship. Symmetric - either side may call this.
 export async function DELETE(_request: Request, { params }: Ctx) {
   const { id } = await params;
   try {

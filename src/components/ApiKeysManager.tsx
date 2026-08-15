@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ApiKey, ApiKeyCreated } from '@/lib/types';
 
-// Mint, list, and revoke personal API keys — the credential for running the
+// Mint, list, and revoke personal API keys - the credential for running the
 // MCP server (or scripts) against your account. The plaintext secret is
 // displayed exactly once, right after creation.
 export function ApiKeysManager() {
@@ -79,14 +79,14 @@ export function ApiKeysManager() {
     <div className="flex flex-col gap-3">
       <div className="rounded-lg border border-line bg-panel px-4 py-3">
         <p className="text-sm text-neutral-300">
-          This key is for your personal use only — do not share it or use it to build public-facing integrations.
+          This key is for your personal use only - do not share it or use it to build public-facing integrations.
         </p>
       </div>
 
       {minted && (
         <div className="rounded-lg border border-brass bg-brass-wash p-4">
           <p className="text-sm font-medium text-brass">
-            Key “{minted.name}” created — copy it now. It will never be shown
+            Key “{minted.name}” created - copy it now. It will never be shown
             again.
           </p>
           <div className="mt-2 flex items-center gap-2">
@@ -108,7 +108,7 @@ export function ApiKeysManager() {
         <p className="text-sm text-neutral-500">Loading…</p>
       ) : keys.length === 0 ? (
         <p className="text-sm text-neutral-500">
-          No keys yet — name one below and mint it.
+          No keys yet - name one below and mint it.
         </p>
       ) : (
         <ul className="divide-y divide-line/60 rounded-lg border border-line bg-panel">

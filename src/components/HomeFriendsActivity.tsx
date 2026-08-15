@@ -60,7 +60,7 @@ export async function HomeFriendsActivity() {
     <Frame>
       {items.length === 0 ? (
         <p className="px-4 py-5 text-sm text-neutral-500">
-          No friend activity yet — add friends to see what they&apos;re ranking.{' '}
+          No friend activity yet - add friends to see what they&apos;re ranking.{' '}
           <Link href="/friends" className="text-brass hover:text-brass-bright">
             Add friends
           </Link>

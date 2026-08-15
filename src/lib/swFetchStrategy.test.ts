@@ -5,12 +5,12 @@ import vm from 'node:vm';
 
 // Regression test for druthers-web#91 ("Fix broken Hide from Schedule
 // toggle"). The bug wasn't in the freeze flag's persistence or in
-// get_schedule()'s filtering (both already worked) — it was in the
+// get_schedule()'s filtering (both already worked) - it was in the
 // installed PWA's service worker (public/sw.js), which cache-firsted any
 // same-origin GET that wasn't a navigation and wasn't under /api/. Next.js's
 // client-side route transitions fetch a page's RSC payload from that page's
 // own URL in exactly that shape, so the first in-app visit to /tv/schedule
-// got cached indefinitely — later visits (e.g. right after toggling
+// got cached indefinitely - later visits (e.g. right after toggling
 // "Hide from Schedule") kept serving that frozen snapshot instead of hitting
 // the network. Fixed by scoping cache-first down to the declared shell URLs
 // and Next's hashed /_next/static/ output (see sw.js's SHELL_URLS + cacheable
@@ -96,7 +96,7 @@ function loadFetchHandler(
   return handler;
 }
 
-// The real `Request` constructor rejects `mode: 'navigate'` — browsers
+// The real `Request` constructor rejects `mode: 'navigate'` - browsers
 // reserve it for actual navigations, never settable from script. sw.js only
 // reads `.method`/`.url`/`.mode` off the request it's handed, so a plain
 // object stands in fine for a navigation event.
@@ -141,8 +141,8 @@ describe('sw.js fetch strategy (druthers-web#91 regression)', () => {
   it('does NOT cache-first the home page fetched as a client-side transition', () => {
     // '/' is in the shell list as the offline fallback for a cold PWA start,
     // but it is also a page route, so it needs the same exemption
-    // /tv/schedule got above. A soft navigation home — and the
-    // router.refresh() behind RefreshHomeOnReturn — fetches the home page's
+    // /tv/schedule got above. A soft navigation home - and the
+    // router.refresh() behind RefreshHomeOnReturn - fetches the home page's
     // RSC payload from '/' with an `?_rsc=` cache-buster that leaves the
     // pathname alone, so a shell-list check on pathname alone matches it.
     // Cache-firsting that froze the Top 5: a deleted item kept its rank and
@@ -188,7 +188,7 @@ describe('sw.js fetch strategy (druthers-web#91 regression)', () => {
 describe('sw.js does not pin a bad response into the cache (PWA-in-prod regression)', () => {
   // A stale PWA session referencing a deploy's since-deleted hashed asset,
   // or a brief server error during a deploy, must not get permanently
-  // cached — that would make the broken state outlive the deploy that
+  // cached - that would make the broken state outlive the deploy that
   // caused it, since a cache-first URL is never retried once something is
   // stored under it.
 

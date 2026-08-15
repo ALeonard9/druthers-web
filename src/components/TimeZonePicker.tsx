@@ -6,7 +6,7 @@ import { greetingAt, FALLBACK_TIME_ZONE } from '@/lib/viewerTime';
 import { deviceTimeZone } from '@/lib/deviceTimeZone';
 
 // Zones offered when the browser cannot enumerate the tzdb itself. Small on
-// purpose — it is a floor, not a catalogue, and every current browser takes
+// purpose - it is a floor, not a catalogue, and every current browser takes
 // the Intl.supportedValuesOf path above it.
 const FALLBACK_ZONES = [
   'UTC',
@@ -33,7 +33,7 @@ function knownZones(): string[] {
 }
 
 /**
- * Choose the zone this account's own hours are read in — the greeting, and
+ * Choose the zone this account's own hours are read in - the greeting, and
  * which day the schedule calls today. Saved to the account, not the device,
  * so it follows you to a phone.
  */
@@ -108,7 +108,7 @@ export function TimeZonePicker() {
           onChange={(e) => save(e.target.value)}
           className="rounded border border-neutral-700 bg-night px-3 py-2 text-sm text-paper outline-none focus:border-brass disabled:opacity-60"
         >
-          {/* A zone the browser cannot enumerate is still the saved value —
+          {/* A zone the browser cannot enumerate is still the saved value -
               keep it selectable so saving something else stays possible. */}
           {!knownZones().includes(zone) && <option value={zone}>{zone}</option>}
           {knownZones().map((z) => (
@@ -131,7 +131,7 @@ export function TimeZonePicker() {
                 timeZone: zone,
               }).format(now)}
             </span>{' '}
-            there — {greetingAt(now, zone).toLowerCase()}.
+            there - {greetingAt(now, zone).toLowerCase()}.
           </>
         ) : (
           ' '

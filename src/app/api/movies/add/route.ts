@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         body: { tmdb, title, poster_url: poster_url ?? null },
       });
     } catch (err) {
-      // 400 means the catalog already has it — find the existing row so the
+      // 400 means the catalog already has it - find the existing row so the
       // add still lands on the user's list. Keyed on tmdb since #163.
       if (err instanceof ApiError && err.status === 400) {
         const all = await apiFetch<Movie[]>('/v1/movies');

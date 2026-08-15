@@ -23,7 +23,7 @@ export default async function TVShowDetailPage({
   if (!user) redirect('/login');
   const { id } = await params;
 
-  // The tracker 404s when the show isn't on any list — that's not an error.
+  // The tracker 404s when the show isn't on any list - that's not an error.
   const trackerOrNull = apiFetch<UserTVShow>(`/v1/users/me/tv-shows/${id}`).catch(
     (err) => {
       if (err instanceof ApiError && err.status === 404) return null;
@@ -31,7 +31,7 @@ export default async function TVShowDetailPage({
     },
   );
 
-  // Streaming availability is a nicety (#26) — it already degrades to empty
+  // Streaming availability is a nicety (#26) - it already degrades to empty
   // buckets upstream, so swallowing the error here only covers the API itself
   // being unreachable, and never fails the page.
   const providersOrNull = apiFetch<WatchProviders>(

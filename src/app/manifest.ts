@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Druthers',
     short_name: 'Druthers',
-    description: 'Your favorites — watched, read, played, and ranked.',
+    description: 'Your favorites - watched, read, played, and ranked.',
     start_url: '/',
     display: 'standalone',
     background_color: '#101014',

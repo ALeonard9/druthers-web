@@ -28,13 +28,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const user = await getSessionUser();
   if (user) return {};
   return {
-    title: 'Druthers — your favorites, ranked',
+    title: 'Druthers - your favorites, ranked',
     description:
-      'Movies, TV, books, and games — watched, read, played, then ranked into the order you’d pick them again. Not ratings out of ten: druthers.',
+      'Movies, TV, books, and games - watched, read, played, then ranked into the order you’d pick them again. Not ratings out of ten: druthers.',
     openGraph: {
-      title: 'Druthers — your favorites, ranked',
+      title: 'Druthers - your favorites, ranked',
       description:
-        'Movies, TV, books, and games — ranked into the order you’d pick them again.',
+        'Movies, TV, books, and games - ranked into the order you’d pick them again.',
       url: '/',
       images: [
         {
@@ -42,21 +42,21 @@ export async function generateMetadata(): Promise<Metadata> {
           type: 'image/png',
           width: 1200,
           height: 630,
-          alt: 'Druthers — your favorites, ranked',
+          alt: 'Druthers - your favorites, ranked',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Druthers — your favorites, ranked',
-      description: 'Movies, TV, books, and games — ranked by your real choices.',
+      title: 'Druthers - your favorites, ranked',
+      description: 'Movies, TV, books, and games - ranked by your real choices.',
       images: [GENERIC_OG_IMAGE_PATH],
     },
   };
 }
 
 /**
- * `/`: a public marketing landing page for signed-out visitors (issue #27 —
+ * `/`: a public marketing landing page for signed-out visitors (issue #27 -
  * the most likely arrival path is a shared Top 5 card, and a bare login form
  * doesn't sell the product), or your own Top 5 across all four shelves once
  * signed in.

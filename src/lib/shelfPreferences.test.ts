@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   normalizeShelfPreferences,
   orderedEnabledShelves,
+  isShelfEnabled,
+  type ShelfPreferences,
 } from './shelfPreferences';
 
 describe('shelf preferences', () => {
@@ -20,6 +22,15 @@ describe('shelf preferences', () => {
         enabled: ['movies', 'books'],
       }),
     ).toEqual(['books', 'movies']);
+  });
+
+  it('checks if a shelf is enabled', () => {
+    const prefs = {
+      order: ['books', 'tv', 'games', 'movies'] as const,
+      enabled: ['movies', 'books'] as const,
+    } as unknown as ShelfPreferences;
+    expect(isShelfEnabled(prefs, 'movies')).toBe(true);
+    expect(isShelfEnabled(prefs, 'tv')).toBe(false);
   });
 
   it('is safe for a server component to import', () => {

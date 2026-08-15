@@ -11,7 +11,7 @@ vi.mock('next/navigation', () => ({
 
 const TABS = [
   { href: '/movies', label: 'My Favorite Movies' },
-  { href: '/movies/ranking', label: 'Ranking' },
+  { href: '/movies/ranking/list', label: 'Ranking' },
   { href: '/movies/watchlist', label: 'Watchlist' },
 ];
 

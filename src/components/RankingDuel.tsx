@@ -220,21 +220,26 @@ export function RankingDuel({
         });
         setPlacements((prev) => [{ title: entry.title, rank: position, imageUrl: entry.imageUrl }, ...prev]);
         if (verdict) setLastVerdict({ ...verdict, rank: position });
-        setQueue((prev) => prev.filter((e) => e.id !== entry.id));
+        const remainingQueue = queue.filter((queued) => queued.id !== entry.id);
+        setQueue(remainingQueue);
         setAnswers(null);
         playPop();
         // Standalone duel pages refresh their server-owned list and counts.
         // A parent with onQueueEmpty owns that state itself. Refreshing there
         // can make the server route redirect before the parent resumes its
         // search flow, as onboarding did after placing its second title.
-        if (!onQueueEmpty) router.refresh();
+        if (!onQueueEmpty) {
+          if (remainingQueue.length > 0) {
+            router.refresh();
+          }
+        }
       } catch {
         setError(`Couldn't save that placement. Try again.`);
       } finally {
         setCommitting(false);
       }
     },
-    [onQueueEmpty, router, shelf.id],
+    [onQueueEmpty, queue, router, shelf.id],
   );
 
   const answer = useCallback(
@@ -815,10 +820,10 @@ function Done({
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         <Link
-          href={shelf.boardHref}
+          href={shelf.shelfHref}
           className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
         >
-          View the full ranking
+          See list
         </Link>
         <Link
           href={shelf.addHref}

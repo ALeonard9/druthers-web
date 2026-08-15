@@ -29,10 +29,13 @@ export async function POST(request: Request) {
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
         // Create dedups on tvmaze OR imdb, so re-find on either key.
-        const all = await apiFetch<TVShow[]>('/v1/tv-shows');
-        const found = all.find(
-          (s) => s.tvmaze === tvmaze || (imdb != null && s.imdb === imdb),
+        const byTvmaze = await apiFetch<TVShow[]>(
+          `/v1/tv-shows?tvmaze=${encodeURIComponent(String(tvmaze))}`,
         );
+        const byImdb = byTvmaze.length === 0 && imdb
+          ? await apiFetch<TVShow[]>(`/v1/tv-shows?imdb=${encodeURIComponent(imdb)}`)
+          : [];
+        const found = byTvmaze[0] ?? byImdb[0];
         if (!found) throw err;
         show = found;
       } else {

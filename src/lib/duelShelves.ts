@@ -37,6 +37,8 @@ export interface ShelfConfig {
   label: string;
   /** Singular, lower-case, for prose: "a movie", "the next movie". */
   noun: string;
+  /** The shelf's poster icon view, where a completed ranking session lands. */
+  shelfHref: string;
   /** Where the drag-and-drop board lives - the duel always links back to it. */
   boardHref: string;
   /** This shelf's comparison screen. */
@@ -57,6 +59,7 @@ export const SHELVES: Record<ShelfId, ShelfConfig> = {
     id: 'movies',
     label: 'Movies',
     noun: 'movie',
+    shelfHref: '/movies?view=icons',
     boardHref: '/movies/ranking/list',
     duelHref: '/movies/ranking',
     itemBase: '/movies',
@@ -67,6 +70,7 @@ export const SHELVES: Record<ShelfId, ShelfConfig> = {
     id: 'tv',
     label: 'TV',
     noun: 'show',
+    shelfHref: '/tv?view=icons',
     boardHref: '/tv/ranking/list',
     duelHref: '/tv/ranking',
     itemBase: '/tv',
@@ -77,6 +81,7 @@ export const SHELVES: Record<ShelfId, ShelfConfig> = {
     id: 'books',
     label: 'Books',
     noun: 'book',
+    shelfHref: '/books?view=icons',
     boardHref: '/books/ranking/list',
     duelHref: '/books/ranking',
     itemBase: '/books',
@@ -87,6 +92,7 @@ export const SHELVES: Record<ShelfId, ShelfConfig> = {
     id: 'games',
     label: 'Games',
     noun: 'game',
+    shelfHref: '/games?view=icons',
     boardHref: '/games/ranking/list',
     duelHref: '/games/ranking',
     itemBase: '/games',

@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { contentSecurityPolicy } from './src/lib/contentSecurityPolicy';
 
 const nextConfig: NextConfig = {
   // Standalone output is only for the Docker image (the Dockerfile sets
@@ -27,6 +28,10 @@ const nextConfig: NextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Content-Security-Policy',
+            value: contentSecurityPolicy(),
+          },
         ],
       },
       {

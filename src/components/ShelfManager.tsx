@@ -15,10 +15,13 @@ export function ShelfManager() {
   const current = order ?? preferences.order;
   function persist(next: ShelfPreferences, changedShelf?: ShelfId) {
     setOrder(next.order);
-    saveShelfPreferences(next);
-    if (changedShelf && !preferences.enabled.includes(changedShelf)) {
-      router.push(`/onboarding?shelf=${changedShelf}`);
-    }
+    void saveShelfPreferences(next)
+      .then(() => {
+        if (changedShelf && !preferences.enabled.includes(changedShelf)) {
+          router.push(`/onboarding?shelf=${changedShelf}`);
+        }
+      })
+      .catch(() => undefined);
   }
 
   return (

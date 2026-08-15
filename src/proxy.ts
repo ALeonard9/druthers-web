@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { API_BASE_URL } from '@/lib/apiBase';
+import { contentSecurityPolicy } from '@/lib/contentSecurityPolicy';
 import {
   REFRESH_COOKIE,
   SESSION_COOKIE,
@@ -22,10 +23,31 @@ import {
  * the old `middleware` names log a deprecation warning.
  */
 export async function proxy(request: NextRequest) {
-  if (request.cookies.get(SESSION_COOKIE)) return NextResponse.next();
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const cspHeader = contentSecurityPolicy({
+    nonce,
+    development: process.env.NODE_ENV === 'development',
+  });
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set(
+    'x-druthers-path',
+    `${request.nextUrl.pathname}${request.nextUrl.search}`,
+  );
+  requestHeaders.set('Content-Security-Policy', cspHeader);
+
+  const reqInit = { request: { headers: requestHeaders } };
+
+  const withCsp = (res: NextResponse) => {
+    res.headers.set('Content-Security-Policy', cspHeader);
+    return res;
+  };
+
+  if (request.cookies.get(SESSION_COOKIE)) return withCsp(NextResponse.next(reqInit));
 
   const refreshToken = request.cookies.get(REFRESH_COOKIE)?.value;
-  if (!refreshToken) return NextResponse.next();
+  if (!refreshToken) return withCsp(NextResponse.next(reqInit));
 
   let refreshed: Response;
   try {
@@ -38,7 +60,7 @@ export async function proxy(request: NextRequest) {
   } catch {
     // API unreachable - leave the cookies alone so a blip doesn't sign
     // anyone out, and let the page handle its own failure.
-    return NextResponse.next();
+    return withCsp(NextResponse.next(reqInit));
   }
 
   if (!refreshed.ok) {
@@ -51,9 +73,9 @@ export async function proxy(request: NextRequest) {
     // visitor instead of a stale user cookie promising a session that just
     // died.
     clearSessionCookies(request.cookies);
-    const response = NextResponse.next({ request: { headers: request.headers } });
+    const response = NextResponse.next(reqInit);
     clearSessionCookies(response.cookies);
-    return response;
+    return withCsp(response);
   }
 
   const data = (await refreshed.json()) as TokenResponse;
@@ -64,9 +86,9 @@ export async function proxy(request: NextRequest) {
   // Without the first, the page that triggered the refresh would still
   // render signed-out.
   request.cookies.set(SESSION_COOKIE, data.access_token);
-  const response = NextResponse.next({ request: { headers: request.headers } });
+  const response = NextResponse.next(reqInit);
   applyTokenCookies(response.cookies, data);
-  return response;
+  return withCsp(response);
 }
 
 export const config = {

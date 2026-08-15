@@ -23,8 +23,10 @@ export async function POST(request: Request) {
       });
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
-        const all = await apiFetch<VideoGame[]>('/v1/games');
-        const found = all.find((g) => g.igdb === igdb);
+        const matches = await apiFetch<VideoGame[]>(
+          `/v1/games?igdb=${encodeURIComponent(String(igdb))}`,
+        );
+        const found = matches[0];
         if (!found) throw err;
         game = found;
       } else {

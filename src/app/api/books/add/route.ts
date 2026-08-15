@@ -23,8 +23,10 @@ export async function POST(request: Request) {
       });
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
-        const all = await apiFetch<Book[]>('/v1/books');
-        const found = all.find((b) => b.isbn === isbn);
+        const matches = await apiFetch<Book[]>(
+          `/v1/books?isbn=${encodeURIComponent(isbn)}`,
+        );
+        const found = matches[0];
         if (!found) throw err;
         book = found;
       } else {

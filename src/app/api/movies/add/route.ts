@@ -25,8 +25,10 @@ export async function POST(request: Request) {
       // 400 means the catalog already has it - find the existing row so the
       // add still lands on the user's list. Keyed on tmdb since #163.
       if (err instanceof ApiError && err.status === 400) {
-        const all = await apiFetch<Movie[]>('/v1/movies');
-        const found = all.find((m) => m.tmdb === tmdb);
+        const matches = await apiFetch<Movie[]>(
+          `/v1/movies?tmdb=${encodeURIComponent(String(tmdb))}`,
+        );
+        const found = matches[0];
         if (!found) throw err;
         movie = found;
       } else {

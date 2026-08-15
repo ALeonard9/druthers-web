@@ -64,35 +64,46 @@ export function AddFromSearchButton({
 }) {
   const router = useRouter();
   const multiAddMode = useMultiAddMode();
-  const [state, setState] = useState<'idle' | 'added' | 'error'>('idle');
+  const [state, setState] = useState<'idle' | 'added'>('idle');
+  const [pendingList, setPendingList] = useState<'watchlist' | 'rankings' | null>(null);
+  const [failedList, setFailedList] = useState<'watchlist' | 'rankings' | null>(null);
   const [pending, startTransition] = useTransition();
+  const listLabel = domain === 'books' ? 'Read' : domain === 'games' ? 'Play' : 'Watch';
 
   function add(list: 'watchlist' | 'rankings') {
+    setPendingList(list);
+    setFailedList(null);
     startTransition(async () => {
-      const res = await fetch(`/api/${domain}/add`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...payload, list }),
-      });
-      if (res.ok) {
-        playPop();
-        setState('added');
-        // Straight to the duel when it's going on the rankings - the API
-        // usually adds it unplaced, so the position still has to be decided.
-        // Exception: the first title into an empty shelf auto-places at #1
-        // (api#289), so there's nothing left to decide - go to the board.
-        if (list === 'rankings' && !multiAddMode) {
-          const tracker = await res.json().catch(() => null);
-          if (isAlreadyPlaced(tracker)) {
-            router.push(SHELVES[domain].boardHref);
-          } else {
-            router.push(duelHrefFor(domain, catalogIdFrom(domain, tracker)));
+      try {
+        const res = await fetch(`/api/${domain}/add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...payload, list }),
+        });
+        if (res.ok) {
+          playPop();
+          setState('added');
+          // Straight to the duel when it's going on the rankings - the API
+          // usually adds it unplaced, so the position still has to be decided.
+          // Exception: the first title into an empty shelf auto-places at #1
+          // (api#289), so there's nothing left to decide - go to the board.
+          if (list === 'rankings' && !multiAddMode) {
+            const tracker = await res.json().catch(() => null);
+            if (isAlreadyPlaced(tracker)) {
+              router.push(SHELVES[domain].boardHref);
+            } else {
+              router.push(duelHrefFor(domain, catalogIdFrom(domain, tracker)));
+            }
+          } else if (!multiAddMode) {
+            router.push(watchlistHref ?? DOMAIN_PAGE[domain]);
           }
-        } else if (!multiAddMode) {
-          router.push(watchlistHref ?? DOMAIN_PAGE[domain]);
+        } else {
+          setFailedList(list);
         }
-      } else {
-        setState('error');
+      } catch {
+        setFailedList(list);
+      } finally {
+        setPendingList(null);
       }
     });
   }
@@ -118,7 +129,7 @@ export function AddFromSearchButton({
             className="inline-flex w-full items-center justify-center gap-1 rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
           >
             <SearchActionIcon kind="rank" />
-            Rank
+            {failedList === 'rankings' ? 'Retry Rank' : 'Rank'}
           </button>
         ) : (
           <NotRankableMessage />
@@ -134,14 +145,14 @@ export function AddFromSearchButton({
         disabled={pending || !addable}
         className="inline-flex flex-1 items-center justify-center gap-1 rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-50"
       >
-        {pending ? (
+        {pending && pendingList === 'watchlist' ? (
           'Adding…'
-        ) : state === 'error' ? (
-          'Retry'
+        ) : failedList === 'watchlist' ? (
+          `Retry ${listLabel}`
         ) : (
           <>
             <SearchActionIcon kind="list" />
-            {domain === 'books' ? 'Read' : domain === 'games' ? 'Play' : 'Watch'}
+            {listLabel}
           </>
         )}
       </button>
@@ -151,10 +162,10 @@ export function AddFromSearchButton({
           disabled={pending || !addable}
           className="inline-flex flex-1 items-center justify-center gap-1 rounded bg-brass px-2 py-1 text-xs font-medium text-ink hover:bg-brass-bright disabled:opacity-50"
         >
-          {pending ? (
+          {pending && pendingList === 'rankings' ? (
             'Adding…'
-          ) : state === 'error' ? (
-            'Retry'
+          ) : failedList === 'rankings' ? (
+            'Retry Rank'
           ) : (
             <>
               <SearchActionIcon kind="rank" />

@@ -30,10 +30,9 @@ export function RankingDuelPage({
   // A duel needs a candidate plus at least one ranked opponent to compare it
   // against. An empty queue means every shelf title already has a position -
   // or the shelf has nothing on it at all - so there's no question the duel
-  // could ask. Land on the board instead, which already owns both of those
-  // states (the ranked list, and the "nothing ranked yet" empty list). This
-  // applies on entry, so nobody lands on an empty duel (web#212).
-  if (queue.length === 0) redirect(shelf.boardHref);
+  // could ask. Land on the shelf's icon view instead, so finishing the queue
+  // returns to browsing rather than opening another ranking screen (web#296).
+  if (queue.length === 0) redirect(shelf.shelfHref);
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-3">

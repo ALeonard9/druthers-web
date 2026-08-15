@@ -121,4 +121,39 @@ describe('proxy', () => {
 
     expect(response.headers.getSetCookie()).toHaveLength(0);
   });
+
+  it('injects a per-request nonce into the request headers and sets Content-Security-Policy', async () => {
+    mockRefresh(okResponse());
+    const req = request({ [SESSION_COOKIE]: 'still-good' });
+    const response = await proxy(req);
+
+    // The response must also have the header so the browser enforces it
+    const responseCsp = response.headers.get('Content-Security-Policy');
+    expect(responseCsp).toContain('nonce-');
+    expect(responseCsp).toContain('strict-dynamic');
+    expect(responseCsp).toContain('https://accounts.google.com');
+    for (const directive of [
+      "default-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://image.tmdb.org",
+      "font-src 'self'",
+      "frame-src 'self' https://accounts.google.com",
+      "connect-src 'self' https://accounts.google.com",
+      "form-action 'self'",
+      "object-src 'none'",
+    ]) {
+      expect(responseCsp).toContain(directive);
+    }
+  });
+
+  it('forwards the requested local path for disabled-shelf recovery', async () => {
+    mockRefresh(okResponse());
+    const response = await proxy(
+      request({ [SESSION_COOKIE]: 'still-good' }, '/movies/ranking?item=42'),
+    );
+
+    expect(response.headers.get('x-middleware-request-x-druthers-path')).toBe(
+      '/movies/ranking?item=42',
+    );
+  });
 });

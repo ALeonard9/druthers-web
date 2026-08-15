@@ -37,9 +37,11 @@ export default function PrivacyPage() {
           To provide metadata and search capabilities for your shelves, our services make API calls to several third-party providers:
         </p>
         <ul className="list-inside list-disc pl-4 space-y-1">
-          <li><strong>TMDB:</strong> For movies and TV shows data.</li>
-          <li><strong>Open Library:</strong> For books data.</li>
-          <li><strong>IGDB:</strong> For video games data.</li>
+          <li><strong>TMDB:</strong> For movie metadata and movie/TV streaming availability.</li>
+          <li><strong>TVmaze:</strong> For TV show and episode metadata.</li>
+          <li><strong>Open Library:</strong> Primary source for book metadata.</li>
+          <li><strong>Google Books:</strong> Fallback for book editions Open Library cannot resolve.</li>
+          <li><strong>IGDB:</strong> For video game metadata.</li>
         </ul>
         <p>
           These API calls may include search queries based on your input, but we do not share your personal account information with these third-party APIs.

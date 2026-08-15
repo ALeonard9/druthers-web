@@ -1,7 +1,7 @@
 const BASE_DIRECTIVES = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://image.tmdb.org",
+  "img-src 'self' data: blob: https://image.tmdb.org https://static.tvmaze.com https://covers.openlibrary.org https://books.google.com https://books.googleusercontent.com https://images.igdb.com",
   "font-src 'self'",
   "frame-src 'self' https://accounts.google.com",
   "connect-src 'self' https://accounts.google.com",

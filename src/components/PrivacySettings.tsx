@@ -10,6 +10,7 @@ import {
 } from '@/lib/privacyDefaults';
 import type { ShelfId } from '@/lib/duelShelves';
 import { useShelfPreferences } from '@/lib/useShelfPreferences';
+import { DomainIcon } from './DomainIcon';
 
 const TIER_ORDER: VisibilityTier[] = ['private', 'friends', 'public'];
 
@@ -494,7 +495,10 @@ export function PrivacySettings() {
         <ul className="divide-y divide-line/60 border-t border-line">
         {DOMAINS.filter((d) => shelfPreferences.enabled.includes(d.key as ShelfId)).map((d) => (
           <li key={d.key} className="px-4 py-3">
-            <p className="mb-1.5 text-sm font-medium text-neutral-200">{d.label}</p>
+            <p className="mb-1.5 flex items-center gap-2 text-sm font-medium text-neutral-200">
+              <DomainIcon domain={d.key as ShelfId} className="h-4 w-4" />
+              {d.label}
+            </p>
             <div className="flex items-center gap-3 py-1">
               <span
                 className="flex-1 text-xs text-neutral-400"

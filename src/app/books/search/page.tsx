@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
-import { BookSearch } from '@/components/BookSearch';
+import { DomainCatalogSearch } from '@/components/DomainCatalogSearch';
 import { MultiAddMode } from '@/components/MultiAddMode';
+import { DomainIcon } from '@/components/DomainIcon';
 
 export default async function BookSearchPage({
   searchParams,
@@ -22,7 +23,10 @@ export default async function BookSearchPage({
         {backLabel}
       </Link>
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-paper">Add a book</h1>
+        <h1 className="inline-flex items-center gap-2 font-display text-3xl font-medium tracking-tight text-paper">
+          <DomainIcon domain="books" className="h-5 w-5" />
+          Add a book
+        </h1>
         <p className="text-sm text-neutral-400">
           Search Open Library to add books one at a time.
         </p>
@@ -34,7 +38,7 @@ export default async function BookSearchPage({
         </p>
       </div>
       <MultiAddMode>
-        <BookSearch />
+        <DomainCatalogSearch domain="books" />
       </MultiAddMode>
     </div>
   );

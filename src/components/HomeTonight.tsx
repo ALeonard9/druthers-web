@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
 import type { Schedule } from '@/lib/types';
+import { relativeDayLabel } from '@/lib/viewerTime';
+import { getViewerTimeZone } from '@/lib/viewerTimeZone';
 
 /**
- * "Tonight" - streamed below the Top 5 rather than blocking first paint.
+ * Upcoming episodes — streamed below the Top 5 rather than blocking first paint.
  * The schedule query is bounded API-side, but it's still the slowest thing
  * on the page, and nothing above it needs to wait.
  */
@@ -25,7 +27,7 @@ function Frame({ children }: { children: React.ReactNode }) {
   return (
     <section className="rounded-lg border border-line bg-panel">
       <div className="flex items-baseline justify-between border-b border-line px-4 py-3">
-        <h2 className="font-display text-lg text-paper">Tonight</h2>
+        <h2 className="font-display text-lg text-paper">Upcoming</h2>
         <Link href="/tv/schedule" className="text-xs text-brass hover:text-brass-bright">
           Full schedule
         </Link>
@@ -66,6 +68,8 @@ export async function HomeTonight() {
 
   const airing = airingSoon(schedule);
   const behind = schedule.catch_up.length;
+  const timeZone = await getViewerTimeZone();
+  const now = new Date();
 
   return (
     <Frame>
@@ -90,8 +94,11 @@ export async function HomeTonight() {
               key={e.episode_id}
               className="flex items-center gap-3 border-b border-line/60 px-4 py-2 text-sm last:border-b-0"
             >
-              <span className="w-10 shrink-0 font-mono text-xs uppercase text-neutral-500">
-                {e.airdate ? AIRDATE_LABEL.format(new Date(e.airdate)) : '-'}
+              <span className="w-16 shrink-0 font-mono text-xs uppercase text-neutral-500">
+                {e.airdate
+                  ? (relativeDayLabel(e.airdate.slice(0, 10), now, timeZone) ??
+                    AIRDATE_LABEL.format(new Date(e.airdate)))
+                  : '—'}
               </span>
               <Link href={`/tv/${e.show_id}`} className="truncate hover:underline">
                 {e.show_title}

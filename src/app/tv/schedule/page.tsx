@@ -7,6 +7,7 @@ import type { Schedule } from '@/lib/types';
 import { ScheduleEpisodeRow } from '@/components/ScheduleEpisodeRow';
 import { FrozenShowsList } from '@/components/FrozenShowsList';
 import { SectionTabs } from '@/components/SectionTabs';
+import { DomainIcon } from '@/components/DomainIcon';
 import { TV_TABS } from '@/lib/sectionTabs';
 import { relativeDayLabel } from '@/lib/viewerTime';
 import { getViewerTimeZone } from '@/lib/viewerTimeZone';
@@ -52,7 +53,7 @@ export default async function SchedulePage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <SectionTabs tabs={TV_TABS} />
+      <SectionTabs tabs={TV_TABS} icon={<DomainIcon domain="tv" />} />
       <div>
         <h1 className="font-display text-3xl font-medium tracking-tight text-paper">Schedule</h1>
         <p className="text-sm text-neutral-400">

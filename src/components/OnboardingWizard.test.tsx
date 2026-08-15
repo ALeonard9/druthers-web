@@ -10,6 +10,37 @@ vi.mock('next/navigation', () => ({ useRouter: () => navigation }));
 vi.mock('@/components/GoodreadsImport', () => ({
   GoodreadsImport: () => <div>Goodreads importer</div>,
 }));
+vi.mock('@/components/VoiceSearch', () => ({
+  VoiceSearch: ({ onTranscript }: { onTranscript: (transcript: string) => void }) => (
+    <button type="button" aria-label="Start voice search" onClick={() => onTranscript('Dune')}>
+      Voice
+    </button>
+  ),
+}));
+vi.mock('@/components/RankingDuel', () => ({
+  RankingDuel: ({
+    queue,
+    onQueueEmpty,
+  }: {
+    queue: Array<Record<string, unknown>>;
+    onQueueEmpty: (result: {
+      ranked: Array<Record<string, unknown>>;
+      skipped: Array<Record<string, unknown>>;
+    }) => void;
+  }) => (
+    <button
+      type="button"
+      onClick={() =>
+        onQueueEmpty({
+          ranked: queue.map((item, index) => ({ ...item, rank: index + 1 })),
+          skipped: [],
+        })
+      }
+    >
+      Finish duel
+    </button>
+  ),
+}));
 
 const summary: Summary = {
   handle: 'new-reader',
@@ -161,5 +192,134 @@ describe('OnboardingWizard shelf setup', () => {
     expect((await screen.findByRole('alert')).textContent).toContain('Preferences could not be saved.');
     expect(screen.queryByText('Finishing up…')).toBeNull();
     expect(navigation.push).not.toHaveBeenCalled();
+  });
+
+  it('uses the full search view and retains its query and results after adding and ranking', async () => {
+    vi.mocked(fetch).mockImplementation((input: string | URL | Request) => {
+      const url = input.toString();
+      if (url === '/api/user/movies') return Promise.resolve(new Response(JSON.stringify([])));
+      if (url === '/api/search?q=Dune') {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              query: 'Dune',
+              corrected: null,
+              movies: [
+                {
+                  tmdb: 438631,
+                  imdb: 'tt1160419',
+                  title: 'Dune',
+                  year: '2021',
+                  release_date: '2021-10-22',
+                  poster_url: '/dune.jpg',
+                  type: 'movie',
+                  popularity: 50,
+                  on_watchlist: false,
+                  on_rankings: false,
+                  rank: null,
+                },
+              ],
+              tv_shows: [],
+              books: [],
+              games: [],
+            }),
+          ),
+        );
+      }
+      if (url === '/api/movies/add') {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              id: 'tracker-1',
+              on_watchlist: false,
+              on_rankings: true,
+              rank: null,
+              movie: {
+                id: 'movie-1',
+                title: 'Dune',
+                year: 2021,
+                poster_url: '/dune.jpg',
+              },
+            }),
+          ),
+        );
+      }
+      return Promise.resolve(new Response(JSON.stringify({})));
+    });
+
+    render(
+      <OnboardingWizard
+        summary={{ ...summary, needs_onboarding: false }}
+        shelfToSetUp="movies"
+      />,
+    );
+
+    const search = await screen.findByRole('searchbox');
+    expect(screen.getByRole('button', { name: 'Start voice search' })).toBeTruthy();
+    fireEvent.change(search, { target: { value: 'Dune' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+
+    const artwork = await screen.findByRole('img', { name: 'Dune' });
+    expect(artwork.parentElement?.className).toContain('aspect-[2/3]');
+    fireEvent.click(screen.getByRole('button', { name: 'Add Dune to Ranked List' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Finish duel' }));
+
+    await waitFor(() => expect(screen.getByRole('searchbox')).toHaveProperty('value', 'Dune'));
+    expect(screen.getByRole('img', { name: 'Dune' })).toBeTruthy();
+    expect(screen.getByText('✓ Ranked')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Watchlist|Read List|Play List/ })).toBeNull();
+  });
+
+  it('explains when an onboarding result is not rankable yet', async () => {
+    vi.mocked(fetch).mockImplementation((input: string | URL | Request) => {
+      const url = input.toString();
+      if (url === '/api/user/movies') return Promise.resolve(new Response(JSON.stringify([])));
+      if (url === '/api/search?q=Doomsday') {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              query: 'Doomsday',
+              corrected: null,
+              movies: [
+                {
+                  tmdb: 100,
+                  imdb: null,
+                  title: 'Avengers: Doomsday',
+                  year: '2099',
+                  release_date: '2099-12-16',
+                  poster_url: '/doomsday.jpg',
+                  type: 'movie',
+                  popularity: 50,
+                  on_watchlist: false,
+                  on_rankings: false,
+                  rank: null,
+                },
+              ],
+              tv_shows: [],
+              books: [],
+              games: [],
+            }),
+          ),
+        );
+      }
+      return Promise.resolve(new Response(JSON.stringify({})));
+    });
+
+    render(
+      <OnboardingWizard
+        summary={{ ...summary, needs_onboarding: false }}
+        shelfToSetUp="movies"
+      />,
+    );
+
+    fireEvent.change(await screen.findByRole('searchbox'), {
+      target: { value: 'Doomsday' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+
+    expect(await screen.findByText('Not rankable yet')).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'Add Avengers: Doomsday to Ranked List' }),
+    ).toBeNull();
   });
 });

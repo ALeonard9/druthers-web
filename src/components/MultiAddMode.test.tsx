@@ -52,7 +52,8 @@ describe('MultiAddMode (web#168)', () => {
     );
 
     fireEvent.click(screen.getByRole('switch'));
-    fireEvent.click(screen.getByRole('button', { name: '+ Add' }));
+    const listLabel = domain === 'books' ? 'Read' : domain === 'games' ? 'Play' : 'Watch';
+    fireEvent.click(screen.getByRole('button', { name: listLabel }));
 
     await waitFor(() => expect(screen.getByText('✓ On your list')).toBeTruthy());
     expect(global.fetch).toHaveBeenCalledWith(`/api/${domain}/add`, expect.anything());
@@ -66,8 +67,64 @@ describe('MultiAddMode (web#168)', () => {
       </MultiAddMode>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '+ Add' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch' }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith('/movies'));
+  });
+
+  it('keeps results in place after a ranked-list add when keep-adding mode is on', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ movie: { id: 'movie-1' }, rank: null }),
+    });
+    render(
+      <MultiAddMode>
+        <AddFromSearchButton domain="movies" payload={{ tmdb: 1, title: 'Movie' }} />
+      </MultiAddMode>,
+    );
+
+    fireEvent.click(screen.getByRole('switch'));
+    fireEvent.click(screen.getByRole('button', { name: 'Rank' }));
+
+    await waitFor(() => expect(screen.getByText('✓ On your list')).toBeTruthy());
+    expect(push).not.toHaveBeenCalled();
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/movies/add',
+      expect.objectContaining({ body: JSON.stringify({ tmdb: 1, title: 'Movie', list: 'rankings' }) }),
+    );
+  });
+
+  it('routes an unplaced ranked-list add to its duel when keep-adding mode is off', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ movie: { id: 'movie-1' }, rank: null }),
+    });
+    render(
+      <MultiAddMode>
+        <AddFromSearchButton domain="movies" payload={{ tmdb: 1, title: 'Movie' }} />
+      </MultiAddMode>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rank' }));
+
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith('/movies/ranking?item=movie-1'),
+    );
+  });
+
+  it('routes an auto-placed ranked-list add to its board when keep-adding mode is off', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ movie: { id: 'movie-1' }, rank: 1 }),
+    });
+    render(
+      <MultiAddMode>
+        <AddFromSearchButton domain="movies" payload={{ tmdb: 1, title: 'Movie' }} />
+      </MultiAddMode>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rank' }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/movies/ranking/list'));
   });
 });

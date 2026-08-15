@@ -7,7 +7,9 @@ import BookSearchPage from './page';
 const mocks = vi.hoisted(() => ({ getSessionUser: vi.fn() }));
 
 vi.mock('@/lib/session', () => ({ getSessionUser: mocks.getSessionUser }));
-vi.mock('@/components/BookSearch', () => ({ BookSearch: () => <div>Book search</div> }));
+vi.mock('@/components/DomainCatalogSearch', () => ({
+  DomainCatalogSearch: ({ domain }: { domain: string }) => <div>{domain} search</div>,
+}));
 vi.mock('@/components/MultiAddMode', () => ({ MultiAddMode: ({ children }: { children: ReactNode }) => <>{children}</> }));
 
 describe('book search page', () => {

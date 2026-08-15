@@ -54,3 +54,12 @@ tasks:
     desc: 'Run Playwright smoke tests'
     cmds:
       - npm run test:e2e
+
+  validate:
+    desc: 'Every mechanical check, in order. Run this before you commit.'
+    # e2e stays out: it needs the dev stack, which a fleet worker must never
+    # start. It runs in CI and at land.
+    cmds:
+      - task: lint
+      - task: typecheck
+      - task: test

@@ -1,7 +1,7 @@
 /** @vitest-environment happy-dom */
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MovieSearch } from './MovieSearch';
+import { DomainCatalogSearch } from './DomainCatalogSearch';
 import type { MovieSearchResult } from '@/lib/types';
 
 vi.mock('next/navigation', () => ({
@@ -29,7 +29,7 @@ async function search(title: string) {
   await screen.findAllByText(title);
 }
 
-describe('MovieSearch unreleased movies (web#180)', () => {
+describe('DomainCatalogSearch movie policy (web#180)', () => {
   afterEach(cleanup);
 
   it('shows a release-date badge and no rank affordance for a movie far from release', async () => {
@@ -40,14 +40,14 @@ describe('MovieSearch unreleased movies (web#180)', () => {
       ],
     });
 
-    render(<MovieSearch />);
+    render(<DomainCatalogSearch domain="movies" />);
     await search('Avengers: Doomsday');
 
     expect(screen.getByText(/Release: Dec 16, 2099/)).toBeTruthy();
     expect(screen.getByText('Not rankable yet')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: '+ Rankings' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Rank' })).toBeNull();
     // Still addable to the watchlist even though it isn't rankable yet.
-    expect(screen.getByRole('button', { name: '+ Watchlist' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Watch' })).toBeTruthy();
   });
 
   it('offers rankings normally for an already-released movie', async () => {
@@ -56,15 +56,15 @@ describe('MovieSearch unreleased movies (web#180)', () => {
       json: async () => [result({ tmdb: 2, title: 'The Matrix', release_date: '1999-03-30' })],
     });
 
-    render(<MovieSearch />);
+    render(<DomainCatalogSearch domain="movies" />);
     await search('The Matrix');
 
     expect(screen.queryByText('Not rankable yet')).toBeNull();
-    expect(screen.getByRole('button', { name: '+ Rankings' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Rank' })).toBeTruthy();
   });
 });
 
-describe('MovieSearch on-watchlist indicator', () => {
+describe('DomainCatalogSearch on-watchlist indicator', () => {
   afterEach(cleanup);
 
   it('shows a single badge, not a duplicate disabled button, for a title already on the watchlist', async () => {
@@ -75,11 +75,11 @@ describe('MovieSearch on-watchlist indicator', () => {
       ],
     });
 
-    render(<MovieSearch />);
+    render(<DomainCatalogSearch domain="movies" />);
     await search('Casablanca');
 
     expect(screen.getAllByText(/On Watchlist/)).toHaveLength(1);
-    expect(screen.queryByRole('button', { name: /Watchlist/ })).toBeNull();
-    expect(screen.getByRole('button', { name: '→ Move to Rankings' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Watch List/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Rank' }).className).toContain('w-full');
   });
 });

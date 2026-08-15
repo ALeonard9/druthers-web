@@ -13,6 +13,7 @@ import { FilterBar } from '@/components/FilterBar';
 import { ProgressBanner } from '@/components/ProgressBanner';
 import { progressMessage } from '@/lib/progress';
 import { SectionTabs } from '@/components/SectionTabs';
+import { DomainIcon } from '@/components/DomainIcon';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,7 @@ export default async function MoviesPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionTabs tabs={MOVIE_TABS} />
+      <SectionTabs tabs={MOVIE_TABS} icon={<DomainIcon domain="movies" />} />
 
       <div className="flex items-end justify-between">
         <div>
@@ -66,9 +67,10 @@ export default async function MoviesPage({
           />
           <Link
             href="/movies/search"
-            className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
+            className="inline-flex items-center gap-1.5 rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
-            + Add a movie
+            <DomainIcon domain="movies" className="h-4 w-4" />
+            Add a movie
           </Link>
         </div>
       </div>
@@ -107,8 +109,9 @@ export default async function MoviesPage({
               'No ranked movies match the filter.'
             ) : (
               <>
-                Nothing ranked yet -{' '}
-                <Link href="/movies/search" className="text-brass">
+                Nothing ranked yet —{' '}
+                <Link href="/movies/search" className="inline-flex items-center gap-1 text-brass">
+                  <DomainIcon domain="movies" className="h-4 w-4" />
                   add a movie
                 </Link>{' '}
                 or promote one from your{' '}

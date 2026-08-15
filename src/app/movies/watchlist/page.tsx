@@ -12,6 +12,7 @@ import { WatchlistCard } from '@/components/WatchlistCard';
 import { WatchlistViewer } from '@/components/WatchlistViewer';
 import { FilterBar } from '@/components/FilterBar';
 import { SectionTabs } from '@/components/SectionTabs';
+import { DomainIcon } from '@/components/DomainIcon';
 import { MOVIE_TABS } from '@/lib/sectionTabs';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +43,7 @@ export default async function MoviesWatchlistPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionTabs tabs={MOVIE_TABS} />
+      <SectionTabs tabs={MOVIE_TABS} icon={<DomainIcon domain="movies" />} />
 
       <div className="flex items-end justify-between">
         <div>
@@ -62,9 +63,10 @@ export default async function MoviesWatchlistPage({
           />
           <Link
             href="/movies/search?from=watchlist"
-            className="rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
+            className="inline-flex items-center gap-1.5 rounded bg-brass px-3 py-2 text-sm font-medium text-ink hover:bg-brass-bright"
           >
-            + Add a movie
+            <DomainIcon domain="movies" className="h-4 w-4" />
+            Add a movie
           </Link>
         </div>
       </div>
@@ -107,8 +109,9 @@ export default async function MoviesWatchlistPage({
               'No watchlist movies match the filter.'
             ) : (
               <>
-                Nothing queued -{' '}
-                <Link href="/movies/search?from=watchlist" className="text-brass">
+                Nothing queued —{' '}
+                <Link href="/movies/search?from=watchlist" className="inline-flex items-center gap-1 text-brass">
+                  <DomainIcon domain="movies" className="h-4 w-4" />
                   add one
                 </Link>
                 .

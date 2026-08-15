@@ -56,6 +56,16 @@ describe('SearchForm', () => {
     expect(screen.getByRole('searchbox')).toHaveProperty('value', 'ada');
   });
 
+  it('limits scope options to active shelves while keeping All and Users', () => {
+    render(<SearchForm activeShelves={['movies', 'books']} />);
+
+    expect(
+      [...screen.getByRole('combobox', { name: 'Search scope' }).querySelectorAll('option')].map(
+        (option) => option.textContent,
+      ),
+    ).toEqual(['All', 'Movies', 'Books', 'Users']);
+  });
+
   it('hides the voice-search control when the browser does not support speech recognition', () => {
     render(<SearchForm />);
 

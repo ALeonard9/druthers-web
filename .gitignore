@@ -53,3 +53,5 @@ next-env.d.ts
 
 # Local Claude Code artifacts (not checked in for this repo)
 graphify-out/
+
+WORKER_REPORT.md

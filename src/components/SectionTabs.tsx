@@ -2,15 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { ReactNode } from 'react';
 
 // Sub-navigation within a section (e.g. Movies → Rankings · Watchlist). The
 // active tab is matched exactly so nested detail routes fall back to the first
-// tab. Each tab filters independently - switching tabs drops the current
-// filter rather than carrying it across.
+// tab. Each tab filters independently — switching tabs drops the current
+// filter rather than carrying it across. An optional `icon` (the domain glyph,
+// web#282) sits at the leading edge of the rail as a section marker.
 export function SectionTabs({
   tabs,
+  icon,
 }: {
   tabs: { href: string; label: string }[];
+  icon?: ReactNode;
 }) {
   const pathname = usePathname();
   // Exact match first (e.g. Ranking now defaults to the duel at
@@ -28,6 +32,11 @@ export function SectionTabs({
     // Scrolls sideways rather than wrapping: a wrapped tab would push the
     // active underline onto a second line and misalign the row.
     <div className="tab-rail flex gap-1 overflow-x-auto border-b border-line">
+      {icon && (
+        <span className="flex shrink-0 items-center py-2 pr-2 text-neutral-500">
+          {icon}
+        </span>
+      )}
       {tabs.map((t) => (
         <Link
           key={t.href}

@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import type { PublicShelf } from '@/lib/types';
+import type { ShelfId } from '@/lib/duelShelves';
 import type { DeckItem } from '@/lib/deck';
 import { RankedPosterDeck } from './RankedPosterDeck';
+import { DomainIcon } from './DomainIcon';
 
 function toDeckItems(shelf: PublicShelf, base: string): DeckItem[] {
   return shelf.items.map((entry) => ({
@@ -51,8 +53,9 @@ export function PublicShelfCarousel({
       <div className="flex items-baseline justify-between border-b border-line px-4 py-3">
         <Link
           href={href}
-          className="font-display text-lg text-paper hover:text-brass"
+          className="inline-flex items-center gap-2 font-display text-lg text-paper hover:text-brass"
         >
+          <DomainIcon domain={shelf.slug as ShelfId} className="h-4 w-4" />
           {shelf.category}
         </Link>
         <span className="font-mono text-[11px] uppercase tracking-wide text-neutral-500">

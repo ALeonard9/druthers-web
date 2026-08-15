@@ -71,7 +71,35 @@ describe('ActivityFeed', () => {
 
     expect(screen.getByText('Grace Movie')).toBeTruthy();
     expect(screen.getAllByText('Grace Hopper')).toHaveLength(2);
+    expect(screen.getByRole('link', { name: 'Grace Hopper' }).getAttribute('href')).toBe('/u/grace');
     expect(window.sessionStorage.getItem('druthers_activity_people')).toBe('["grace"]');
+  });
+
+  it('links a social actor without a handle to their profile by id', () => {
+    renderFeed({
+      initialSocialItems: [
+        { ...socialItem, actor: { id: 'grace', handle: null, display_name: 'Grace Hopper' } },
+      ],
+    });
+    openFilter();
+    fireEvent.click(screen.getByRole('button', { name: /friends/i }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include Grace Hopper' }));
+
+    expect(screen.getByRole('link', { name: 'Grace Hopper' }).getAttribute('href')).toBe('/u/grace');
+  });
+
+  it('renders a social actor without a linkable identity as plain text', () => {
+    const ghost = { id: '', handle: null, display_name: 'Ghost' };
+    renderFeed({
+      initialSocialItems: [{ ...socialItem, actor: ghost }],
+      friends: [{ id: 'friendship', user: ghost, friends_since: '2026-01-01T00:00:00Z' }],
+    });
+    openFilter();
+    fireEvent.click(screen.getByRole('button', { name: /friends/i }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Include Ghost' }));
+
+    expect(screen.getAllByText('Ghost').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('link', { name: 'Ghost' })).toBeNull();
   });
 
   it('drops your own activity when You is unchecked, leaving a selected friend', () => {

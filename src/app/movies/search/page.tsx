@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/session';
-import { MovieSearch } from '@/components/MovieSearch';
+import { DomainCatalogSearch } from '@/components/DomainCatalogSearch';
 import { MultiAddMode } from '@/components/MultiAddMode';
+import { DomainIcon } from '@/components/DomainIcon';
 
 export default async function MovieSearchPage({
   searchParams,
@@ -22,13 +23,16 @@ export default async function MovieSearchPage({
         {backLabel}
       </Link>
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-paper">Add a movie</h1>
+        <h1 className="inline-flex items-center gap-2 font-display text-3xl font-medium tracking-tight text-paper">
+          <DomainIcon domain="movies" className="h-5 w-5" />
+          Add a movie
+        </h1>
         <p className="text-sm text-neutral-400">
           Search the catalog and add a title to your list.
         </p>
       </div>
       <MultiAddMode>
-        <MovieSearch />
+        <DomainCatalogSearch domain="movies" />
       </MultiAddMode>
     </div>
   );

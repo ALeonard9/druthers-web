@@ -79,7 +79,7 @@ describe('streamingProviders', () => {
 
   it('returns nothing when the title has no availability', () => {
     // The API answers with empty buckets for "nowhere", "unresolvable" and
-    // "TMDB was down" alike — all three render as no section.
+    // "TMDB was down" alike - all three render as no section.
     expect(streamingProviders(providers())).toEqual([]);
   });
 

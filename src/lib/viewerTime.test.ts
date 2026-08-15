@@ -7,7 +7,7 @@ import {
   relativeDayLabel,
 } from './viewerTime';
 
-// 2026-08-10T02:30:00Z — deliberately after UTC midnight, so a zone behind
+// 2026-08-10T02:30:00Z - deliberately after UTC midnight, so a zone behind
 // UTC is still on the 9th and a zone ahead is well into the 10th. Anything
 // that reads the server's clock instead of the viewer's gets this wrong.
 const AT = new Date('2026-08-10T02:30:00Z');

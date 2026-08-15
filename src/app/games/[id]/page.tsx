@@ -16,7 +16,7 @@ export default async function GameDetailPage({
   if (!user) redirect('/login');
   const { id } = await params;
 
-  // The tracker 404s when the game isn't on any list — that's not an error.
+  // The tracker 404s when the game isn't on any list - that's not an error.
   const trackerOrNull = apiFetch<UserVideoGame>(`/v1/users/me/games/${id}`).catch(
     (err) => {
       if (err instanceof ApiError && err.status === 404) return null;

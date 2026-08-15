@@ -65,7 +65,7 @@ export default async function SettingsPage() {
         <div>
           <h2 className="font-display text-lg text-paper">Time zone</h2>
           <p className="text-sm text-neutral-400">
-            Which clock your hours are read in — the greeting up top, and
+            Which clock your hours are read in - the greeting up top, and
             which day the schedule calls today. Saved to your account, so it
             follows you to another device.
           </p>
@@ -97,7 +97,7 @@ export default async function SettingsPage() {
             >
               MCP server
             </a>{' '}
-            and scripts — use one as <code className="font-mono text-xs">API_TOKEN</code>{' '}
+            and scripts - use one as <code className="font-mono text-xs">API_TOKEN</code>{' '}
             instead of your password. Revoking takes effect immediately.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default async function SettingsPage() {
         </div>
         <div className="rounded-lg border border-line bg-panel px-4 py-3 text-sm">
           {/* Plain anchors on purpose: these are file downloads served by BFF
-              route handlers, not pages — <Link/> would try to client-navigate
+              route handlers, not pages - <Link/> would try to client-navigate
               and prefetch them. */}
           <a
             href="/api/export"

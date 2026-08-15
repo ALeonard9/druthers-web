@@ -56,7 +56,7 @@ export function byRank(a: UserMovie, b: UserMovie): number {
  *  - watchlist:      on_watchlist, by title
  *  - rankingsPlaced: on_rankings with a rank position, ordered by rank
  *  - rankingsUnplaced: on_rankings but not yet positioned ("to rank" bucket)
- * A movie may appear in the watchlist and the rankings. Pure — safe to test.
+ * A movie may appear in the watchlist and the rankings. Pure - safe to test.
  */
 export function partitionMovies(movies: UserMovie[]): {
   watchlist: UserMovie[];

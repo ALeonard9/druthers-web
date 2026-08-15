@@ -19,7 +19,7 @@ const refresh = vi.fn();
 // And it records rather than throws. The real next/navigation redirect throws
 // to unwind the render, and mimicking that is tempting, but the throw escapes
 // as an unhandled error that vitest then reports against whichever test is
-// running — including the negative control that never redirects. Asserting the
+// running - including the negative control that never redirects. Asserting the
 // call is what the behaviour actually is: the guard decided to redirect, and
 // where to.
 const { redirect } = vi.hoisted(() => ({ redirect: vi.fn() }));
@@ -155,7 +155,7 @@ describe('RankingDuelPage default to the list when nothing is left to rank (web#
   beforeEach(() => redirect.mockClear());
 
   it('redirects every fully-ranked shelf to its own board', () => {
-    // Two ranked entries, nothing queued — a matchup is impossible, so the
+    // Two ranked entries, nothing queued - a matchup is impossible, so the
     // duel must hand off to the board instead of showing an empty duel.
     // Parametrised over all four shelves so a config typo can't strand one.
     const cases = [

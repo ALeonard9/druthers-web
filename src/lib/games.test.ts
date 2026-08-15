@@ -88,7 +88,7 @@ describe('byRank', () => {
   });
 });
 
-describe('filterGames — game-specific fields', () => {
+describe('filterGames - game-specific fields', () => {
   const games = [
     ug({
       id: '1', on_watchlist: true, is_100_percent: true,
@@ -116,7 +116,7 @@ describe('filterGames — game-specific fields', () => {
 
   it('filters to 100%-completed games only when the flag is set', () => {
     expect(filterGames(games, { hundred: true }).map((g) => g.id)).toEqual(['1']);
-    // Unset must not act as "only incomplete" — it means "don't filter".
+    // Unset must not act as "only incomplete" - it means "don't filter".
     expect(filterGames(games, {}).map((g) => g.id)).toEqual(['1', '2']);
   });
 });

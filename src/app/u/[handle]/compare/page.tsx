@@ -14,7 +14,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = await params;
   return {
-    title: `You × @${handle} — Druthers`,
+    title: `You × @${handle} - Druthers`,
     description: `Compare your favorites with @${handle}.`,
   };
 }

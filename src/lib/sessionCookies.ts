@@ -9,7 +9,7 @@ import type { SessionUser } from './types';
 // info for rendering the nav without decoding the JWT on the client.
 export const SESSION_COOKIE = 'aleonard_session';
 export const USER_COOKIE = 'aleonard_user';
-// The refresh token (#246) — httpOnly and never read by client JS. It is the
+// The refresh token (#246) - httpOnly and never read by client JS. It is the
 // only credential that survives the access token's expiry, so it is also the
 // only one worth stealing; it never leaves the server side of the BFF.
 export const REFRESH_COOKIE = 'aleonard_refresh';
@@ -35,7 +35,7 @@ export interface TokenResponse {
 // Minimal surfaces shared by the `cookies()` store, NextResponse.cookies, and
 // NextRequest.cookies, so the same helpers work from a route handler or from
 // the proxy. Kept separate because request cookies can only be deleted, not
-// written with options — clearing genuinely needs less than writing does.
+// written with options - clearing genuinely needs less than writing does.
 interface CookieWriter {
   set(name: string, value: string, options?: Record<string, unknown>): unknown;
   delete(name: string): unknown;
@@ -81,7 +81,7 @@ export function applyTokenCookies(
   });
   const user = sessionUserFrom(data);
   // Non-sensitive; readable by the client to render the nav. Lives as long as
-  // the refresh token — it is the "you are signed in" hint, and expiring it
+  // the refresh token - it is the "you are signed in" hint, and expiring it
   // with the access token would sign the user out visually every 30 minutes.
   store.set(USER_COOKIE, JSON.stringify(user), {
     ...cookieOptions,

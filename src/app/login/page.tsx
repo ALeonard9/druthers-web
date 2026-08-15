@@ -6,7 +6,7 @@ import { GoogleSignIn } from '@/components/GoogleSignIn';
 import { LoginForm } from '@/components/LoginForm';
 
 async function sessionIsValid(): Promise<boolean> {
-  // The user cookie alone isn't proof — an expired/stale JWT with a
+  // The user cookie alone isn't proof - an expired/stale JWT with a
   // lingering cookie caused a /login ↔ / redirect loop. Only bounce away
   // from the login page when the token actually works.
   try {
@@ -29,14 +29,14 @@ export default async function LoginPage() {
         <span className="mr-0.5 not-italic text-brass">’</span>druthers
       </h1>
       <p className="mb-6 text-sm text-neutral-400">
-        Your favorites — watched, read, played, and ranked.
+        Your favorites - watched, read, played, and ranked.
       </p>
 
       <div className="rounded-lg border border-line bg-panel p-6">
         <GoogleSignIn clientId={clientId} />
       </div>
 
-      {/* Local/dev fallback — hidden in prod builds, where the API's
+      {/* Local/dev fallback - hidden in prod builds, where the API's
           DISABLE_PASSWORD_LOGIN rejects password auth anyway (belt and
           suspenders). NEXT_PUBLIC_APP_ENV is baked at build time. */}
       {process.env.NEXT_PUBLIC_APP_ENV !== 'prod' && (

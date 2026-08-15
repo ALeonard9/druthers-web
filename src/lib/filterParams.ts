@@ -15,13 +15,13 @@ export interface CommonFilters {
  * all eight pages.
  */
 export interface DomainFilters extends CommonFilters {
-  rated?: string; // movies — MPAA certificate
-  runtimeMax?: number; // movies — minutes
-  status?: string; // tv — Running / Ended
-  watchStatus?: string; // tv — not_started / behind / up_to_date / complete
+  rated?: string; // movies - MPAA certificate
+  runtimeMax?: number; // movies - minutes
+  status?: string; // tv - Running / Ended
+  watchStatus?: string; // tv - not_started / behind / up_to_date / complete
   pagesMax?: number; // books
   platform?: string; // games
-  hundred?: boolean; // games — 100%-completed only
+  hundred?: boolean; // games - 100%-completed only
 }
 
 /** Raw string form of every filter, for populating the form controls. */
@@ -41,7 +41,7 @@ function num(v: string | undefined): number | undefined {
 /**
  * Read the filter search params once, in both shapes a domain page needs:
  * `filters` (typed, for filterX()) and `filterValues` (strings, for the form).
- * `hasFilter` drives the "(filtered)" hints and empty states. Pure — safe to test.
+ * `hasFilter` drives the "(filtered)" hints and empty states. Pure - safe to test.
  */
 export function parseFilterParams(sp: Record<string, string | undefined>): {
   filters: DomainFilters;
@@ -101,7 +101,7 @@ export function optionsFrom(values: (string | null | undefined)[]): string[] {
 }
 
 /**
- * Same, but labelled with how many items carry each value — the long tail of
+ * Same, but labelled with how many items carry each value - the long tail of
  * Open Library subjects is mostly one-book entries, and the count is what tells
  * you which options are worth picking.
  */
@@ -115,7 +115,7 @@ export function optionsWithCounts(
 
 /**
  * Does a comma-joined field contain this exact token? Used for genre and
- * platform, where the value comes from a dropdown built by optionsFrom() —
+ * platform, where the value comes from a dropdown built by optionsFrom() -
  * so an exact token match is both possible and more precise than a substring
  * ("Action" must not match "Action-Adventure").
  */

@@ -8,10 +8,10 @@ const BATCH = 100;
  * Incrementally reveals more of an already-in-memory list as an
  * IntersectionObserver sentinel scrolls into view (#122's "All" length).
  * Mounting 2000 draggable rows at once is what actually hurts responsiveness
- * — the data is already local, so this only paces the DOM.
+ * - the data is already local, so this only paces the DOM.
  *
  * `resetKey` starts the count over (e.g. switching length or domain) by
- * adjusting state during render rather than in an effect — the pattern React
+ * adjusting state during render rather than in an effect - the pattern React
  * itself recommends for "reset state when a prop changes" without the extra
  * render + effect round trip.
  *
@@ -19,7 +19,7 @@ const BATCH = 100;
  * only exists in the DOM once there's more to reveal, so it mounts well
  * after this hook's first render. A plain `useRef` + effect with a
  * `[total, batch]` dependency array would set up the observer once on that
- * first render — while the element is still null — and never again, since
+ * first render - while the element is still null - and never again, since
  * neither dependency changes when the div later appears. A callback ref
  * fires exactly when the node itself mounts or unmounts, whatever the
  * reason, which is the signal that's actually needed here.

@@ -19,7 +19,7 @@ import {
 } from '@/lib/shareCardRender';
 
 /**
- * "Share your Top 5" — button + modal from the Top 5 Share Cards design.
+ * "Share your Top 5" - button + modal from the Top 5 Share Cards design.
  * The preview canvas *is* the export surface (rendered at full resolution,
  * scaled by CSS), so what you see is exactly the PNG that ships.
  */
@@ -106,10 +106,10 @@ export function ShareTop5Button({
     });
   // Two different URLs for two different audiences. The rendered card image
   // and Facebook/X posts outlive this session and may be opened by anyone,
-  // anywhere, later — those must always resolve, so they're forced to prod.
+  // anywhere, later - those must always resolve, so they're forced to prod.
   // Copy URL and Send message are opened right now, by whoever the current
   // page is actually being served to (QA/local/prod), so they use
-  // `resolvedDestination.url` as-is — it's already env-dynamic (built via
+  // `resolvedDestination.url` as-is - it's already env-dynamic (built via
   // getSiteUrl() in buildShareDestination/contentUrl/profileUrl).
   const publicDestinationUrl = publicShareUrl(resolvedDestination.url);
   const copyableUrl = resolvedDestination.url;
@@ -396,7 +396,7 @@ function ShareModal({
       files: [new File([''], 'druthers.png', { type: 'image/png' })],
     });
   });
-  // The modal only mounts on click, so navigator exists — safe to detect
+  // The modal only mounts on click, so navigator exists - safe to detect
   // synchronously. canShare({files}) is the mobile share-sheet capability.
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -509,7 +509,7 @@ function ShareModal({
       try {
         await copyPromise;
         setImageCopied(true);
-        setImageNotice('Image copied — paste the image in Facebook to attach it.');
+        setImageNotice('Image copied - paste the image in Facebook to attach it.');
         window.setTimeout(() => setImageCopied(false), 2000);
       } catch {
         setImageNotice('Facebook opened, but the image could not be copied. Download it instead.');
@@ -719,7 +719,7 @@ export function messageSharePayload({
         ? watchlistSubjects[category]
         : rankedSubjects[category]
     : `${owner} Druthers profile`;
-  // `url` is passed through as-is — the caller decides whether it needs to
+  // `url` is passed through as-is - the caller decides whether it needs to
   // be forced to prod (content posted for others to open later) or left
   // env-dynamic (opened right now, by whoever this page is actually served
   // to). Rewriting it here regressed "Send message" on QA/local back to a

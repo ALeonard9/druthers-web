@@ -34,7 +34,7 @@ function show(partial: Partial<UserTVShow>): UserTVShow {
 describe('statusTooltip', () => {
   it('describes behind with counts', () => {
     const s = show({ watch_status: 'behind', aired_count: 16, watched_count: 3 });
-    expect(statusTooltip(s)).toBe('Behind — 3 of 16 aired episodes watched');
+    expect(statusTooltip(s)).toBe('Behind - 3 of 16 aired episodes watched');
   });
 
   it('describes complete and up to date', () => {

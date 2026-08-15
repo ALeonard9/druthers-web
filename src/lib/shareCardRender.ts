@@ -6,10 +6,10 @@ import type { ShareData, ShareShelf } from './shareCards';
  * canvas scaled down, so the preview is exactly what gets shared.
  *
  * Formats (from the design):
- *   square 1080×1080 — IG/FB post
- *   story  1080×1920 — IG Stories / TikTok, paper "ticket stub"
- *   wide   1200×630  — X / FB link card
- *   grid   1080×1080 — all four categories, one post
+ *   square 1080×1080 - IG/FB post
+ *   story  1080×1920 - IG Stories / TikTok, paper "ticket stub"
+ *   wide   1200×630  - X / FB link card
+ *   grid   1080×1080 - all four categories, one post
  */
 
 export type ShareFormat = 'square' | 'story' | 'wide' | 'grid';
@@ -70,7 +70,7 @@ function monthYear(): string {
 
 /**
  * The URL printed on the card, sans protocol. Always taken from
- * `data.url` — the card used to compose `druthers.io/<handle>` itself, which
+ * `data.url` - the card used to compose `druthers.io/<handle>` itself, which
  * 404'd: profiles live at `/u/<handle>`, and an unclaimed or private profile
  * has no page at all.
  */
@@ -359,7 +359,7 @@ function drawStory(ctx: Ctx, f: Fonts, data: ShareData, s: ShareShelf) {
   ctx.fillStyle = C.paperGold;
   ctx.textAlign = 'left';
   // A claimed handle can push this past the date on the same line
-  // (e.g. www.druthers.io/u/<handle>) — truncate to whatever's left.
+  // (e.g. www.druthers.io/u/<handle>) - truncate to whatever's left.
   const link = truncate(ctx, linkText(data), pw - dateW - footGap);
   ctx.fillText(link, px, footY);
   line(ctx, px, footY + 12, px + ctx.measureText(link).width, footY + 12, C.paperDash, 2);

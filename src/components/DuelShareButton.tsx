@@ -224,14 +224,14 @@ function DuelFormatter({
     if (copyPromise) {
       try {
         await copyPromise;
-        setNotice(`Image copied — paste the image in ${LABEL[platform]} to attach it.`);
+        setNotice(`Image copied - paste the image in ${LABEL[platform]} to attach it.`);
         return;
       } catch {
         // Download below when clipboard access is denied.
       }
     }
     downloadBlob(blob, filename);
-    setNotice(`Image downloaded — attach it to your ${LABEL[platform]} post.`);
+    setNotice(`Image downloaded - attach it to your ${LABEL[platform]} post.`);
   }
 
   return createPortal(

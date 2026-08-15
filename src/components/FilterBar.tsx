@@ -45,7 +45,7 @@ function summarize(f: FilterValues, extras: ExtraField[]): string[] {
 /**
  * Collapsed-by-default filter drawer. Filters the lists via URL search params
  * (the server re-renders the filtered set), so `basePath` must be the page the
- * control is on — each tab filters independently.
+ * control is on - each tab filters independently.
  *
  * `genreOptions` and any `extras` are built from the caller's own library data,
  * so the menus only ever offer values that exist.

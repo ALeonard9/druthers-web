@@ -96,7 +96,7 @@ describe('hasToken', () => {
   });
 
   it('does not match a partial token', () => {
-    // "Action" must not match "Action-Adventure" — the reason this replaced
+    // "Action" must not match "Action-Adventure" - the reason this replaced
     // the old substring filter.
     expect(hasToken('Action-Adventure, Indie', 'Action')).toBe(false);
   });

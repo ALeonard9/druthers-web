@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 /**
- * Home (#108) is `force-dynamic`, but that only governs server rendering —
+ * Home (#108) is `force-dynamic`, but that only governs server rendering -
  * Next's Client Router Cache still serves a stale RSC payload on browser
  * back/forward navigation regardless (`staleTimes` explicitly excludes
  * back/forward: https://nextjs.org/docs/app/api-reference/config/next-config-js/staleTimes).

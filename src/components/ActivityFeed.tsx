@@ -294,7 +294,7 @@ export function ActivityFeed({
       {items.length === 0 ? (
         <p className="text-sm text-neutral-500">
           {!includeSelf && selectedIds.length === 0
-            ? 'Nobody selected — pick yourself or someone you follow above.'
+            ? 'Nobody selected - pick yourself or someone you follow above.'
             : 'Nothing here yet.'}
         </p>
       ) : (

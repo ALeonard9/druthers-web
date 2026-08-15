@@ -107,7 +107,7 @@ export default async function MoviesWatchlistPage({
               'No watchlist movies match the filter.'
             ) : (
               <>
-                Nothing queued —{' '}
+                Nothing queued -{' '}
                 <Link href="/movies/search?from=watchlist" className="text-brass">
                   add one
                 </Link>

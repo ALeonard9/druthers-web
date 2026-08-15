@@ -1,6 +1,6 @@
 // App-shell cache so the installed PWA opens instantly instead of a blank
 // screen when the network is slow or briefly unavailable. Not a full offline
-// mode — API data always comes from the network.
+// mode - API data always comes from the network.
 //
 // Only static assets and Next's hashed /_next/static/ build output are
 // cache-first. A *page* URL must never be. Client-side route transitions
@@ -61,7 +61,7 @@ self.addEventListener('fetch', (event) => {
       fetch(request, { cache: 'no-store' })
         .then((response) => {
           // Only a genuinely fresh page is worth keeping as the offline
-          // fallback — caching an error response here would make a bad
+          // fallback - caching an error response here would make a bad
           // deploy or a 404 the thing every future offline load falls back
           // to.
           if (response.ok) {
@@ -93,7 +93,7 @@ self.addEventListener('fetch', (event) => {
       (cached) =>
         cached ??
         fetch(request).then((response) => {
-          // A build's hashed filenames only exist while that build is live —
+          // A build's hashed filenames only exist while that build is live -
           // caching a 404 for one (e.g. a stale page still referencing a
           // hash from a since-replaced deploy) would pin that failure in
           // place forever, since a cache-first URL is never retried once

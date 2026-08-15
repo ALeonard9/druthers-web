@@ -107,7 +107,7 @@ export default async function MoviesPage({
               'No ranked movies match the filter.'
             ) : (
               <>
-                Nothing ranked yet —{' '}
+                Nothing ranked yet -{' '}
                 <Link href="/movies/search" className="text-brass">
                   add a movie
                 </Link>{' '}

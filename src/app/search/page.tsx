@@ -91,7 +91,7 @@ export default async function SearchPage({
     }
   }
 
-  // Close matches first, within each domain and across sections — an exact
+  // Close matches first, within each domain and across sections - an exact
   // title match puts its whole section at the top.
   const ranked = results
     ? {
@@ -130,7 +130,7 @@ export default async function SearchPage({
 
       {results && total === 0 && (
         <p className="text-sm text-neutral-500">
-          Nothing found for “{results.query}” in {scope === 'all' ? 'the catalog' : scope} — check the
+          Nothing found for “{results.query}” in {scope === 'all' ? 'the catalog' : scope} - check the
           spelling or try fewer words.
         </p>
       )}

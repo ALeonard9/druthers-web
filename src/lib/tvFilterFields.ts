@@ -4,7 +4,7 @@ import { optionsWithCounts } from './filterParams';
 
 /**
  * The four values the API can report for a user's progress through a show.
- * A fixed enum (see WatchStatus), not derived from the data — otherwise a
+ * A fixed enum (see WatchStatus), not derived from the data - otherwise a
  * status you happen to have none of right now would vanish from the menu.
  */
 const WATCH_STATUS: { value: string; label: string }[] = [

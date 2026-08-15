@@ -6,7 +6,7 @@ const OPTIONS: { value: ShelfViewMode; label: string }[] = [
   { value: 'icons', label: 'Icons' },
 ];
 
-// List / Carousel / Icons, Finder-style (#122 — Adam's addition to the
+// List / Carousel / Icons, Finder-style (#122 - Adam's addition to the
 // original length-control scope). A browsing preference, so it lives beside
 // LengthControl but isn't tied to the same cross-device storage.
 export function ViewModeToggle({

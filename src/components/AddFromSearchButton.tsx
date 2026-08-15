@@ -16,7 +16,7 @@ const DOMAIN_PAGE = {
 
 // One-click "add to my list" for a global-search result row. Adds to the
 // domain's watchlist via its existing add route. If the result is already
-// tracked (server-driven, web#31), shows a badge instead — ranked items get
+// tracked (server-driven, web#31), shows a badge instead - ranked items get
 // no action, watchlist-only items get a promote-to-rankings shortcut.
 export function AddFromSearchButton({
   domain,
@@ -46,10 +46,10 @@ export function AddFromSearchButton({
       if (res.ok) {
         playPop();
         setState('added');
-        // Straight to the duel when it's going on the rankings — the API
+        // Straight to the duel when it's going on the rankings - the API
         // usually adds it unplaced, so the position still has to be decided.
         // Exception: the first title into an empty shelf auto-places at #1
-        // (api#289), so there's nothing left to decide — go to the board.
+        // (api#289), so there's nothing left to decide - go to the board.
         if (list === 'rankings') {
           const tracker = await res.json().catch(() => null);
           if (isAlreadyPlaced(tracker)) {

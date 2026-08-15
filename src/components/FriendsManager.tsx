@@ -24,7 +24,7 @@ async function callJson(path: string, method: string, body?: unknown) {
 }
 
 // #120: send/accept/decline/cancel/unfriend, plus the read-only follow
-// lists. Friends and follows are rendered as visibly separate sections —
+// lists. Friends and follows are rendered as visibly separate sections -
 // blurring them would let someone misjudge who can see their friends-only
 // shelves.
 export function FriendsManager() {
@@ -262,7 +262,7 @@ export function FriendsManager() {
                     ) : (
                       displayName(req.user)
                     )}
-                    <span className="ml-2 text-xs text-neutral-500">request sent — waiting</span>
+                    <span className="ml-2 text-xs text-neutral-500">request sent - waiting</span>
                   </span>
                   <button
                     type="button"
@@ -282,13 +282,13 @@ export function FriendsManager() {
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-medium text-neutral-200">Friends</h3>
         <p className="text-xs text-neutral-500">
-          Mutual — you both accepted. Friends see anything you&apos;ve set to
+          Mutual - you both accepted. Friends see anything you&apos;ve set to
           the Friends tier.
         </p>
         {friends === null ? (
           <p className="text-sm text-neutral-500">Loading…</p>
         ) : friends.length === 0 ? (
-          <p className="text-sm text-neutral-500">No friends yet — send a request above.</p>
+          <p className="text-sm text-neutral-500">No friends yet - send a request above.</p>
         ) : (
           <ul className="divide-y divide-line/60 rounded-lg border border-line bg-panel">
             {friends.map((friend) => (
@@ -350,7 +350,7 @@ export function FriendsManager() {
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-medium text-neutral-200">Following</h3>
         <p className="text-xs text-neutral-500">
-          One-way, no approval needed — but only for public profiles, and it
+          One-way, no approval needed - but only for public profiles, and it
           doesn&apos;t unlock anything private. Follow from someone&apos;s
           profile page.
         </p>
@@ -397,7 +397,7 @@ export function FriendsManager() {
         <h3 className="text-sm font-medium text-neutral-200">Followers</h3>
         <p className="text-xs text-neutral-500">
           People following your public profile. They see only what&apos;s
-          public — following grants nothing extra.
+          public - following grants nothing extra.
         </p>
         {followers === null ? (
           <p className="text-sm text-neutral-500">Loading…</p>

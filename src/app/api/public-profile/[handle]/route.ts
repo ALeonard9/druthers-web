@@ -8,7 +8,7 @@ interface Ctx {
 
 // Client-callable proxy for /v1/public/{handle} (#279's shelf/kind/limit/
 // offset), for the incremental "load more" fetches a length-control change
-// or a scroll needs — the initial page load goes straight through
+// or a scroll needs - the initial page load goes straight through
 // fetchPublicProfile() server-side, this route is only for what happens
 // after hydration.
 export async function GET(request: Request, { params }: Ctx) {

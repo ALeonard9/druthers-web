@@ -3,7 +3,7 @@ import { resolveShelfTier } from './privacyDefaults';
 
 /**
  * Data plumbing for the shareable Top 5 cards (see the "Top 5 Share Cards"
- * design). Pure — the canvas drawing lives in shareCardRender.ts.
+ * design). Pure - the canvas drawing lives in shareCardRender.ts.
  */
 
 export type ShareCategory = 'movies' | 'tv' | 'books' | 'games';
@@ -29,7 +29,7 @@ export interface ShareData {
   handle: string | null;
   /**
    * Absolute URL printed on the card and offered by "Copy link". Only a
-   * profile that actually resolves gets a path — otherwise this is the bare
+   * profile that actually resolves gets a path - otherwise this is the bare
    * site, because a card advertising a 404 is worse than one advertising the
    * front door.
    */
@@ -94,7 +94,7 @@ export function publicShareUrl(url: string): string {
 }
 
 /**
- * Public profile URL for a handle. The path is `/u/<handle>` — the canonical
+ * Public profile URL for a handle. The path is `/u/<handle>` - the canonical
  * form the API documents on DbUser.handle and the only one the web serves.
  */
 export function profileUrl(handle: string): string {

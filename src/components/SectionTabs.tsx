@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 
 // Sub-navigation within a section (e.g. Movies → Rankings · Watchlist). The
 // active tab is matched exactly so nested detail routes fall back to the first
-// tab. Each tab filters independently — switching tabs drops the current
+// tab. Each tab filters independently - switching tabs drops the current
 // filter rather than carrying it across.
 export function SectionTabs({
   tabs,

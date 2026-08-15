@@ -47,7 +47,7 @@ export function HomeShelfCarousel({ shelf }: { shelf: SummaryShelf }) {
 
       {items.length === 0 ? (
         <p className="flex-1 px-4 py-6 text-sm text-neutral-500">
-          Nothing ranked yet —{' '}
+          Nothing ranked yet -{' '}
           <Link href={base} className="text-brass hover:text-brass-bright">
             start your list
           </Link>

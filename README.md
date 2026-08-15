@@ -1,20 +1,20 @@
 # Druthers Web
 
-> **[Druthers](https://druthers.io)** is social taste-sharing for the things you love —
+> **[Druthers](https://druthers.io)** is social taste-sharing for the things you love -
 > **Movies, TV, Books, and Games**. Track what you've watched, played, and read;
 > share a formatted top-5; and find the overlap with a friend.
 
 ## What this is
 
-The **web app** — a Next.js frontend for druthers.io, with a backend-for-frontend
+The **web app** - a Next.js frontend for druthers.io, with a backend-for-frontend
 (BFF) layer that keeps your session token off the client entirely. It talks to
 [`druthers-api`](https://github.com/ALeonard9/druthers-api) and runs serverless on
 **Google Cloud Run**.
 
 - **Sign in with Google**, then track and rate across all four domains
-- **Secure by design** — a BFF layer (`src/app/api/*`) proxies the API and keeps the
+- **Secure by design** - a BFF layer (`src/app/api/*`) proxies the API and keeps the
   JWT in an **httpOnly cookie**, so the token never reaches client JavaScript
-- **Tested** — Vitest (unit) + Playwright (E2E), run in CI on every PR
+- **Tested** - Vitest (unit) + Playwright (E2E), run in CI on every PR
 
 ## Stack
 
@@ -37,7 +37,7 @@ npm install
 npm run dev                       # http://localhost:3000
 ```
 
-No env file is required for the default local setup — the app falls back to
+No env file is required for the default local setup - the app falls back to
 `http://127.0.0.1:8000` for the API. To point at a different backend, add
 `API_BASE_URL=...` to a root-level `.env.local` (Next.js loads it automatically;
 not committed).
@@ -70,14 +70,14 @@ publishes to GHCR and deploys to **Cloud Run** (see
 
 ## Security
 
-OSS scanning on every PR — Gitleaks, Semgrep, Trivy, and Dependabot — with GitHub
+OSS scanning on every PR - Gitleaks, Semgrep, Trivy, and Dependabot - with GitHub
 push protection. See [`SECURITY.md`](https://github.com/ALeonard9/.github/blob/main/SECURITY.md).
 
 ## Related repos
 
-- **[druthers-api](https://github.com/ALeonard9/druthers-api)** — FastAPI backend; source of truth for library data, auth, and search.
-- **[druthers-mcp](https://github.com/ALeonard9/druthers-mcp)** — MCP server that lets Claude and other assistants manage your library.
-- **[druthers-infra](https://github.com/ALeonard9/druthers-infra)** — infrastructure-as-code and ops runbooks (private repo).
+- **[druthers-api](https://github.com/ALeonard9/druthers-api)** - FastAPI backend; source of truth for library data, auth, and search.
+- **[druthers-mcp](https://github.com/ALeonard9/druthers-mcp)** - MCP server that lets Claude and other assistants manage your library.
+- **[druthers-infra](https://github.com/ALeonard9/druthers-infra)** - infrastructure-as-code and ops runbooks (private repo).
 
 ## Contributing
 
@@ -85,4 +85,4 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## License
 
-GNU General Public License v3.0 — see [LICENSE](LICENSE).
+GNU General Public License v3.0 - see [LICENSE](LICENSE).

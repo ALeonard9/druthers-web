@@ -54,9 +54,9 @@ export function MovieDetail({
         body: JSON.stringify(body),
       });
       // It usually goes on the rankings unplaced, so the position still has
-      // to be decided — hand straight to the duel rather than leaving it in
+      // to be decided - hand straight to the duel rather than leaving it in
       // limbo. Exception: the first movie into an empty shelf auto-places at
-      // #1 (api#289) — nothing to decide, so just refresh in place.
+      // #1 (api#289) - nothing to decide, so just refresh in place.
       if (body.on_rankings === true) {
         const tracker = await res.json().catch(() => null);
         if (isAlreadyPlaced(tracker)) {
@@ -77,7 +77,7 @@ export function MovieDetail({
 
   // Clears the position (closing the gap it leaves) without leaving
   // Rankings, so it re-enters the "to rank" queue and completed_at is
-  // untouched — only a fresh entry into Rankings stamps that date.
+  // untouched - only a fresh entry into Rankings stamps that date.
   function rerank() {
     const wasRank = tracker?.rank;
     startTransition(async () => {
@@ -139,7 +139,7 @@ export function MovieDetail({
           <Field label="Language" value={movie.language} />
           {/*
             No IMDb id here. Since the TMDB migration (druthers-api#163) IMDb
-            is a legacy column we still store but deliberately don't present —
+            is a legacy column we still store but deliberately don't present -
             movie data, ratings and posters all come from TMDB now, and
             surfacing an IMDb id implies a source relationship we don't have.
           */}
@@ -170,7 +170,7 @@ export function MovieDetail({
               <span className="text-sm text-neutral-300">
                 {tracker?.rank
                   ? `Ranked #${tracker.rank}`
-                  : 'In “to rank” — drag it into place on the Rankings page'}
+                  : 'In “to rank” - drag it into place on the Rankings page'}
               </span>
               {tracker?.rank && !confirmRemove && (
                 <button

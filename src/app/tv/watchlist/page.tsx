@@ -97,7 +97,7 @@ export default async function TVWatchlistPage({
               'No watchlist shows match the filter.'
             ) : (
               <>
-                Nothing queued —{' '}
+                Nothing queued -{' '}
                 <Link href="/tv/search?from=watchlist" className="text-brass">
                   add one
                 </Link>

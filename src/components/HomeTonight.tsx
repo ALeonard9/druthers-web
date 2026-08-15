@@ -3,7 +3,7 @@ import { apiFetch } from '@/lib/api';
 import type { Schedule } from '@/lib/types';
 
 /**
- * "Tonight" — streamed below the Top 5 rather than blocking first paint.
+ * "Tonight" - streamed below the Top 5 rather than blocking first paint.
  * The schedule query is bounded API-side, but it's still the slowest thing
  * on the page, and nothing above it needs to wait.
  */
@@ -13,7 +13,7 @@ const AIRDATE_LABEL = new Intl.DateTimeFormat('en-US', {
   timeZone: 'UTC',
 });
 
-// Per-request server component — "now" is stable for the render.
+// Per-request server component - "now" is stable for the render.
 function airingSoon(schedule: Schedule) {
   const cutoff = Date.now() - 86_400_000;
   return schedule.upcoming
@@ -75,7 +75,7 @@ export async function HomeTonight() {
           {behind > 0 && (
             <>
               {' '}
-              — but you&apos;re {behind} episode{behind === 1 ? '' : 's'} behind.{' '}
+              - but you&apos;re {behind} episode{behind === 1 ? '' : 's'} behind.{' '}
               <Link href="/tv/schedule" className="text-brass">
                 Catch up
               </Link>
@@ -91,7 +91,7 @@ export async function HomeTonight() {
               className="flex items-center gap-3 border-b border-line/60 px-4 py-2 text-sm last:border-b-0"
             >
               <span className="w-10 shrink-0 font-mono text-xs uppercase text-neutral-500">
-                {e.airdate ? AIRDATE_LABEL.format(new Date(e.airdate)) : '—'}
+                {e.airdate ? AIRDATE_LABEL.format(new Date(e.airdate)) : '-'}
               </span>
               <Link href={`/tv/${e.show_id}`} className="truncate hover:underline">
                 {e.show_title}

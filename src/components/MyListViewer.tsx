@@ -17,7 +17,7 @@ function Poster({ url, className }: { url: string | null; className: string }) {
  * A signed-in user's own "My List" for one domain: Carousel (default) /
  * List / Icons, the same three modes the public profile shelf offers
  * (`PublicShelfRankedViewer`). Unlike the public viewer this has the full
- * collection in hand already — no pagination/length control needed.
+ * collection in hand already - no pagination/length control needed.
  *
  * `filterBar` arrives pre-built from the server page (it needs unfiltered
  * genre options computed there) and is only shown outside Carousel mode,

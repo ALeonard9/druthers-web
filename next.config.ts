@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   output: process.env.DOCKER_BUILD ? 'standalone' : undefined,
   async redirects() {
     return [
-      // "Bored" became "Surprise me" — keep old links working.
+      // "Bored" became "Surprise me" - keep old links working.
       { source: '/bored', destination: '/surprise', permanent: true },
       { source: '/developers', destination: '/mcp', permanent: true },
     ];

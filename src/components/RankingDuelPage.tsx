@@ -8,7 +8,7 @@ import { duelLists, type DuelEntry, type ShelfConfig } from '@/lib/duelShelves';
  * header that says which shelf is being judged and how deep it is, the duel
  * itself, and the standing link back to the drag-and-drop board.
  *
- * Deliberately not the section tab rail — the tabs mark the active page by
+ * Deliberately not the section tab rail - the tabs mark the active page by
  * exact path, so a duel route would light up the wrong tab. A crumb back to
  * the board says where you are more honestly.
  */
@@ -28,8 +28,8 @@ export function RankingDuelPage({
   const { ranked, queue } = duelLists(entries, focusId);
 
   // A duel needs a candidate plus at least one ranked opponent to compare it
-  // against. An empty queue means every shelf title already has a position —
-  // or the shelf has nothing on it at all — so there's no question the duel
+  // against. An empty queue means every shelf title already has a position -
+  // or the shelf has nothing on it at all - so there's no question the duel
   // could ask. Land on the board instead, which already owns both of those
   // states (the ranked list, and the "nothing ranked yet" empty list). This
   // applies on entry, so nobody lands on an empty duel (web#212).

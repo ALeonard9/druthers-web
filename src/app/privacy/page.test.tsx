@@ -30,7 +30,7 @@ describe('Privacy Policy page', () => {
     expect(screen.getByText(/permanently delete your account from Settings/i)).toBeTruthy();
   });
 
-  // There is no company behind druthers.io — see the matching terms test.
+  // There is no company behind druthers.io - see the matching terms test.
   it('claims no corporate entity', () => {
     const { container } = render(<PrivacyPage />);
     expect(container.textContent).not.toMatch(/LLC|Inc\.|Ltd|Corporation/);

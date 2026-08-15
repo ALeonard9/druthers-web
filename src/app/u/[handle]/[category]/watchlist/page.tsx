@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle, category } = await params;
   const label = getWatchlistLabels(category).singular.toLowerCase();
   return {
-    title: `@${handle}’s ${category} ${label} — Druthers`,
+    title: `@${handle}’s ${category} ${label} - Druthers`,
     description: `What @${handle} wants to get to next, in ${category}.`,
     openGraph: {
       title: `@${handle}’s ${category} ${label}`,

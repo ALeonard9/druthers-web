@@ -62,9 +62,9 @@ export function GameSearch() {
     // Land wherever it just went: a new rankings entry starts unranked
     // in the "to rank" bucket on the board, which the deck won't show.
     // Adding to the rankings usually leaves the title *unplaced*, so hand
-    // straight to the duel to decide where it goes — the add is only half
+    // straight to the duel to decide where it goes - the add is only half
     // the gesture. Exception: the first game into an empty shelf auto-places
-    // at #1 (api#289), so there's nothing left to decide — go to the board.
+    // at #1 (api#289), so there's nothing left to decide - go to the board.
     if (res.ok && !multiAddMode) {
       if (list === 'watchlist') {
         router.push('/games/backlog');

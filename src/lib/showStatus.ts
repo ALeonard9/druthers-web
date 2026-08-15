@@ -14,14 +14,14 @@ export function statusTooltip(show: UserTVShow): string {
   const watched = show.watched_count ?? 0;
   switch (status) {
     case 'complete':
-      return `Complete — all ${aired} episodes watched`;
+      return `Complete - all ${aired} episodes watched`;
     case 'up_to_date':
-      return `Up to date — all ${aired} aired episodes watched`;
+      return `Up to date - all ${aired} aired episodes watched`;
     case 'behind':
-      return `Behind — ${watched} of ${aired} aired episodes watched`;
+      return `Behind - ${watched} of ${aired} aired episodes watched`;
     default:
       return aired === 0
-        ? 'Not started — no episodes aired yet'
-        : `Not started — ${aired} episodes waiting`;
+        ? 'Not started - no episodes aired yet'
+        : `Not started - ${aired} episodes waiting`;
   }
 }

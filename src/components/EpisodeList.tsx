@@ -10,7 +10,7 @@ import type { TVEpisode } from '@/lib/types';
 // refresh so the server stays the source of truth. `overrides` is a local
 // optimistic layer on top of that: it flips instantly on click so the button
 // doesn't wait on the round trip, then gets cleared once fresh server data
-// (a new `watchedIds` prop, via router.refresh()) lands — or rolled back if
+// (a new `watchedIds` prop, via router.refresh()) lands - or rolled back if
 // the request fails.
 export function EpisodeList({
   showId,
@@ -34,7 +34,7 @@ export function EpisodeList({
   const favorited = useMemo(() => new Set(favoritedIds), [favoritedIds]);
 
   // The server just resynced (a new watchedIds/favoritedIds array landed via
-  // router.refresh()) — it's the source of truth again, so drop any
+  // router.refresh()) - it's the source of truth again, so drop any
   // optimistic overrides instead of shadowing it. Adjusting state during
   // render (rather than in an effect) per
   // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes.
@@ -102,7 +102,7 @@ export function EpisodeList({
       const qs = season != null ? `?season=${season}` : '';
       const res = await fetch(`/api/tv/${showId}/watch-all${qs}`, { method: 'POST' });
       if (!res.ok) {
-        setError('Could not mark episodes watched — try again.');
+        setError('Could not mark episodes watched - try again.');
         setOverrides(previous);
         return;
       }
@@ -126,7 +126,7 @@ export function EpisodeList({
         method: wasWatched ? 'DELETE' : 'POST',
       });
       if (!res.ok) {
-        setError('Could not update watched state — try again.');
+        setError('Could not update watched state - try again.');
         setOverride(ep.id, wasWatched);
         return;
       }
@@ -144,7 +144,7 @@ export function EpisodeList({
         method: wasFavorited ? 'DELETE' : 'POST',
       });
       if (!res.ok) {
-        setError('Could not update favorite — try again.');
+        setError('Could not update favorite - try again.');
         setFavoriteOverride(ep.id, wasFavorited);
         return;
       }
@@ -155,7 +155,7 @@ export function EpisodeList({
   if (episodes.length === 0) {
     return (
       <p className="text-sm text-neutral-500">
-        No episodes yet — they sync from TVMaze when the show is opened.
+        No episodes yet - they sync from TVMaze when the show is opened.
       </p>
     );
   }

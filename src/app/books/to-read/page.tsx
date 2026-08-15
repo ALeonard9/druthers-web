@@ -99,7 +99,7 @@ export default async function BooksToReadPage({
               'No books on your Read List match the filter.'
             ) : (
               <>
-                Nothing queued —{' '}
+                Nothing queued -{' '}
                 <Link href="/books/search?from=watchlist" className="text-brass">
                   add one
                 </Link>

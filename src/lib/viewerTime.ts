@@ -2,7 +2,7 @@
  * Reading the clock in the viewer's own time zone.
  *
  * Every one of these used to run in whatever zone the *server* happened to
- * be in — `new Date().getHours()` inside a server component is the container's
+ * be in - `new Date().getHours()` inside a server component is the container's
  * hour, not the reader's, so a user in Sydney was greeted "Good evening" over
  * their breakfast. The zone comes from the API preference (`time_zone`, unset
  * rows falling back to the deployment's `TIME_ZONE`), so it follows the account
@@ -67,8 +67,8 @@ export function greetingAt(at: Date, timeZone: string): string {
 /**
  * "Today"/"Tomorrow"/"Yesterday" for an API calendar date, or null.
  *
- * `day` is a bare `YYYY-MM-DD` with no time and no zone — comparing it as a
- * timestamp is what produces off-by-one day labels — so this compares it as a
+ * `day` is a bare `YYYY-MM-DD` with no time and no zone - comparing it as a
+ * timestamp is what produces off-by-one day labels - so this compares it as a
  * string against the viewer's own calendar date.
  */
 export function relativeDayLabel(

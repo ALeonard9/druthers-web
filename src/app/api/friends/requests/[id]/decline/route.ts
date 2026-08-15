@@ -6,7 +6,7 @@ interface Ctx {
 }
 
 // Decline an incoming request. Deletes the row rather than recording a
-// refusal — the pair can try again later.
+// refusal - the pair can try again later.
 export async function PUT(_request: Request, { params }: Ctx) {
   const { id } = await params;
   try {

@@ -7,7 +7,7 @@ import type { UnreadCount } from '@/lib/types';
  *
  * Split out of TopBar and streamed: the bar sits in the root layout, so
  * awaiting this API call there delayed the static shell of *every* page for
- * a piece of pure decoration. Absent until it resolves — which is also what
+ * a piece of pure decoration. Absent until it resolves - which is also what
  * "no unread" looks like.
  */
 export async function UnreadBadge() {
@@ -18,7 +18,7 @@ export async function UnreadBadge() {
     );
     unread = count.unread;
   } catch {
-    // Decoration — never let an API blip take down the bar.
+    // Decoration - never let an API blip take down the bar.
     return null;
   }
 

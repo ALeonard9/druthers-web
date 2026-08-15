@@ -16,12 +16,12 @@ import {
 /**
  * The engine's contract: place a title in the right spot, lose nothing, and do
  * it in a logarithmic number of questions. Ported from the iOS suite so the
- * two implementations are held to the same standard — a title has to land in
+ * two implementations are held to the same standard - a title has to land in
  * the same place on both.
  *
  * The oracle is a list of even numbers, so a candidate can sit strictly
- * between any two neighbours without ties. Answering is then mechanical —
- * lower value means better rank — and the engine has to land the candidate
+ * between any two neighbours without ties. Answering is then mechanical -
+ * lower value means better rank - and the engine has to land the candidate
  * exactly where arithmetic says it belongs.
  */
 

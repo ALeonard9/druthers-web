@@ -92,7 +92,7 @@ export default async function TVRankingListPage({
               'No ranked shows match the filter.'
             ) : (
               <>
-                Nothing ranked yet —{' '}
+                Nothing ranked yet -{' '}
                 <Link href="/tv/search" className="text-brass">
                   add a show
                 </Link>{' '}

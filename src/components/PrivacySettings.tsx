@@ -21,7 +21,7 @@ const TIER_LABEL: Record<VisibilityTier, string> = {
 
 const TIER_HELP: Record<VisibilityTier, string> = {
   private: 'Only you can see this.',
-  friends: "Visible to friends you've accepted — nobody else.",
+  friends: "Visible to friends you've accepted - nobody else.",
   public: 'Visible to anyone with your profile link.',
 };
 
@@ -40,7 +40,7 @@ const DOMAINS: {
   label: string;
   field: ShelfField;
   watchlistField: ShelfField;
-  // The queue list's display name — "Watchlist" only actually fits Movies
+  // The queue list's display name - "Watchlist" only actually fits Movies
   // and TV; Books and Games have their own established terms elsewhere in
   // the app (BookDetail's "to-read", GameDetail's "backlog").
   queueLabel: string;
@@ -75,7 +75,7 @@ const DOMAINS: {
   },
 ];
 
-// The profile can never sit below the most open of these (#274) — mirrors
+// The profile can never sit below the most open of these (#274) - mirrors
 // the API's own floor check so a doomed selection is explained immediately
 // instead of round-tripping to a 422.
 function floorTier(
@@ -402,20 +402,20 @@ export function PrivacySettings() {
         {handleError && <p className="mt-2 text-xs text-red-400">{handleError}</p>}
         {!settings.handle && (
           <p className="mt-2 text-xs text-neutral-500">
-            Pick a handle before sharing anything — it becomes your profile URL.
+            Pick a handle before sharing anything - it becomes your profile URL.
             Everything below stays private until you do.
           </p>
         )}
         {handleNotice && (
           <p className="mt-2 text-xs text-amber-400">
-            Pick a handle above first — Friends and Public need somewhere to point to.
+            Pick a handle above first - Friends and Public need somewhere to point to.
           </p>
         )}
 
         <div className="mt-4 flex items-center gap-3 border-t border-line pt-3">
           <span
             className="flex-1 text-sm text-neutral-200"
-            title="Controls who can view your profile page. A shelf can never be more open than your profile — raising a shelf above it raises the profile too."
+            title="Controls who can view your profile page. A shelf can never be more open than your profile - raising a shelf above it raises the profile too."
           >
             Profile
             {savingField === 'visibility_profile' && (
@@ -432,7 +432,7 @@ export function PrivacySettings() {
         {profileFloorNotice && (
           <p className="mt-2 text-xs text-amber-400">
             {profileFloorNotice.source} is set to {TIER_LABEL[profileFloorNotice.tier]}, so your
-            profile must stay at least {TIER_LABEL[profileFloorNotice.tier]} — a shelf can never
+            profile must stay at least {TIER_LABEL[profileFloorNotice.tier]} - a shelf can never
             be more visible than the page that links to it.{' '}
             <button
               type="button"
@@ -640,10 +640,10 @@ export function PrivacySettings() {
       </details>
 
       <p className="text-xs text-neutral-500">
-        <span className="text-neutral-400">Private</span> — only you.{' '}
-        <span className="text-neutral-400">Friends</span> — people you&apos;ve accepted as a
+        <span className="text-neutral-400">Private</span> - only you.{' '}
+        <span className="text-neutral-400">Friends</span> - people you&apos;ve accepted as a
         friend.{' '}
-        <span className="text-neutral-400">Public</span> — anyone with your profile link.
+        <span className="text-neutral-400">Public</span> - anyone with your profile link.
       </p>
     </div>
   );

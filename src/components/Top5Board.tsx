@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 
 /**
- * One shelf's Top 5 — the landing page's primary content, also reused for
+ * One shelf's Top 5 - the landing page's primary content, also reused for
  * the public profile clone (#121) with overridden links: a visitor's own
  * `/movies` isn't the right target on someone else's profile.
  *
@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { getWatchlistLabels } from '@/lib/domainLabels';
 
 interface Top5BoardEntry {
-  // Absent on a public profile's entries — those never expose an id to link
+  // Absent on a public profile's entries - those never expose an id to link
   // through to (#274 strips it), so the row renders unlinked there.
   id?: string;
   rank: number;
@@ -45,7 +45,7 @@ export function Top5Board({
   emptyMessage,
 }: {
   shelf: Top5BoardShelf;
-  // Overrides the owner's-own-shelf default — required off the profile page.
+  // Overrides the owner's-own-shelf default - required off the profile page.
   href?: string;
   watchlistHref?: string;
   emptyMessage?: ReactNode;
@@ -83,7 +83,7 @@ export function Top5Board({
         <p className="flex-1 px-4 py-6 text-sm text-neutral-500">
           {emptyMessage ?? (
             <>
-              Nothing ranked yet —{' '}
+              Nothing ranked yet -{' '}
               <Link href={resolvedHref} className="text-brass hover:text-brass-bright">
                 start your list
               </Link>

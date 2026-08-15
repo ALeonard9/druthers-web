@@ -1,5 +1,5 @@
 // The done/watched sound. Synthesized with WebAudio (no assets); the user
-// picks a sound (or silence) on /sounds — stored per-device in localStorage.
+// picks a sound (or silence) on /sounds - stored per-device in localStorage.
 
 const STORAGE_KEY = 'druthers.sound';
 export const DEFAULT_SOUND = 'coin';
@@ -149,7 +149,7 @@ export function playSound(id: string): void {
   try {
     (RECIPES[id] ?? RECIPES[DEFAULT_SOUND])();
   } catch {
-    // Audio is a garnish — never let it break the action.
+    // Audio is a garnish - never let it break the action.
   }
 }
 

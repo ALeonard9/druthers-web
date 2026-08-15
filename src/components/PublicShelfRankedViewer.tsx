@@ -31,8 +31,8 @@ function Poster({ url, className }: { url: string | null; className: string }) {
 
 // Length control + List/Carousel/Icons toggle for a public/friend-visible
 // profile shelf (#122). Unlike the owner's own RankingsBoard, this data
-// isn't all fetched up front — a shared link paging into a 2,000-item shelf
-// shouldn't cost the same as browsing it — so "load more" here means an
+// isn't all fetched up front - a shared link paging into a 2,000-item shelf
+// shouldn't cost the same as browsing it - so "load more" here means an
 // actual network fetch (#279's shelf/limit/offset), not just revealing more
 // of an in-memory array.
 export function PublicShelfRankedViewer({
@@ -55,7 +55,7 @@ export function PublicShelfRankedViewer({
 
   // Refetch from the top whenever the length control changes (including the
   // redundant fetch on first mount that re-requests the same page the
-  // server already rendered — accepted for simplicity on a page anonymous
+  // server already rendered - accepted for simplicity on a page anonymous
   // visitors load fresh each time anyway).
   useEffect(() => {
     let cancelled = false;

@@ -14,7 +14,7 @@ export async function GET() {
   }
 }
 
-// Mint a key — the response carries the plaintext exactly once.
+// Mint a key - the response carries the plaintext exactly once.
 export async function POST(request: Request) {
   const body = await request.json();
   try {

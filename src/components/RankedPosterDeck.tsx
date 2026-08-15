@@ -6,7 +6,7 @@ import type { DeckItem } from '@/lib/deck';
 
 // Posters sit closer together than they are wide, so they overlap. The width
 // itself lives in .poster-deck (globals.css) as --deck-card, which lets the
-// transform below stay pure CSS calc — nothing needs measuring to paint.
+// transform below stay pure CSS calc - nothing needs measuring to paint.
 const STEP_RATIO = 0.72;
 // Beyond this many posters either side of the front one, stop drawing.
 const DEPTH = 4;
@@ -18,7 +18,7 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 /**
  * The top of a user's rankings as a deck of overlapping posters, dragged with
  * a finger. Opens on #1; the rank rides the artwork on a brass plate. Domain
- * agnostic — callers flatten their rows to DeckItem (see lib/deck.ts).
+ * agnostic - callers flatten their rows to DeckItem (see lib/deck.ts).
  */
 export function RankedPosterDeck({
   items,
@@ -32,9 +32,9 @@ export function RankedPosterDeck({
   placedCount: number;
   label?: string;
   /** False for read-only contexts (e.g. a public profile) where the front
-   * card has nowhere to link — dragging through the deck still works. */
+   * card has nowhere to link - dragging through the deck still works. */
   interactive?: boolean;
-  /** False for an unranked deck (e.g. a watchlist) — hides the rank plate. */
+  /** False for an unranked deck (e.g. a watchlist) - hides the rank plate. */
   showRank?: boolean;
   /** Optional controls tied to whichever poster is currently at the front. */
   renderCaptionActions?: (item: DeckItem) => ReactNode;
@@ -119,7 +119,7 @@ export function RankedPosterDeck({
     if (!p || e.pointerId !== p.id) return;
     if (p.captured) e.currentTarget.releasePointerCapture(e.pointerId);
     pointerRef.current = null;
-    // A tap never moved anything — leave it to the card's click handler.
+    // A tap never moved anything - leave it to the card's click handler.
     if (!movedRef.current) {
       setDragging(false);
       return;

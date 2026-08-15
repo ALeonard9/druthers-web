@@ -34,14 +34,14 @@ const LANDING_SHARE_DATA: ShareData = {
 };
 
 /**
- * Public marketing landing page — what signed-out visitors see at `/`
+ * Public marketing landing page - what signed-out visitors see at `/`
  * instead of a bare login form (issue #27). Walks the three-step loop (pick
  * a domain, rank via duels, share a shelf) and demonstrates the last two
- * steps against a small fixed set of widely recognisable movies (#134) —
+ * steps against a small fixed set of widely recognisable movies (#134) -
  * deliberately not any one account's real shelf, so a stranger's obscure or
  * mismatched rankings can never be what a new visitor sees first.
  *
- * Deliberately louder than the rest of the site's restrained in-app tone —
+ * Deliberately louder than the rest of the site's restrained in-app tone -
  * this is the one page a stranger sees before they know what druthers is, so
  * it leans on scale/contrast/glow rather than the dry "after-hours archive"
  * register everything past sign-in uses.
@@ -71,7 +71,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
           <span className="mr-1 not-italic text-brass">’</span>druthers
         </h1>
         <p className="max-w-xl text-xl leading-relaxed text-neutral-200 sm:text-2xl">
-          Your favorites — movies, TV, books, and games — watched, read, and
+          Your favorites - movies, TV, books, and games - watched, read, and
           played, then ranked into the order you&apos;d pick them again.
         </p>
         <div className="mt-3 rounded-xl border border-brass/40 bg-panel p-6 shadow-[0_0_60px_-15px_var(--color-brass-wash)]">
@@ -112,7 +112,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
         </div>
       </section>
 
-      {/* Example duel — tappable but not wired to a real ranking write (no
+      {/* Example duel - tappable but not wired to a real ranking write (no
           session to write against, and this isn't anyone's actual shelf). */}
       <section className="flex flex-col items-center gap-8 border-y border-line bg-panel px-4 py-24">
         <div className="max-w-lg text-center">
@@ -126,7 +126,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
         <LandingDuelExample a={LANDING_DUEL_ITEMS[0]} b={LANDING_DUEL_ITEMS[1]} />
       </section>
 
-      {/* Top 5 carousel — a fixed, generally-popular set (#134), not any
+      {/* Top 5 carousel - a fixed, generally-popular set (#134), not any
           one account's real shelf. */}
       <section className="flex flex-col items-center gap-8 px-4 py-24">
         <div className="max-w-lg text-center">
@@ -147,7 +147,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
         </div>
       </section>
 
-      {/* Step four — the sharing payoff: a real render of the actual card
+      {/* Step four - the sharing payoff: a real render of the actual card
           format (lib/shareCardRender, same canvas ShareTop5Button uses),
           against illustrative data rather than a live fetch. */}
       <section className="flex flex-col items-center gap-8 border-y border-line bg-panel px-4 py-24">
@@ -160,7 +160,7 @@ export function PublicLanding({ googleClientId }: { googleClientId: string }) {
           </h2>
           <p className="mt-3 text-base text-neutral-300">
             Once you&apos;ve got a Top 5 in any category, druthers turns it
-            into a shareable card in one tap — this is the actual format,
+            into a shareable card in one tap - this is the actual format,
             rendered right in the browser.
           </p>
         </div>

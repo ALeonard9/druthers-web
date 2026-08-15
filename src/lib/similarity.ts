@@ -57,7 +57,7 @@ export function rankResults<T extends { title: string }>(
     .map(({ r }) => r);
 }
 
-/** The best similarity in a list — used to order whole sections. */
+/** The best similarity in a list - used to order whole sections. */
 export function bestScore(
   query: string,
   results: { title: string }[],

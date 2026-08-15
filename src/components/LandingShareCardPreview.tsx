@@ -4,11 +4,11 @@ import { useEffect, useRef } from 'react';
 import type { ShareData, ShareShelf } from '@/lib/shareCards';
 import { ensureFontsLoaded, renderShareCard } from '@/lib/shareCardRender';
 
-// Sample Top 5 for the public landing page (web#134) — a visitor hasn't
+// Sample Top 5 for the public landing page (web#134) - a visitor hasn't
 // ranked anything yet, so this renders the *real* share-card canvas (same
 // lib/shareCardRender used by ShareTop5Button once you're signed in)
 // against illustrative data, not a live fetch. 'story' is the portrait
-// ticket format — the one people actually post.
+// ticket format - the one people actually post.
 const SAMPLE_SHELF: ShareShelf = {
   category: 'movies',
   label: 'Movies',

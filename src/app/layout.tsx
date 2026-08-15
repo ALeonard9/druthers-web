@@ -8,7 +8,7 @@ import { getSessionUser } from '@/lib/session';
 import { SITE_URL } from '@/lib/shareCards';
 import { GENERIC_OG_IMAGE_PATH } from '@/lib/ogCards';
 
-// Display face: bookish, characterful — wordmark, page titles, rank numerals.
+// Display face: bookish, characterful - wordmark, page titles, rank numerals.
 const fraunces = Fraunces({
   subsets: ['latin'],
   variable: '--font-fraunces',
@@ -36,26 +36,26 @@ const getTitle = () => {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: getTitle(),
-  description: 'Your favorites — watched, read, played, and ranked.',
+  description: 'Your favorites - watched, read, played, and ranked.',
   openGraph: {
     type: 'website',
     siteName: 'Druthers',
-    title: 'Druthers — your favorites, ranked',
-    description: 'Your favorites — watched, read, played, and ranked.',
+    title: 'Druthers - your favorites, ranked',
+    description: 'Your favorites - watched, read, played, and ranked.',
     images: [
       {
         url: GENERIC_OG_IMAGE_PATH,
         type: 'image/png',
         width: 1200,
         height: 630,
-        alt: 'Druthers — your favorites, ranked',
+        alt: 'Druthers - your favorites, ranked',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Druthers — your favorites, ranked',
-    description: 'Your favorites — watched, read, played, and ranked.',
+    title: 'Druthers - your favorites, ranked',
+    description: 'Your favorites - watched, read, played, and ranked.',
     images: [GENERIC_OG_IMAGE_PATH],
   },
   appleWebApp: {
@@ -76,7 +76,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // Signed-out visitors only ever reach public pages (the landing page,
-  // /login, /about) — none of them want the logged-in app shell (its nav
+  // /login, /about) - none of them want the logged-in app shell (its nav
   // just bounces back to /login anyway). Keeping this check here, rather
   // than per-page, is what lets the public landing page (#27) go chrome-free
   // without a route-group refactor of every existing page.

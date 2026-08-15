@@ -21,7 +21,7 @@ function readInitialMode(): ShelfViewMode {
 }
 
 /**
- * List/Carousel/Icons for a public profile shelf — a browsing preference,
+ * List/Carousel/Icons for a public profile shelf - a browsing preference,
  * not a sharing one, so it's saved on this device only (no cross-device
  * requirement the way ranked_list_length has, matching SoundPicker's
  * precedent). Starts at the default and reads localStorage in an effect
@@ -35,7 +35,7 @@ export function useShelfViewMode(): [ShelfViewMode, (mode: ShelfViewMode) => voi
 
   useEffect(() => {
     // Deferred into a microtask so the setState lives in a callback rather
-    // than the effect's synchronous body — sidesteps react-hooks/set-state-in-effect.
+    // than the effect's synchronous body - sidesteps react-hooks/set-state-in-effect.
     queueMicrotask(() => {
       const initial = readInitialMode();
       if (initial !== DEFAULT_MODE) {

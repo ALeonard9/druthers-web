@@ -3,11 +3,11 @@ import Link from 'next/link';
 import { ReplayTutorialButton } from '@/components/Tutorial';
 
 export const metadata: Metadata = {
-  title: 'Why “druthers” — Druthers',
+  title: 'Why “druthers” - Druthers',
   description: 'What the name druthers means and why the site wears it.',
 };
 
-// Intentionally public — no session redirect. A visitor puzzling over the
+// Intentionally public - no session redirect. A visitor puzzling over the
 // name shouldn't need an account to get the joke.
 export default function AboutPage() {
   return (
@@ -24,12 +24,12 @@ export default function AboutPage() {
         </p>
         <p className="mt-3 text-sm leading-relaxed text-ink/80">
           Say <em>“I’d rather”</em> fast and often enough and it squishes into{' '}
-          <em>druthers</em> — 19th-century American slang for your preferences:
+          <em>druthers</em> - 19th-century American slang for your preferences:
           the things you’d pick, given the choice.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-ink/80">
           That’s exactly what this site is. Every movie, show, book, and game
-          here has been watched, read, or played — then ranked into the order
+          here has been watched, read, or played - then ranked into the order
           we’d pick them again. Not reviews, not ratings out of ten: just
           druthers, on the record.
         </p>

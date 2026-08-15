@@ -15,7 +15,7 @@ export default async function FriendsPage() {
           Friends
         </h1>
         <p className="text-sm text-neutral-400">
-          Add a friend by their exact handle — there&apos;s no directory, so
+          Add a friend by their exact handle - there&apos;s no directory, so
           this is the only way to reach someone.
         </p>
       </div>

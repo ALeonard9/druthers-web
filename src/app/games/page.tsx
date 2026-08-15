@@ -105,7 +105,7 @@ export default async function GamesPage({
               'No ranked games match the filter.'
             ) : (
               <>
-                Nothing ranked yet —{' '}
+                Nothing ranked yet -{' '}
                 <Link href="/games/search" className="text-brass">
                   add a game
                 </Link>{' '}

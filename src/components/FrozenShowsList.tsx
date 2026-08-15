@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ScheduleFrozenShow } from '@/lib/types';
 
-// Shows hidden from the schedule (the API field is still `freeze` — legacy
+// Shows hidden from the schedule (the API field is still `freeze` - legacy
 // name). Unhiding here puts their episodes back on the schedule/catch-up.
 export function FrozenShowsList({ shows }: { shows: ScheduleFrozenShow[] }) {
   const router = useRouter();

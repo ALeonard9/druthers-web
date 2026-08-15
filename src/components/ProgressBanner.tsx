@@ -1,6 +1,6 @@
 // Small contextual nudge shown on a domain's shelf page (movies/tv/books/
 // games) while the ranked list is still thin. See lib/progress.ts for the
-// threshold/copy logic — this is just the presentational shell, styled to
+// threshold/copy logic - this is just the presentational shell, styled to
 // match the site's dark "after-hours archive" panels.
 export function ProgressBanner({ message }: { message: string }) {
   return (

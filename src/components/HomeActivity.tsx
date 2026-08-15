@@ -55,7 +55,7 @@ export async function HomeActivity() {
     <Frame>
       {feed.length === 0 ? (
         <p className="px-4 py-6 text-sm text-neutral-500">
-          Nothing yet — add something to a list and it shows up here.
+          Nothing yet - add something to a list and it shows up here.
         </p>
       ) : (
         <ul>

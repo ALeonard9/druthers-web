@@ -28,7 +28,23 @@ import { useIncrementalReveal } from '@/lib/useIncrementalReveal';
 import { LengthControl } from './LengthControl';
 
 function Poster({ url, className }: { url: string | null; className: string }) {
-  if (!url) return <div className={`${className} bg-line`} />;
+  if (!url) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-line`}>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className="h-1/2 w-1/2 text-neutral-500"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <path d="M21 15l-5-5L5 21" />
+        </svg>
+      </div>
+    );
+  }
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={url} alt="" loading="lazy" className={`${className} object-cover`} />;
 }

@@ -218,7 +218,19 @@ export function RankedPosterDeck({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="h-full w-full bg-line" />
+                  <div className="flex h-full w-full items-center justify-center bg-line">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      className="h-1/3 w-1/3 text-neutral-500"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="M21 15l-5-5L5 21" />
+                    </svg>
+                  </div>
                 )}
                 {showRank && !m.isSeeAll && (
                   <span className="deck-plate absolute bottom-2.5 left-2.5 min-w-8 rounded px-2 py-0.5 text-center font-display text-xl font-bold tabular-nums text-ink">

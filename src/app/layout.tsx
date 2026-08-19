@@ -85,8 +85,12 @@ export default async function RootLayout({
   // than per-page, is what lets the public landing page (#27) go chrome-free
   // without a route-group refactor of every existing page.
   const user = await getSessionUser();
-  const pathname = (await headers()).get('x-pathname') ?? '';
-  const fullWidth = pathname.startsWith('/admin');
+  // Server Components have no direct pathname access. Rather than adding a
+  // second middleware entry point (Next 16 only allows one - see
+  // src/proxy.ts), reuse the `x-druthers-path` header proxy.ts already
+  // forwards on every request for this exact purpose.
+  const path = (await headers()).get('x-druthers-path') ?? '';
+  const fullWidth = path.startsWith('/admin');
   let activeShelves;
   if (user) {
     try {

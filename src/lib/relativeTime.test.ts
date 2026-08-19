@@ -31,6 +31,17 @@ describe('relativeTimeFrom', () => {
   it('falls back to the raw string for an unparseable value', () => {
     expect(relativeTimeFrom('not-a-date', NOW)).toBe('not-a-date');
   });
+
+  // Regression pin: the API used to omit the Z designator, which made
+  // `new Date(iso)` parse the timestamp in the *runner's* local zone instead
+  // of UTC. In America/Chicago that made anything under 5 hours old read
+  // "just now" and 3-day-old timestamps read "2d ago". Fixed at the API
+  // source, but this pins the Z-suffixed math here too so a regression in
+  // either layer gets caught.
+  it('computes an absolute duration off a Z-suffixed timestamp regardless of local zone', () => {
+    expect(relativeTimeFrom('2026-08-18T07:00:00Z', NOW)).toBe('5h ago');
+    expect(relativeTimeFrom('2026-08-15T13:00:00Z', NOW)).toBe('2d ago');
+  });
 });
 
 describe('exactTimestamp', () => {

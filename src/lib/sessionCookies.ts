@@ -16,10 +16,12 @@ export const REFRESH_COOKIE = 'aleonard_refresh';
 
 // Admin "view as user" (#250). A separate token, in its own httpOnly cookie,
 // never mixed into aleonard_session: the admin's own session and refresh
-// cookies stay untouched for the whole impersonation, which is what makes
-// "Back to admin" a cookie delete and nothing more, and is also what proxy.ts
-// relies on to skip its refresh path while this cookie is present. Both
-// cookies are set and cleared together.
+// cookies stay untouched for the whole impersonation, which is what lets
+// "Back to admin" end the session server-side using the ADMIN's own token
+// (the impersonation token cannot end its own session - DELETE is a write,
+// and every write is refused while impersonating, no exceptions) and is
+// also what proxy.ts relies on to skip its refresh path while this cookie
+// is present. Both cookies are set and cleared together.
 export const IMPERSONATION_COOKIE = 'aleonard_impersonation';
 // Non-sensitive (handles/emails only) but still httpOnly - nothing client-side
 // reads it directly. The impersonation banner, the /admin block screen, and
@@ -113,18 +115,36 @@ export function clearSessionCookies(store: CookieRemover): void {
 
 interface ImpersonationPerson {
   id: string;
-  handle: string;
+  // Both nullable in the API's own response schema (Optional[str] = None),
+  // not just display_name - a private user is exactly the kind of account
+  // likeliest to lack a handle, so this is the realistic case to handle,
+  // not an edge case to shrug off. Every caller that displays a person must
+  // fall back through handle -> display_name -> email -> id.
+  handle: string | null;
   display_name?: string | null;
-  email: string;
+  email: string | null;
 }
 
-/** POST /v1/admin/impersonation's response shape. */
+/** Best available way to name someone in impersonation UI, in priority order. */
+export function personLabel(person: ImpersonationPerson): string {
+  if (person.handle) return `@${person.handle}`;
+  if (person.display_name) return person.display_name;
+  if (person.email) return person.email;
+  return person.id;
+}
+
+/**
+ * POST /v1/admin/impersonation's response shape (OutImpersonationSession).
+ * target and acting_admin are both the same OutImpersonationParty on the API
+ * side - acting_admin is not missing display_name, it just isn't shown for it
+ * in the UI today.
+ */
 export interface ImpersonationStartResponse {
   token: string;
   expires_at: string;
   session_id: string;
   target: ImpersonationPerson;
-  acting_admin: Omit<ImpersonationPerson, 'display_name'>;
+  acting_admin: ImpersonationPerson;
 }
 
 /** What the meta cookie carries - everything the banner and block screen need to render, and nothing more. */
@@ -132,7 +152,7 @@ export interface ImpersonationMeta {
   session_id: string;
   expires_at: string;
   target: ImpersonationPerson;
-  acting_admin: Omit<ImpersonationPerson, 'display_name'>;
+  acting_admin: ImpersonationPerson;
 }
 
 // A 15-minute token with no refresh path (#250) - if the clock or the

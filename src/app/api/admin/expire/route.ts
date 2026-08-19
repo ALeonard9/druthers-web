@@ -20,8 +20,18 @@ export async function GET(request: Request) {
   const store = await cookies();
   clearImpersonationCookies(store);
 
-  const destination = target
-    ? `/admin/users/${encodeURIComponent(target)}?impersonation_expired=${encodeURIComponent(handle ?? '')}`
-    : '/admin';
-  return NextResponse.redirect(new URL(destination, request.url));
+  if (!target) {
+    return NextResponse.redirect(new URL('/admin', request.url));
+  }
+
+  // `impersonation_expired=1` is the marker the detail page checks - kept
+  // separate from the handle because a target can genuinely have no handle
+  // (nullable in the API's own schema), and the expiry notice still needs
+  // to show in that case rather than silently disappearing along with the
+  // empty value.
+  const qs = new URLSearchParams({ impersonation_expired: '1' });
+  if (handle) qs.set('impersonation_handle', handle);
+  return NextResponse.redirect(
+    new URL(`/admin/users/${encodeURIComponent(target)}?${qs}`, request.url),
+  );
 }

@@ -33,11 +33,17 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function AdminUserDetailView({
   initialUser,
+  impersonationExpired,
   expiredImpersonationHandle,
+  impersonationStopWarning,
 }: {
   initialUser: AdminUserDetail;
   /** Set when /api/admin/expire (#250) sent us here after a mid-session token expiry. */
+  impersonationExpired?: boolean;
+  /** The expired session's target handle, when the target had one. */
   expiredImpersonationHandle?: string;
+  /** Set when the escape hatch could not confirm the view-as session actually ended server-side. */
+  impersonationStopWarning?: boolean;
 }) {
   const [user, setUser] = useState(initialUser);
   const [confirming, setConfirming] = useState(false);
@@ -66,9 +72,17 @@ export function AdminUserDetailView({
 
   return (
     <div className="flex flex-col gap-8">
-      {expiredImpersonationHandle && (
+      {impersonationExpired && (
         <p role="status" className="rounded-lg border border-line bg-panel px-4 py-2 text-sm text-neutral-300">
-          Your view-as session for @{expiredImpersonationHandle} expired.
+          {expiredImpersonationHandle
+            ? `Your view-as session for @${expiredImpersonationHandle} expired.`
+            : 'Your view-as session expired.'}
+        </p>
+      )}
+      {impersonationStopWarning && (
+        <p role="alert" className="rounded-lg border border-red-900 bg-red-950/20 px-4 py-2 text-sm text-red-200">
+          Could not confirm the view-as session ended. It may still be active for a few
+          more minutes.
         </p>
       )}
       <div>

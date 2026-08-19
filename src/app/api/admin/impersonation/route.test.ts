@@ -1,13 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DELETE, POST } from './route';
 
+const SESSION_COOKIE = 'aleonard_session';
+
 const mocks = vi.hoisted(() => ({
   apiFetch: vi.fn(),
   applyImpersonationCookies: vi.fn(),
   clearImpersonationCookies: vi.fn(),
   cookies: vi.fn(),
-  cookieStore: {},
 }));
+
+function fakeCookieStore(values: Record<string, string> = {}) {
+  return { get: (name: string) => (name in values ? { value: values[name] } : undefined) };
+}
 
 vi.mock('next/headers', () => ({ cookies: mocks.cookies }));
 vi.mock('@/lib/api', () => ({
@@ -21,6 +26,7 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 vi.mock('@/lib/sessionCookies', () => ({
+  SESSION_COOKIE: 'aleonard_session',
   applyImpersonationCookies: mocks.applyImpersonationCookies,
   clearImpersonationCookies: mocks.clearImpersonationCookies,
 }));
@@ -33,9 +39,11 @@ function jsonRequest(body: unknown) {
 }
 
 describe('POST /api/admin/impersonation', () => {
+  const store = fakeCookieStore();
+
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.cookies.mockResolvedValue(mocks.cookieStore);
+    mocks.cookies.mockResolvedValue(store);
   });
 
   it('starts a session and writes the impersonation cookies', async () => {
@@ -54,7 +62,7 @@ describe('POST /api/admin/impersonation', () => {
       method: 'POST',
       body: { target_uuid: 'target-1', reason: undefined },
     });
-    expect(mocks.applyImpersonationCookies).toHaveBeenCalledWith(mocks.cookieStore, startResponse);
+    expect(mocks.applyImpersonationCookies).toHaveBeenCalledWith(store, startResponse);
     expect(response.status).toBe(200);
   });
 
@@ -81,25 +89,86 @@ describe('POST /api/admin/impersonation', () => {
 describe('DELETE /api/admin/impersonation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.cookies.mockResolvedValue(mocks.cookieStore);
   });
 
-  it('ends the upstream session and clears the local cookies', async () => {
-    mocks.apiFetch.mockResolvedValue(undefined);
+  it('ends the upstream session using the ADMIN token and clears the local cookies', async () => {
+    const store = fakeCookieStore({ [SESSION_COOKIE]: 'admin-jwt' });
+    mocks.cookies.mockResolvedValue(store);
+    mocks.apiFetch.mockResolvedValue({ ended: 1 });
 
     const response = await DELETE();
+    const body = await response.json();
 
-    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/admin/impersonation', { method: 'DELETE' });
-    expect(mocks.clearImpersonationCookies).toHaveBeenCalledWith(mocks.cookieStore);
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/admin/impersonation', {
+      method: 'DELETE',
+      token: 'admin-jwt',
+    });
+    expect(mocks.clearImpersonationCookies).toHaveBeenCalledWith(store);
     expect(response.status).toBe(200);
+    expect(body).toEqual({ ok: true, sessionEnded: true });
   });
 
-  it('still clears the local cookies even if the upstream call fails - the escape hatch must always work', async () => {
+  it('reads the admin token BEFORE clearing cookies - this is the regression that let the stop call send the impersonation token', async () => {
+    // A real bug, not a hypothetical: cookies() in a Route Handler moves
+    // into "response" mode the moment any cookie on it is set/deleted, and
+    // every OTHER `cookies()` read in the same request - including
+    // getToken()'s own - starts reading that outgoing jar too, so it stops
+    // seeing aleonard_session once clearImpersonationCookies has run. This
+    // fake store reproduces that: .get(SESSION_COOKIE) returns the real
+    // token until clear() is called, then goes blank, exactly like the
+    // live store did. If the handler read the token after clearing (or
+    // relied on getToken()'s own lookup at all), this test fails the same
+    // way "Back to admin" did against the real API: no Authorization
+    // header, "Not authenticated", session never ends.
+    let cleared = false;
+    const store = {
+      get: (name: string) =>
+        name === SESSION_COOKIE && !cleared ? { value: 'admin-jwt' } : undefined,
+    };
+    mocks.cookies.mockResolvedValue(store);
+    mocks.clearImpersonationCookies.mockImplementation(() => {
+      cleared = true;
+    });
+    mocks.apiFetch.mockResolvedValue({ ended: 1 });
+
+    await DELETE();
+
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/admin/impersonation', {
+      method: 'DELETE',
+      token: 'admin-jwt',
+    });
+  });
+
+  it('does not swallow an upstream failure - reports sessionEnded: false with the real message', async () => {
+    const store = fakeCookieStore({ [SESSION_COOKIE]: 'admin-jwt' });
+    mocks.cookies.mockResolvedValue(store);
+    const { ApiError } = await import('@/lib/api');
+    mocks.apiFetch.mockRejectedValue(new ApiError(403, 'This view-as session is read-only.'));
+
+    const response = await DELETE();
+    const body = await response.json();
+
+    // The local cookies still clear unconditionally - the admin is never
+    // stuck locally - but the response must not claim the session ended.
+    expect(mocks.clearImpersonationCookies).toHaveBeenCalledWith(store);
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      ok: true,
+      sessionEnded: false,
+      warning: 'This view-as session is read-only.',
+    });
+  });
+
+  it('still clears the local cookies even if the upstream call fails outright (network error)', async () => {
+    const store = fakeCookieStore({ [SESSION_COOKIE]: 'admin-jwt' });
+    mocks.cookies.mockResolvedValue(store);
     mocks.apiFetch.mockRejectedValue(new Error('network error'));
 
     const response = await DELETE();
+    const body = await response.json();
 
-    expect(mocks.clearImpersonationCookies).toHaveBeenCalledWith(mocks.cookieStore);
+    expect(mocks.clearImpersonationCookies).toHaveBeenCalledWith(store);
     expect(response.status).toBe(200);
+    expect(body.sessionEnded).toBe(false);
   });
 });

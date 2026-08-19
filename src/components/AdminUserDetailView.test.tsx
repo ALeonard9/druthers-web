@@ -147,12 +147,28 @@ describe('AdminUserDetailView', () => {
 
   it('shows the impersonation-expired message when landed here with that param', () => {
     render(
-      <AdminUserDetailView initialUser={BASE_USER} expiredImpersonationHandle="private-user" />,
+      <AdminUserDetailView
+        initialUser={BASE_USER}
+        impersonationExpired
+        expiredImpersonationHandle="private-user"
+      />,
     );
 
     expect(
       screen.getByText('Your view-as session for @private-user expired.'),
     ).toBeTruthy();
+  });
+
+  it('still shows the expiry message with no handle - a target can genuinely have none', () => {
+    render(<AdminUserDetailView initialUser={BASE_USER} impersonationExpired />);
+
+    expect(screen.getByText('Your view-as session expired.')).toBeTruthy();
+  });
+
+  it('shows a warning, not a clean "you are back", when the stop call could not confirm the session ended', () => {
+    render(<AdminUserDetailView initialUser={BASE_USER} impersonationStopWarning />);
+
+    expect(screen.getByText(/Could not confirm the view-as session ended/)).toBeTruthy();
   });
 
   it('shows no expiry message on a normal visit', () => {

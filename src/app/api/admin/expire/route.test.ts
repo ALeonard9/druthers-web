@@ -26,7 +26,17 @@ describe('GET /api/admin/expire', () => {
     expect(mocks.clearImpersonationCookies).toHaveBeenCalledWith(mocks.cookieStore);
     expect(response.status).toBe(307);
     expect(response.headers.get('location')).toBe(
-      'http://localhost/admin/users/target-1?impersonation_expired=private-user',
+      'http://localhost/admin/users/target-1?impersonation_expired=1&impersonation_handle=private-user',
+    );
+  });
+
+  it('still marks the session expired with no handle - a target can genuinely have none', async () => {
+    const response = await GET(
+      new Request('http://localhost/api/admin/expire?target=target-1'),
+    );
+
+    expect(response.headers.get('location')).toBe(
+      'http://localhost/admin/users/target-1?impersonation_expired=1',
     );
   });
 

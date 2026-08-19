@@ -1,4 +1,4 @@
-import type { ImpersonationMeta } from '@/lib/sessionCookies';
+import { personLabel, type ImpersonationMeta } from '@/lib/sessionCookies';
 import { ImpersonationEscapeButton } from './ImpersonationEscapeButton';
 
 /**
@@ -18,20 +18,20 @@ import { ImpersonationEscapeButton } from './ImpersonationEscapeButton';
  * dismissible, and the two must never be confused or dismissed as a pair.
  */
 export function ImpersonationBanner({ meta }: { meta: ImpersonationMeta }) {
-  const actingAdminName = meta.acting_admin.handle
-    ? `@${meta.acting_admin.handle}`
-    : meta.acting_admin.email;
-
   return (
     <div
       role="note"
       className="sticky top-0 z-[60] flex flex-wrap items-center justify-center gap-3 bg-red-600 px-4 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))] text-sm text-white"
     >
       <span>
-        Viewing as <strong>@{meta.target.handle}</strong>
-        {meta.target.display_name && <> ({meta.target.display_name})</>}
+        Viewing as <strong>{personLabel(meta.target)}</strong>
+        {/* Only appended when personLabel used the handle - otherwise
+            display_name (or email) is already the label itself. */}
+        {meta.target.handle && meta.target.display_name && (
+          <> ({meta.target.display_name})</>
+        )}
         {' - acting admin '}
-        {actingAdminName}
+        {personLabel(meta.acting_admin)}
       </span>
       <ImpersonationEscapeButton targetId={meta.target.id} />
     </div>

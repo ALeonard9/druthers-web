@@ -9,8 +9,11 @@ describe('ImpersonationEscapeButton', () => {
     vi.unstubAllGlobals();
   });
 
-  it('calls the stop endpoint and does a full navigation back to the target detail page', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }))));
+  it('calls the stop endpoint and does a clean navigation when the session confirms ended', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true, sessionEnded: true }))),
+    );
     const assign = vi.fn();
     vi.stubGlobal('location', { ...window.location, assign });
 
@@ -24,7 +27,29 @@ describe('ImpersonationEscapeButton', () => {
     expect(assign).toHaveBeenCalledWith('/admin/users/target-1');
   });
 
-  it('still navigates away even if the stop call fails - the escape hatch must always work', async () => {
+  it('still navigates away locally when the stop call cannot confirm the session ended, but flags it', async () => {
+    // The local cookies are always cleared by the route handler regardless -
+    // this must not read as a clean "you are back", so the destination
+    // carries the warning param the detail page surfaces.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ ok: true, sessionEnded: false, warning: 'refused' })),
+      ),
+    );
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+
+    render(<ImpersonationEscapeButton targetId="target-1" />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Back to admin' }));
+    });
+
+    expect(assign).toHaveBeenCalledWith('/admin/users/target-1?impersonation_stop_warning=1');
+  });
+
+  it('still navigates away, flagged as unconfirmed, if the stop call fails outright - the escape hatch must always work locally', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')));
     const assign = vi.fn();
     vi.stubGlobal('location', { ...window.location, assign });
@@ -35,7 +60,7 @@ describe('ImpersonationEscapeButton', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Back to admin' }));
     });
 
-    expect(assign).toHaveBeenCalledWith('/admin/users/target-1');
+    expect(assign).toHaveBeenCalledWith('/admin/users/target-1?impersonation_stop_warning=1');
   });
 
   it('supports a custom label for the /admin block screen', () => {

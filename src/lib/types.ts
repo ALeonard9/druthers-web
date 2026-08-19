@@ -573,24 +573,30 @@ export interface AdminUserDetail {
   };
 }
 
+// Every field here is genuinely optional on the API side, actor included -
+// not just handle/email. An actor can be fully absent (an expired-token
+// denial that never resolved to an account) and a resolved actor can still
+// be missing individual fields (their account was later deleted, which nulls
+// the FK and falls back to whatever was denormalized at write time).
 export interface AdminAuditActor {
-  id: string;
+  id: string | null;
   handle: string | null;
-  email: string;
+  email: string | null;
 }
 
 export interface AdminAuditEvent {
   id: number;
   created_at: string;
-  actor: AdminAuditActor;
+  actor: AdminAuditActor | null;
   target: AdminAuditActor | null;
   action: string;
   result: string;
-  detail: Record<string, unknown>;
-  request_id: string;
-  method: string;
-  path: string;
-  status_code: number;
+  detail: Record<string, unknown> | null;
+  request_id: string | null;
+  method: string | null;
+  path: string | null;
+  status_code: number | null;
+  source_ip: string | null;
 }
 
 export interface AdminAuditResponse {

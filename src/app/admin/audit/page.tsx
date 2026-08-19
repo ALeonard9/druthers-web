@@ -1,5 +1,6 @@
 import { apiFetch } from '@/lib/api';
-import type { AdminAuditResponse } from '@/lib/types';
+import { getImpersonationMeta } from '@/lib/session';
+import type { AdminAuditActor, AdminAuditResponse } from '@/lib/types';
 import { AdminAuditFilters } from '@/components/AdminAuditFilters';
 import { exactTimestamp, relativeTimeFrom } from '@/lib/relativeTime';
 
@@ -8,11 +9,27 @@ const RESULT_STYLES: Record<string, string> = {
   denied: 'text-plum',
 };
 
+// Every field on an actor/target is independently nullable (see the doc
+// comment on AdminAuditActor) - an actor can even be entirely absent, for a
+// denial that never resolved to an account. Falls back through the same
+// handle -> email -> "unknown" chain personLabel uses for impersonation.
+function actorLabel(actor: AdminAuditActor | null): string {
+  if (!actor) return 'Unknown';
+  return actor.handle ?? actor.email ?? 'Unknown';
+}
+
 export default async function AdminAuditPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
+  // See admin/page.tsx's comment on the same check - AdminLayout renders the
+  // impersonation block screen instead of {children}, but Next still
+  // invokes this page's own Server Component regardless, so its own
+  // apiFetch call needs to bail out here rather than run on the
+  // impersonated token and throw an uncaught 403.
+  if (await getImpersonationMeta()) return null;
+
   const sp = await searchParams;
   const actor = sp.actor?.trim() ?? '';
   const target = sp.target?.trim() ?? '';
@@ -60,14 +77,12 @@ export default async function AdminAuditPage({
                       {relativeTimeFrom(event.created_at)}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-paper">
-                    {event.actor.handle ?? event.actor.email}
-                  </td>
+                  <td className="px-3 py-2 text-paper">{actorLabel(event.actor)}</td>
                   <td className="px-3 py-2 font-mono text-xs text-neutral-300">
                     {event.action}
                   </td>
                   <td className="px-3 py-2 text-neutral-300">
-                    {event.target ? (event.target.handle ?? event.target.email) : '-'}
+                    {event.target ? actorLabel(event.target) : '-'}
                   </td>
                   <td className={`px-3 py-2 font-medium ${RESULT_STYLES[event.result] ?? 'text-neutral-400'}`}>
                     {event.result}

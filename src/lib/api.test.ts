@@ -45,6 +45,19 @@ describe('apiFetch - impersonation expiry (#250)', () => {
     );
   });
 
+  it('omits the handle param rather than sending the literal string "null" for a handle-less target', async () => {
+    mocks.getToken.mockResolvedValue('expired-view-as-jwt');
+    mocks.getImpersonationMeta.mockResolvedValue({
+      ...IMPERSONATION_META,
+      target: { ...IMPERSONATION_META.target, handle: null },
+    });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(401, { detail: 'Not authenticated' })));
+
+    await expect(apiFetch('/v1/movies')).rejects.toThrow('NEXT_REDIRECT');
+
+    expect(mocks.redirect).toHaveBeenCalledWith('/api/admin/expire?target=target-1');
+  });
+
   it('redirects on a 403 GET while impersonating - reads are never legitimately blocked', async () => {
     mocks.getToken.mockResolvedValue('expired-view-as-jwt');
     mocks.getImpersonationMeta.mockResolvedValue(IMPERSONATION_META);
@@ -83,5 +96,23 @@ describe('apiFetch - impersonation expiry (#250)', () => {
     await expect(apiFetch('/v1/auth/token', { auth: false })).rejects.toThrow(ApiError);
     expect(mocks.redirect).not.toHaveBeenCalled();
     expect(mocks.getImpersonationMeta).not.toHaveBeenCalled();
+  });
+});
+
+describe('apiFetch - explicit token override', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('uses the explicit token instead of calling getToken() - needed by the impersonation stop endpoint (#250), which must never resolve identity through the cookie store after mutating it', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { ok: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await apiFetch('/v1/admin/impersonation', { method: 'DELETE', token: 'explicit-admin-jwt' });
+
+    expect(mocks.getToken).not.toHaveBeenCalled();
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.headers.Authorization).toBe('Bearer explicit-admin-jwt');
   });
 });

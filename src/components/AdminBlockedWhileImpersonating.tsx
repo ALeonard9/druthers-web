@@ -1,4 +1,4 @@
-import type { ImpersonationMeta } from '@/lib/sessionCookies';
+import { personLabel, type ImpersonationMeta } from '@/lib/sessionCookies';
 import { ImpersonationEscapeButton } from './ImpersonationEscapeButton';
 
 /**
@@ -13,8 +13,8 @@ export function AdminBlockedWhileImpersonating({ meta }: { meta: ImpersonationMe
   return (
     <div className="flex flex-col items-start gap-3 rounded-lg border border-red-900 bg-red-950/20 px-4 py-6">
       <p className="text-sm text-neutral-200">
-        You are viewing as <strong>@{meta.target.handle}</strong>. Return to admin to
-        continue.
+        You are viewing as <strong>{personLabel(meta.target)}</strong>. Return to admin
+        to continue.
       </p>
       <ImpersonationEscapeButton
         targetId={meta.target.id}

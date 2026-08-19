@@ -15,8 +15,19 @@ export class ApiError extends Error {
 interface ApiOptions {
   method?: string;
   body?: unknown;
-  // When true, attach the caller's bearer token from the session cookie.
+  // When true, attach a bearer token - normally resolved from the session
+  // cookie via getToken(), unless `token` below overrides it.
   auth?: boolean;
+  // Explicit bearer token, bypassing getToken()'s cookie lookup. Needed by
+  // /api/admin/impersonation's DELETE handler (#250): it clears the
+  // impersonation cookie on the request-scoped cookies() store before
+  // calling this, and that mutation puts the store into "response" mode for
+  // every *other* `cookies()` read in the same request too, including
+  // getToken()'s own - so getToken() can no longer see aleonard_session
+  // either, not just the cookie that was actually cleared. Reading the
+  // admin's token before mutating anything and passing it straight through
+  // sidesteps that rather than depending on it.
+  token?: string;
 }
 
 /**
@@ -25,11 +36,11 @@ interface ApiOptions {
  */
 export async function apiFetch<T>(
   path: string,
-  { method = 'GET', body, auth = true }: ApiOptions = {},
+  { method = 'GET', body, auth = true, token: explicitToken }: ApiOptions = {},
 ): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (auth) {
-    const token = await getToken();
+    const token = explicitToken ?? (await getToken());
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
@@ -62,10 +73,11 @@ export async function apiFetch<T>(
     if (auth && (res.status === 401 || (res.status === 403 && method === 'GET'))) {
       const impersonation = await getImpersonationMeta();
       if (impersonation) {
-        const qs = new URLSearchParams({
-          target: impersonation.target.id,
-          handle: impersonation.target.handle,
-        });
+        // handle is nullable (a private user is exactly the kind of account
+        // likeliest to lack one) - omit the param rather than sending the
+        // literal string "null" through the query string.
+        const qs = new URLSearchParams({ target: impersonation.target.id });
+        if (impersonation.target.handle) qs.set('handle', impersonation.target.handle);
         redirect(`/api/admin/expire?${qs}`);
       }
     }

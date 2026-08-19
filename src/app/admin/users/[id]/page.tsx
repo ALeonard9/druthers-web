@@ -5,10 +5,17 @@ import { AdminUserDetailView } from '@/components/AdminUserDetailView';
 
 export default async function AdminUserDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
+  // Set by /api/admin/expire (#250) when apiFetch caught a 401/403 on an
+  // expired impersonation token elsewhere in the app and landed the admin
+  // back here rather than signing them out.
+  const expiredHandle = sp.impersonation_expired;
 
   let user: AdminUserDetail;
   try {
@@ -23,5 +30,10 @@ export default async function AdminUserDetailPage({
     throw err;
   }
 
-  return <AdminUserDetailView initialUser={user} />;
+  return (
+    <AdminUserDetailView
+      initialUser={user}
+      expiredImpersonationHandle={expiredHandle || undefined}
+    />
+  );
 }

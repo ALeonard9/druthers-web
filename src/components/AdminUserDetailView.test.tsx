@@ -132,4 +132,32 @@ describe('AdminUserDetailView', () => {
     // Status is unchanged - the guard refused the action.
     expect(screen.getByText('active')).toBeTruthy();
   });
+
+  it('shows a View as button for a non-admin target', () => {
+    render(<AdminUserDetailView initialUser={BASE_USER} />);
+
+    expect(screen.getByRole('button', { name: 'View as @follower' })).toBeTruthy();
+  });
+
+  it('never shows View as for a target who is an admin', () => {
+    render(<AdminUserDetailView initialUser={{ ...BASE_USER, user_group: 'admin' }} />);
+
+    expect(screen.queryByRole('button', { name: /View as/ })).toBeNull();
+  });
+
+  it('shows the impersonation-expired message when landed here with that param', () => {
+    render(
+      <AdminUserDetailView initialUser={BASE_USER} expiredImpersonationHandle="private-user" />,
+    );
+
+    expect(
+      screen.getByText('Your view-as session for @private-user expired.'),
+    ).toBeTruthy();
+  });
+
+  it('shows no expiry message on a normal visit', () => {
+    render(<AdminUserDetailView initialUser={BASE_USER} />);
+
+    expect(screen.queryByText(/view-as session/)).toBeNull();
+  });
 });

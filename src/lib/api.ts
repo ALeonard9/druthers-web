@@ -1,4 +1,5 @@
-import { getToken } from './session';
+import { redirect } from 'next/navigation';
+import { getImpersonationMeta, getToken } from './session';
 
 export { API_BASE_URL } from './apiBase';
 import { API_BASE_URL } from './apiBase';
@@ -44,6 +45,31 @@ export async function apiFetch<T>(
   const text = await res.text();
   const data = text ? JSON.parse(text) : undefined;
   if (!res.ok) {
+    // Impersonation tokens are ~15 minutes with no refresh (#250), so a 401
+    // here always means that clock ran out mid-render. A 403 on a GET means
+    // the same thing by elimination: reads are never blocked while
+    // impersonating, only writes are, so a refused read can't be the
+    // expected "read-only" refusal - something about the session itself is
+    // wrong. A 403 on a write, by contrast, *is* the expected refusal and is
+    // left to throw normally so the caller's own error handling shows it.
+    //
+    // This redirects rather than clearing cookies directly because a plain
+    // Server Component render (which is most apiFetch call sites) cannot
+    // mutate cookies - only a Route Handler or Server Action can. /api/admin/expire
+    // is that Route Handler: it clears the impersonation cookies and lands
+    // the admin back on the target's detail page with an explanation,
+    // keeping their own admin session untouched throughout.
+    if (auth && (res.status === 401 || (res.status === 403 && method === 'GET'))) {
+      const impersonation = await getImpersonationMeta();
+      if (impersonation) {
+        const qs = new URLSearchParams({
+          target: impersonation.target.id,
+          handle: impersonation.target.handle,
+        });
+        redirect(`/api/admin/expire?${qs}`);
+      }
+    }
+
     const detail =
       (data && (data.detail || data.message)) || res.statusText || 'API error';
     throw new ApiError(res.status, typeof detail === 'string' ? detail : 'API error');

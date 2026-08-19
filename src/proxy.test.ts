@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { proxy } from './proxy';
-import { REFRESH_COOKIE, SESSION_COOKIE, USER_COOKIE } from './lib/sessionCookies';
+import { IMPERSONATION_COOKIE, REFRESH_COOKIE, SESSION_COOKIE, USER_COOKIE } from './lib/sessionCookies';
 
 const tokenPayload = {
   access_token: 'fresh-access',
@@ -144,6 +144,27 @@ describe('proxy', () => {
     ]) {
       expect(responseCsp).toContain(directive);
     }
+  });
+
+  it('never refreshes while the impersonation cookie is present, even if the admin session cookie has also expired', async () => {
+    // This is the trap #250 called out by name: if impersonation reused
+    // aleonard_session, its short expiry would trigger a silent refresh with
+    // the ACTING ADMIN's own refresh token, restoring the admin's identity
+    // while the impersonation banner was still on screen. The impersonation
+    // token lives in its own cookie, so this also proves the refresh path
+    // never runs purely because that cookie is present - not just because
+    // the session cookie happens to still be valid.
+    const fetchMock = mockRefresh(okResponse());
+    await proxy(
+      request({
+        [IMPERSONATION_COOKIE]: 'view-as-jwt',
+        [REFRESH_COOKIE]: 'drr_admin_refresh',
+        // No SESSION_COOKIE - simulates the admin's own 12h session having
+        // expired mid-impersonation.
+      }),
+    );
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('forwards the requested local path for disabled-shelf recovery', async () => {

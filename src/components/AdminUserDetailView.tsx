@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { AdminDomainCounts, AdminUserDetail } from '@/lib/types';
 import { exactTimestamp, relativeTimeFrom } from '@/lib/relativeTime';
+import { AdminImpersonateButton } from './AdminImpersonateButton';
 
 const DOMAIN_LABELS: Record<keyof AdminUserDetail['domains'], string> = {
   movies: 'Movies',
@@ -30,7 +31,14 @@ const STATUS_STYLES: Record<string, string> = {
   disabled: 'bg-plum-wash text-plum',
 };
 
-export function AdminUserDetailView({ initialUser }: { initialUser: AdminUserDetail }) {
+export function AdminUserDetailView({
+  initialUser,
+  expiredImpersonationHandle,
+}: {
+  initialUser: AdminUserDetail;
+  /** Set when /api/admin/expire (#250) sent us here after a mid-session token expiry. */
+  expiredImpersonationHandle?: string;
+}) {
   const [user, setUser] = useState(initialUser);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -58,6 +66,11 @@ export function AdminUserDetailView({ initialUser }: { initialUser: AdminUserDet
 
   return (
     <div className="flex flex-col gap-8">
+      {expiredImpersonationHandle && (
+        <p role="status" className="rounded-lg border border-line bg-panel px-4 py-2 text-sm text-neutral-300">
+          Your view-as session for @{expiredImpersonationHandle} expired.
+        </p>
+      )}
       <div>
         <Link href="/admin" className="text-xs text-neutral-500 hover:text-paper">
           &larr; Directory
@@ -71,28 +84,35 @@ export function AdminUserDetailView({ initialUser }: { initialUser: AdminUserDet
           >
             {user.status}
           </span>
-          {user.status === 'active' ? (
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              disabled={busy}
-              className="ml-auto rounded-lg border border-red-900 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-950/40 disabled:opacity-50"
-            >
-              Disable account
-            </button>
-          ) : (
-            // Enable is restorative and trivially undone - no confirmation.
-            // Confirming it too would just train people to dismiss dialogs,
-            // which is what makes the disable confirm below worthless.
-            <button
-              type="button"
-              onClick={() => void runAction('enable')}
-              disabled={busy}
-              className="ml-auto rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-neutral-300 hover:border-brass hover:text-paper disabled:opacity-50"
-            >
-              {busy ? 'Enabling…' : 'Enable account'}
-            </button>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            {/* Never rendered for a target who is an admin - impersonating
+                another admin is not a "view as user" workflow. */}
+            {user.user_group !== 'admin' && (
+              <AdminImpersonateButton userId={user.id} handle={user.handle} />
+            )}
+            {user.status === 'active' ? (
+              <button
+                type="button"
+                onClick={() => setConfirming(true)}
+                disabled={busy}
+                className="rounded-lg border border-red-900 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-950/40 disabled:opacity-50"
+              >
+                Disable account
+              </button>
+            ) : (
+              // Enable is restorative and trivially undone - no confirmation.
+              // Confirming it too would just train people to dismiss dialogs,
+              // which is what makes the disable confirm below worthless.
+              <button
+                type="button"
+                onClick={() => void runAction('enable')}
+                disabled={busy}
+                className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-neutral-300 hover:border-brass hover:text-paper disabled:opacity-50"
+              >
+                {busy ? 'Enabling…' : 'Enable account'}
+              </button>
+            )}
+          </div>
         </div>
         {user.display_name && (
           <p className="text-sm text-neutral-400">{user.display_name}</p>

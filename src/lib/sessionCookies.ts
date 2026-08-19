@@ -14,6 +14,20 @@ export const USER_COOKIE = 'aleonard_user';
 // only one worth stealing; it never leaves the server side of the BFF.
 export const REFRESH_COOKIE = 'aleonard_refresh';
 
+// Admin "view as user" (#250). A separate token, in its own httpOnly cookie,
+// never mixed into aleonard_session: the admin's own session and refresh
+// cookies stay untouched for the whole impersonation, which is what makes
+// "Back to admin" a cookie delete and nothing more, and is also what proxy.ts
+// relies on to skip its refresh path while this cookie is present. Both
+// cookies are set and cleared together.
+export const IMPERSONATION_COOKIE = 'aleonard_impersonation';
+// Non-sensitive (handles/emails only) but still httpOnly - nothing client-side
+// reads it directly. The impersonation banner, the /admin block screen, and
+// the escape hatch are all server-rendered, and all three read this cookie
+// through the same cookies() call so they can never disagree about who is
+// being viewed or whether impersonation is even active.
+export const IMPERSONATION_META_COOKIE = 'aleonard_impersonation_meta';
+
 // Retire the session cookie slightly before the token inside it actually
 // expires. Middleware refreshes on a *missing* session cookie, so without a
 // margin a request could slip through carrying a token that expired in
@@ -95,4 +109,59 @@ export function clearSessionCookies(store: CookieRemover): void {
   store.delete(SESSION_COOKIE);
   store.delete(REFRESH_COOKIE);
   store.delete(USER_COOKIE);
+}
+
+interface ImpersonationPerson {
+  id: string;
+  handle: string;
+  display_name?: string | null;
+  email: string;
+}
+
+/** POST /v1/admin/impersonation's response shape. */
+export interface ImpersonationStartResponse {
+  token: string;
+  expires_at: string;
+  session_id: string;
+  target: ImpersonationPerson;
+  acting_admin: Omit<ImpersonationPerson, 'display_name'>;
+}
+
+/** What the meta cookie carries - everything the banner and block screen need to render, and nothing more. */
+export interface ImpersonationMeta {
+  session_id: string;
+  expires_at: string;
+  target: ImpersonationPerson;
+  acting_admin: Omit<ImpersonationPerson, 'display_name'>;
+}
+
+// A 15-minute token with no refresh path (#250) - if the clock or the
+// response is ever wrong, err toward the cookie outliving the token rather
+// than expiring it early and stranding the admin without the banner that
+// explains why their next request just got refused.
+const IMPERSONATION_FALLBACK_MAX_AGE_SECONDS = 15 * 60;
+
+export function applyImpersonationCookies(
+  store: CookieWriter,
+  data: ImpersonationStartResponse,
+): void {
+  const secondsLeft = Math.round((new Date(data.expires_at).getTime() - Date.now()) / 1000);
+  const maxAge =
+    Number.isFinite(secondsLeft) && secondsLeft > 0
+      ? secondsLeft
+      : IMPERSONATION_FALLBACK_MAX_AGE_SECONDS;
+
+  store.set(IMPERSONATION_COOKIE, data.token, { ...cookieOptions, maxAge });
+  const meta: ImpersonationMeta = {
+    session_id: data.session_id,
+    expires_at: data.expires_at,
+    target: data.target,
+    acting_admin: data.acting_admin,
+  };
+  store.set(IMPERSONATION_META_COOKIE, JSON.stringify(meta), { ...cookieOptions, maxAge });
+}
+
+export function clearImpersonationCookies(store: CookieRemover): void {
+  store.delete(IMPERSONATION_COOKIE);
+  store.delete(IMPERSONATION_META_COOKIE);
 }

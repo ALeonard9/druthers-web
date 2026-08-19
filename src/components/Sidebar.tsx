@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import type { ShelfId } from '@/lib/duelShelves';
 import { orderedEnabledShelves } from '@/lib/shelfPreferences';
 import { useShelfPreferences } from '@/lib/useShelfPreferences';
+import { isAdminHint } from '@/lib/adminHint';
+import type { SessionUser } from '@/lib/types';
 import { DOMAIN_ICON_PATHS } from './DomainIcon';
 
 interface NavItem {
@@ -85,8 +87,10 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 }
 
 // Persistent left rail on desktop; the same items render as a bottom tab bar
-// on small screens (BottomTabs).
-export function Sidebar() {
+// on small screens (BottomTabs). `user` is optional only so existing callers
+// that don't pass it (tests, storybook-style renders) still compile - AppShell
+// always passes the signed-in user.
+export function Sidebar({ user = null }: { user?: SessionUser | null }) {
   const pathname = usePathname();
   const preferences = useShelfPreferences();
   const collections = [COLLECTIONS[0], ...orderedEnabledShelves(preferences).flatMap((id) =>
@@ -138,6 +142,18 @@ export function Sidebar() {
         >
           Why “druthers”?
         </Link>
+        {isAdminHint(user) && (
+          <Link
+            href="/admin"
+            className={`px-3 py-1 text-xs transition-colors ${
+              pathname.startsWith('/admin')
+                ? 'text-paper'
+                : 'text-neutral-500 hover:text-paper'
+            }`}
+          >
+            Admin
+          </Link>
+        )}
       </div>
     </aside>
   );

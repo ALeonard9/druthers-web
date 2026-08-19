@@ -36,4 +36,19 @@ describe('Sidebar', () => {
     ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(fetch).toHaveBeenCalledWith('/api/preferences');
   });
+
+  it('hides the Admin link with no user', () => {
+    render(<Sidebar />);
+    expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
+  });
+
+  it('hides the Admin link for a non-admin user_group', () => {
+    render(<Sidebar user={{ user_id: '1', email: 'a@example.com', user_group: 'user' }} />);
+    expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
+  });
+
+  it('shows the Admin link only when the readable cookie claims user_group "admin" - a rendering decision only, not the real gate', () => {
+    render(<Sidebar user={{ user_id: '1', email: 'a@example.com', user_group: 'admin' }} />);
+    expect(screen.getByRole('link', { name: 'Admin' }).getAttribute('href')).toBe('/admin');
+  });
 });

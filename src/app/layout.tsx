@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, Instrument_Sans } from 'next/font/google';
+import { headers } from 'next/headers';
 import './globals.css';
 import { AppShell } from '@/components/AppShell';
 import { EnvBanner } from '@/components/EnvBanner';
@@ -84,6 +85,8 @@ export default async function RootLayout({
   // than per-page, is what lets the public landing page (#27) go chrome-free
   // without a route-group refactor of every existing page.
   const user = await getSessionUser();
+  const pathname = (await headers()).get('x-pathname') ?? '';
+  const fullWidth = pathname.startsWith('/admin');
   let activeShelves;
   if (user) {
     try {
@@ -105,7 +108,9 @@ export default async function RootLayout({
         {/* Environment warning sits above the app shell so signed-out visitors
             on the public landing page see it too. Renders nothing in dev. */}
         <EnvBanner />
-        <AppShell user={user} activeShelves={activeShelves}>{children}</AppShell>
+        <AppShell user={user} activeShelves={activeShelves} fullWidth={fullWidth}>
+          {children}
+        </AppShell>
         <ServiceWorkerRegister />
       </body>
     </html>

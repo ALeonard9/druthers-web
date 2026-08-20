@@ -1,5 +1,5 @@
 /** @vitest-environment happy-dom */
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { getWatchlistLabels } from '@/lib/domainLabels';
 import { NotesVisibilityDisclaimer, SocialContext } from './SocialContext';
@@ -23,6 +23,8 @@ describe('SocialContext', () => {
     expect(screen.getByText('Ranked #3')).toBeTruthy();
     expect(screen.getByText('On Watchlist')).toBeTruthy();
     expect(screen.getByText('A wonderful pick.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Ada Lovelace' }).getAttribute('href')).toBe('/u/ada');
+    expect(screen.getByRole('link', { name: 'Ranked #3' }).getAttribute('href')).toBe('/u/ada/movies');
   });
 
   it('makes the common empty state explicit', () => {
@@ -73,6 +75,94 @@ describe('SocialContext', () => {
 
     expect(screen.getByText(getWatchlistLabels('books').on_badge)).toBeTruthy();
     expect(screen.queryByText('On Watchlist')).toBeNull();
+  });
+
+  it('shows the relationship filter only when both kinds are present and filters its rows', () => {
+    render(
+      <SocialContext
+        domain="books"
+        people={[
+          {
+            handle: 'octavia', display_name: 'Octavia', relationship: 'friends',
+            rank: 1, on_watchlist: false, notes: '',
+          },
+          {
+            handle: 'ursula', display_name: 'Ursula', relationship: 'follows',
+            rank: 2, on_watchlist: false, notes: '',
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'All' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Friends' }));
+    expect(screen.getByText('Octavia')).toBeTruthy();
+    expect(screen.queryByText('Ursula')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Following' }));
+    expect(screen.queryByText('Octavia')).toBeNull();
+    expect(screen.getByText('Ursula')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Ranked #2' }).getAttribute('href')).toBe('/u/ursula/books');
+  });
+
+  it('omits the relationship filter when everyone has the same relationship', () => {
+    render(
+      <SocialContext
+        domain="movies"
+        people={[{
+          handle: 'ada', display_name: 'Ada', relationship: 'friends',
+          rank: null, on_watchlist: false, notes: '',
+        }]}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'All' })).toBeNull();
+  });
+
+  it('shows a relationship-specific empty message when an active filter has no matching rows', () => {
+    const { rerender } = render(
+      <SocialContext
+        domain="movies"
+        people={[
+          {
+            handle: 'ada', display_name: 'Ada', relationship: 'friends',
+            rank: null, on_watchlist: false, notes: '',
+          },
+          {
+            handle: 'lin', display_name: 'Lin', relationship: 'follows',
+            rank: null, on_watchlist: false, notes: '',
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Friends' }));
+    rerender(
+      <SocialContext
+        domain="movies"
+        people={[{
+          handle: 'lin', display_name: 'Lin', relationship: 'follows',
+          rank: null, on_watchlist: false, notes: '',
+        }]}
+      />,
+    );
+
+    expect(screen.getByText('No friends are tracking this yet.')).toBeTruthy();
+    expect(screen.queryByText('No friends or people you follow are tracking this yet.')).toBeNull();
+  });
+
+  it('does not link a withheld rank', () => {
+    render(
+      <SocialContext
+        domain="games"
+        people={[{
+          handle: 'grace', display_name: 'Grace', relationship: 'follows',
+          rank: null, on_watchlist: false, notes: '',
+        }]}
+      />,
+    );
+
+    expect(screen.queryByRole('link', { name: /Ranked/ })).toBeNull();
   });
 });
 

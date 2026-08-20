@@ -257,7 +257,7 @@ export function GameDetail({
           />
         )}
 
-        <SocialContext people={social} />
+        <SocialContext domain="games" people={social} />
 
         {/* Notes */}
         <div>

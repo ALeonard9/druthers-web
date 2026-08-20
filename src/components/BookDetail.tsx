@@ -225,7 +225,7 @@ export function BookDetail({
           />
         )}
 
-        <SocialContext people={social} />
+        <SocialContext domain="books" people={social} />
 
         {/* Notes */}
         <div>

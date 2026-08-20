@@ -233,7 +233,7 @@ export function MovieDetail({
           />
         )}
 
-        <SocialContext people={social} />
+        <SocialContext domain="movies" people={social} />
 
         {/* Notes */}
         <div>

@@ -259,7 +259,7 @@ export function TVShowDetail({
           />
         )}
 
-        <SocialContext people={social} />
+        <SocialContext domain="tv" people={social} />
 
         {/* Notes */}
         <div>

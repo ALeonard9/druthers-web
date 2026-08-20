@@ -372,7 +372,7 @@ export interface Visibility {
 export interface SocialItemContext {
   handle: string;
   display_name: string | null;
-  relationship: 'friend' | 'follows';
+  relationship: 'friends' | 'follows';
   rank: number | null;
   on_watchlist: boolean;
   /** Null means the viewer is not permitted to read the note. */

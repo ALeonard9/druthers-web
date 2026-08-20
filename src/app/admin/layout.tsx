@@ -5,12 +5,13 @@ import { getImpersonationMeta } from '@/lib/session';
 import { SectionTabs } from '@/components/SectionTabs';
 import { AdminBlockedWhileImpersonating } from '@/components/AdminBlockedWhileImpersonating';
 
-// The list drives the tab rail. Reports/stats are a later increment (#249's
-// INC 4/5) - adding a third entry here is the whole job when that lands, the
-// rail already scrolls and doesn't hardcode a tab count.
+// The list drives the tab rail. The rail scrolls rather than hardcoding a
+// tab count, so the reports surface can live beside the console's directory
+// and audit work without becoming a separate admin shell.
 const ADMIN_TABS = [
   { href: '/admin', label: 'Directory' },
   { href: '/admin/audit', label: 'Audit log' },
+  { href: '/admin/reports', label: 'Reports' },
 ];
 
 export const dynamic = 'force-dynamic';

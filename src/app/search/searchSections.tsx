@@ -11,14 +11,41 @@ import {
   type CatalogSearchResult,
 } from '@/components/CatalogSearchResults';
 
+// `minQueryLength` mirrors MIN_QUERY_LENGTH_BY_DOMAIN in the API's
+// app/services/search_policy.py, which is the source of truth and still
+// enforces these floors server-side. They are duplicated here so a section the
+// provider cannot serve says so instead of issuing a request and reporting the
+// empty answer as "nothing found". Each value is that provider's own observed
+// limit, probed 2026-08-20 (api#398): TMDB, TVMaze and IGDB serve
+// one-character queries, Open Library rejects anything under three.
 const CATALOG_DOMAINS: Record<
   CatalogDomain,
-  { title: string; endpoint: string; singular: string }
+  { title: string; endpoint: string; singular: string; minQueryLength: number }
 > = {
-  movies: { title: 'Movies', endpoint: '/v1/movies/search', singular: 'Movie' },
-  tv: { title: 'TV Shows', endpoint: '/v1/tv-shows/search', singular: 'TV Show' },
-  games: { title: 'Games', endpoint: '/v1/games/search', singular: 'Game' },
-  books: { title: 'Books', endpoint: '/v1/books/search', singular: 'Book' },
+  movies: {
+    title: 'Movies',
+    endpoint: '/v1/movies/search',
+    singular: 'Movie',
+    minQueryLength: 1,
+  },
+  tv: {
+    title: 'TV Shows',
+    endpoint: '/v1/tv-shows/search',
+    singular: 'TV Show',
+    minQueryLength: 1,
+  },
+  games: {
+    title: 'Games',
+    endpoint: '/v1/games/search',
+    singular: 'Game',
+    minQueryLength: 1,
+  },
+  books: {
+    title: 'Books',
+    endpoint: '/v1/books/search',
+    singular: 'Book',
+    minQueryLength: 3,
+  },
 };
 
 const BEST_MATCH_THRESHOLD = 0.75;
@@ -27,6 +54,12 @@ const ROW = 'flex items-center gap-3 px-4 py-2 text-sm';
 export interface CatalogSearchTask {
   domain: CatalogDomain;
   resultsPromise: Promise<CatalogSearchResult[]>;
+  /** The query is below this provider's floor, so nothing was searched. */
+  belowMinQuery: boolean;
+}
+
+export function catalogDomainMinQueryLength(domain: CatalogDomain): number {
+  return CATALOG_DOMAINS[domain].minQueryLength;
 }
 
 export function catalogDomainTitle(domain: CatalogDomain): string {
@@ -37,8 +70,14 @@ export function createCatalogSearchTask(
   domain: CatalogDomain,
   query: string,
 ): CatalogSearchTask {
+  // Below the provider's floor there is nothing to ask for, so skip the round
+  // trip entirely rather than rendering its empty answer as a real result.
+  if (query.trim().length < CATALOG_DOMAINS[domain].minQueryLength) {
+    return { domain, resultsPromise: Promise.resolve([]), belowMinQuery: true };
+  }
   return {
     domain,
+    belowMinQuery: false,
     resultsPromise: apiFetch<CatalogSearchResult[]>(
       `${CATALOG_DOMAINS[domain].endpoint}?q=${encodeURIComponent(query)}`,
     ),
@@ -89,6 +128,24 @@ function UnavailableNotice({ title }: { title: string }) {
     <SectionFrame title={title}>
       <p role="alert" className="px-4 py-6 text-sm text-amber-300">
         {title} search is unavailable right now.
+      </p>
+    </SectionFrame>
+  );
+}
+
+function BelowMinQueryNotice({
+  title,
+  minimum,
+}: {
+  title: string;
+  minimum: number;
+}) {
+  // Deliberately not the empty state and deliberately without a count: nothing
+  // was searched, so claiming zero results would be a claim we did not make.
+  return (
+    <SectionFrame title={title}>
+      <p className="px-4 py-6 text-sm text-neutral-400">
+        {title} search needs at least {minimum} characters.
       </p>
     </SectionFrame>
   );
@@ -148,8 +205,17 @@ export async function CatalogDomainSection({
   domain,
   query,
   resultsPromise,
+  belowMinQuery,
 }: CatalogSearchTask & { query: string }) {
   const title = CATALOG_DOMAINS[domain].title;
+  if (belowMinQuery) {
+    return (
+      <BelowMinQueryNotice
+        title={title}
+        minimum={CATALOG_DOMAINS[domain].minQueryLength}
+      />
+    );
+  }
   let results: CatalogSearchResult[];
   try {
     results = await resultsPromise;

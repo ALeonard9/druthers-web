@@ -481,8 +481,12 @@ describe('global search page', () => {
       rank: null,
     };
     const tasks: CatalogSearchTask[] = [
-      { domain: 'books', resultsPromise: Promise.reject(new Error('books failed')) },
-      { domain: 'movies', resultsPromise: Promise.resolve([movie]) },
+      {
+        domain: 'books',
+        resultsPromise: Promise.reject(new Error('books failed')),
+        belowMinQuery: false,
+      },
+      { domain: 'movies', resultsPromise: Promise.resolve([movie]), belowMinQuery: false },
     ];
 
     render(await BestMatch({ query: 'Dune', tasks }));
@@ -507,8 +511,16 @@ describe('global search page', () => {
       rank: null,
     };
     const tasks: CatalogSearchTask[] = [
-      { domain: 'books', resultsPromise: Promise.reject(new Error('best domain failed')) },
-      { domain: 'movies', resultsPromise: Promise.resolve([weakMovie]) },
+      {
+        domain: 'books',
+        resultsPromise: Promise.reject(new Error('best domain failed')),
+        belowMinQuery: false,
+      },
+      {
+        domain: 'movies',
+        resultsPromise: Promise.resolve([weakMovie]),
+        belowMinQuery: false,
+      },
     ];
 
     expect(await BestMatch({ query: 'Dune', tasks })).toBeNull();

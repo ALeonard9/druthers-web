@@ -2,11 +2,14 @@ import Link from 'next/link';
 import { redirect, notFound } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
+import { resolveShelfTier } from '@/lib/privacyDefaults';
 import type {
+  SocialItemContext,
   TVEpisode,
   TVShow,
   UserTVEpisode,
   UserTVShow,
+  Visibility,
   WatchProviders,
 } from '@/lib/types';
 import { TVShowDetail } from '@/components/TVShowDetail';
@@ -43,13 +46,17 @@ export default async function TVShowDetailPage({
   let episodes: TVEpisode[];
   let marks: UserTVEpisode[];
   let providers: WatchProviders | null;
+  let social: SocialItemContext[];
+  let visibility: Visibility;
   try {
-    [show, tracker, episodes, marks, providers] = await Promise.all([
+    [show, tracker, episodes, marks, providers, social, visibility] = await Promise.all([
       apiFetch<TVShow>(`/v1/tv-shows/${id}`),
       trackerOrNull,
       apiFetch<TVEpisode[]>(`/v1/tv-shows/${id}/episodes`),
       apiFetch<UserTVEpisode[]>(`/v1/users/me/tv-shows/${id}/episodes`),
       providersOrNull,
+      apiFetch<SocialItemContext[]>(`/v1/tv/${id}/social`),
+      apiFetch<Visibility>('/v1/users/me/visibility'),
     ]);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) notFound();
@@ -68,7 +75,13 @@ export default async function TVShowDetailPage({
       <Link href="/tv" className="text-sm text-brass hover:text-brass-bright">
         ← Back to My TV Shows
       </Link>
-      <TVShowDetail show={show} tracker={tracker} providers={providers} />
+      <TVShowDetail
+        show={show}
+        tracker={tracker}
+        providers={providers}
+        social={social}
+        notesVisibility={resolveShelfTier(visibility, 'visibility_notes_tv')}
+      />
       <section>
         <h2 className="mb-3 text-lg font-medium text-neutral-200">Episodes</h2>
         <EpisodeList

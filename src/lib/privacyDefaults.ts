@@ -16,12 +16,22 @@ export const SHELF_FIELDS = [
 
 export type ShelfField = (typeof SHELF_FIELDS)[number];
 
+export const NOTES_FIELDS = [
+  'visibility_notes_movies',
+  'visibility_notes_tv',
+  'visibility_notes_books',
+  'visibility_notes_games',
+] as const;
+
+export type NotesField = (typeof NOTES_FIELDS)[number];
+type VisibilityField = ShelfField | NotesField;
+
 /** Returns a shelf's effective privacy after its nullable override is resolved. */
-export function resolveShelfTier(settings: Visibility, field: ShelfField): VisibilityTier {
+export function resolveShelfTier(settings: Visibility, field: VisibilityField): VisibilityTier {
   return settings[field] ?? settings.default_privacy;
 }
 
 /** Whether a shelf follows the account-wide default instead of an explicit override. */
-export function shelfInheritsDefault(settings: Visibility, field: ShelfField): boolean {
+export function shelfInheritsDefault(settings: Visibility, field: VisibilityField): boolean {
   return settings[field] === null;
 }

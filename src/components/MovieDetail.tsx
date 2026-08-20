@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import { CompletedDateField } from './CompletedDateField';
 import { WhereToWatch } from './WhereToWatch';
-import type { Movie, UserMovie, WatchProviders } from '@/lib/types';
+import { NotesVisibilityDisclaimer, SocialContext } from './SocialContext';
+import type { Movie, SocialItemContext, UserMovie, VisibilityTier, WatchProviders } from '@/lib/types';
 
 function Field({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
@@ -21,10 +22,14 @@ export function MovieDetail({
   movie,
   tracker,
   providers,
+  social,
+  notesVisibility,
 }: {
   movie: Movie;
   tracker: UserMovie | null;
   providers: WatchProviders | null;
+  social: SocialItemContext[];
+  notesVisibility: VisibilityTier;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -228,11 +233,14 @@ export function MovieDetail({
           />
         )}
 
+        <SocialContext domain="movies" people={social} />
+
         {/* Notes */}
         <div>
           <label className="mb-1 block text-xs uppercase tracking-wide text-neutral-500">
             My notes
           </label>
+          <NotesVisibilityDisclaimer tier={notesVisibility} />
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

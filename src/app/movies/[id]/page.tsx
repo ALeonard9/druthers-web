@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { redirect, notFound } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
-import type { Movie, UserMovie, WatchProviders } from '@/lib/types';
+import { resolveShelfTier } from '@/lib/privacyDefaults';
+import type { Movie, SocialItemContext, UserMovie, Visibility, WatchProviders } from '@/lib/types';
 import { MovieDetail } from '@/components/MovieDetail';
 
 export const dynamic = 'force-dynamic';
@@ -40,14 +41,24 @@ export default async function MovieDetailPage({
     if (!(err instanceof ApiError && err.status === 404)) throw err;
   }
 
-  const providers = await providersOrNull;
+  const [providers, social, visibility] = await Promise.all([
+    providersOrNull,
+    apiFetch<SocialItemContext[]>(`/v1/movies/${id}/social`),
+    apiFetch<Visibility>('/v1/users/me/visibility'),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
       <Link href="/movies" className="text-sm text-brass hover:text-brass-bright">
         ← Back to My Movies
       </Link>
-      <MovieDetail movie={movie} tracker={tracker} providers={providers} />
+      <MovieDetail
+        movie={movie}
+        tracker={tracker}
+        providers={providers}
+        social={social}
+        notesVisibility={resolveShelfTier(visibility, 'visibility_notes_movies')}
+      />
     </div>
   );
 }

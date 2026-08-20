@@ -680,7 +680,7 @@ export function shareDialogTitle(
   const watchlist: Record<ShareCategory, string> = {
     movies: 'Share my movie watchlist',
     tv: 'Share my TV watchlist',
-    books: 'Share my read list',
+    books: 'Share my reading list',
     games: 'Share my play list',
   };
   return kind === 'watchlist' ? watchlist[category] : ranked[category];

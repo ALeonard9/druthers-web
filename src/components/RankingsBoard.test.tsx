@@ -169,7 +169,7 @@ describe('Drag-and-Drop Rankings Boards (web#137)', () => {
     };
     render(<BookRankingsBoard placed={[mockBookItem]} unplaced={[ready]} placedCount={1} />);
     expect(screen.getByText(/Test Book/)).toBeTruthy();
-    expectExplicitActions('Remove Test Book from rankings', 'Read List');
+    expectExplicitActions('Remove Test Book from rankings', 'Reading List');
   });
 
   it('renders explicit right-side game actions without swipe-only controls', () => {

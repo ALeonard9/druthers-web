@@ -22,7 +22,7 @@ export const TV_TABS = [
 export const BOOK_TABS = [
   { href: '/books', label: 'My Favorite Books' },
   { href: '/books/ranking/list', label: 'Ranking' },
-  { href: '/books/to-read', label: 'Read List' },
+  { href: '/books/to-read', label: 'Reading List' },
 ];
 
 export const GAME_TABS = [

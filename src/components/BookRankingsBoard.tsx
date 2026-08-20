@@ -95,7 +95,7 @@ function ToRankChip({
           onClick={() => onMoveToWatchlist(item)}
           className="min-h-10 rounded border border-line px-3 py-2 text-xs font-medium text-neutral-200 hover:border-neutral-500 hover:bg-line/40"
         >
-          Read List
+          Reading List
         </button>
         <button
           onClick={() => onPlaceTop(item)}

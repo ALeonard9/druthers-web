@@ -199,7 +199,7 @@ describe('contextual share formatter title', () => {
   it('names ranked and watchlist content instead of calling everything Top 5', () => {
     expect(shareDialogTitle('games', 'ranked')).toBe('Share my games');
     expect(shareDialogTitle('tv', 'watchlist')).toBe('Share my TV watchlist');
-    expect(shareDialogTitle('books', 'watchlist')).toBe('Share my read list');
+    expect(shareDialogTitle('books', 'watchlist')).toBe('Share my reading list');
   });
 
   it('builds concise category and watchlist message copy', () => {

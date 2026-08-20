@@ -65,7 +65,7 @@ const DOMAINS: {
     label: 'Books',
     field: 'visibility_books',
     watchlistField: 'visibility_watchlist_books',
-    queueLabel: 'Read List',
+    queueLabel: 'Reading List',
   },
   {
     key: 'games',

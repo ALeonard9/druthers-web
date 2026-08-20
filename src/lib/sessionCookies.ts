@@ -14,6 +14,22 @@ export const USER_COOKIE = 'aleonard_user';
 // only one worth stealing; it never leaves the server side of the BFF.
 export const REFRESH_COOKIE = 'aleonard_refresh';
 
+// Admin "view as user" (#250). A separate token, in its own httpOnly cookie,
+// never mixed into aleonard_session: the admin's own session and refresh
+// cookies stay untouched for the whole impersonation, which is what lets
+// "Back to admin" end the session server-side using the ADMIN's own token
+// (the impersonation token cannot end its own session - DELETE is a write,
+// and every write is refused while impersonating, no exceptions) and is
+// also what proxy.ts relies on to skip its refresh path while this cookie
+// is present. Both cookies are set and cleared together.
+export const IMPERSONATION_COOKIE = 'aleonard_impersonation';
+// Non-sensitive (handles/emails only) but still httpOnly - nothing client-side
+// reads it directly. The impersonation banner, the /admin block screen, and
+// the escape hatch are all server-rendered, and all three read this cookie
+// through the same cookies() call so they can never disagree about who is
+// being viewed or whether impersonation is even active.
+export const IMPERSONATION_META_COOKIE = 'aleonard_impersonation_meta';
+
 // Retire the session cookie slightly before the token inside it actually
 // expires. Middleware refreshes on a *missing* session cookie, so without a
 // margin a request could slip through carrying a token that expired in
@@ -95,4 +111,77 @@ export function clearSessionCookies(store: CookieRemover): void {
   store.delete(SESSION_COOKIE);
   store.delete(REFRESH_COOKIE);
   store.delete(USER_COOKIE);
+}
+
+interface ImpersonationPerson {
+  id: string;
+  // Both nullable in the API's own response schema (Optional[str] = None),
+  // not just display_name - a private user is exactly the kind of account
+  // likeliest to lack a handle, so this is the realistic case to handle,
+  // not an edge case to shrug off. Every caller that displays a person must
+  // fall back through handle -> display_name -> email -> id.
+  handle: string | null;
+  display_name?: string | null;
+  email: string | null;
+}
+
+/** Best available way to name someone in impersonation UI, in priority order. */
+export function personLabel(person: ImpersonationPerson): string {
+  if (person.handle) return `@${person.handle}`;
+  if (person.display_name) return person.display_name;
+  if (person.email) return person.email;
+  return person.id;
+}
+
+/**
+ * POST /v1/admin/impersonation's response shape (OutImpersonationSession).
+ * target and acting_admin are both the same OutImpersonationParty on the API
+ * side - acting_admin is not missing display_name, it just isn't shown for it
+ * in the UI today.
+ */
+export interface ImpersonationStartResponse {
+  token: string;
+  expires_at: string;
+  session_id: string;
+  target: ImpersonationPerson;
+  acting_admin: ImpersonationPerson;
+}
+
+/** What the meta cookie carries - everything the banner and block screen need to render, and nothing more. */
+export interface ImpersonationMeta {
+  session_id: string;
+  expires_at: string;
+  target: ImpersonationPerson;
+  acting_admin: ImpersonationPerson;
+}
+
+// A 15-minute token with no refresh path (#250) - if the clock or the
+// response is ever wrong, err toward the cookie outliving the token rather
+// than expiring it early and stranding the admin without the banner that
+// explains why their next request just got refused.
+const IMPERSONATION_FALLBACK_MAX_AGE_SECONDS = 15 * 60;
+
+export function applyImpersonationCookies(
+  store: CookieWriter,
+  data: ImpersonationStartResponse,
+): void {
+  const secondsLeft = Math.round((new Date(data.expires_at).getTime() - Date.now()) / 1000);
+  const maxAge =
+    Number.isFinite(secondsLeft) && secondsLeft > 0
+      ? secondsLeft
+      : IMPERSONATION_FALLBACK_MAX_AGE_SECONDS;
+
+  store.set(IMPERSONATION_COOKIE, data.token, { ...cookieOptions, maxAge });
+  const meta: ImpersonationMeta = {
+    session_id: data.session_id,
+    expires_at: data.expires_at,
+    target: data.target,
+    acting_admin: data.acting_admin,
+  };
+  store.set(IMPERSONATION_META_COOKIE, JSON.stringify(meta), { ...cookieOptions, maxAge });
+}
+
+export function clearImpersonationCookies(store: CookieRemover): void {
+  store.delete(IMPERSONATION_COOKIE);
+  store.delete(IMPERSONATION_META_COOKIE);
 }

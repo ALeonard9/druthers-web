@@ -507,3 +507,114 @@ export interface Summary {
   /** Whether the onboarding wizard should show: unfinished AND zero items added. */
   needs_onboarding: boolean;
 }
+
+// --- Admin console (issue #249) ---------------------------------------
+
+export interface AdminUserRow {
+  id: string;
+  handle: string;
+  display_name: string | null;
+  email: string;
+  user_group: string;
+  status: string;
+  created_at: string;
+  /** Wrote something - the API has no sign-in tracking yet. Never label this "last active". */
+  last_tracked_at: string | null;
+  tracked_total: number;
+}
+
+export interface AdminUserListResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  users: AdminUserRow[];
+}
+
+export interface AdminDomainCounts {
+  ranked: number;
+  watchlist: number;
+  total: number;
+}
+
+export interface AdminUserVisibility {
+  profile: string;
+  default_privacy: string;
+  movies: string | null;
+  tv: string | null;
+  books: string | null;
+  games: string | null;
+  watchlist_movies: string | null;
+  watchlist_tv: string | null;
+  watchlist_books: string | null;
+  watchlist_games: string | null;
+  share_activity: boolean;
+}
+
+export interface AdminUserDetail {
+  id: string;
+  handle: string;
+  display_name: string | null;
+  email: string;
+  user_group: string;
+  status: string;
+  created_at: string;
+  last_tracked_at: string | null;
+  visibility: AdminUserVisibility;
+  domains: {
+    movies: AdminDomainCounts;
+    tv: AdminDomainCounts;
+    books: AdminDomainCounts;
+    games: AdminDomainCounts;
+  };
+  social: {
+    friends: number;
+    followers: number;
+    following: number;
+  };
+}
+
+// Every field here is genuinely optional on the API side, actor included -
+// not just handle/email. An actor can be fully absent (an expired-token
+// denial that never resolved to an account) and a resolved actor can still
+// be missing individual fields (their account was later deleted, which nulls
+// the FK and falls back to whatever was denormalized at write time).
+export interface AdminAuditActor {
+  id: string | null;
+  handle: string | null;
+  email: string | null;
+}
+
+export interface AdminAuditEvent {
+  id: number;
+  created_at: string;
+  actor: AdminAuditActor | null;
+  target: AdminAuditActor | null;
+  action: string;
+  result: string;
+  detail: Record<string, unknown> | null;
+  request_id: string | null;
+  method: string | null;
+  path: string | null;
+  status_code: number | null;
+  source_ip: string | null;
+}
+
+export interface AdminAuditResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  events: AdminAuditEvent[];
+}
+
+/** GET /v1/admin/impersonation - every live view-as session, across every admin. Never carries the token. */
+export interface AdminLiveSession {
+  session_id: string;
+  acting_admin: { id: string; handle: string | null; display_name: string | null; email: string | null };
+  target: { id: string; handle: string | null; display_name: string | null; email: string | null };
+  started_at: string;
+  expires_at: string;
+}
+
+export interface AdminLiveSessionList {
+  sessions: AdminLiveSession[];
+}

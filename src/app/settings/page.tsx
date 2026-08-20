@@ -7,6 +7,7 @@ import { SoundPicker } from '@/components/SoundPicker';
 import { TimeZonePicker } from '@/components/TimeZonePicker';
 import { ShelfManager } from '@/components/ShelfManager';
 import { DeleteAccount } from '@/components/DeleteAccount';
+import { ImpersonationReadOnlyGuard } from '@/components/ImpersonationReadOnlyGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,7 +43,9 @@ export default async function SettingsPage() {
             Friends, or Public per shelf in Advanced Sharing Options.
           </p>
         </div>
-        <PrivacySettings />
+        <ImpersonationReadOnlyGuard>
+          <PrivacySettings />
+        </ImpersonationReadOnlyGuard>
         <Link
           href="/followers"
           className="w-fit text-sm text-brass hover:text-brass-bright"
@@ -58,7 +61,9 @@ export default async function SettingsPage() {
             Choose which shelves appear around Druthers and arrange their order.
           </p>
         </div>
-        <ShelfManager />
+        <ImpersonationReadOnlyGuard>
+          <ShelfManager />
+        </ImpersonationReadOnlyGuard>
       </section>
 
       <section id="time-zone" className="flex scroll-mt-24 flex-col gap-3">
@@ -70,7 +75,9 @@ export default async function SettingsPage() {
             follows you to another device.
           </p>
         </div>
-        <TimeZonePicker />
+        <ImpersonationReadOnlyGuard>
+          <TimeZonePicker />
+        </ImpersonationReadOnlyGuard>
       </section>
 
       <section className="flex flex-col gap-3">
@@ -101,7 +108,9 @@ export default async function SettingsPage() {
             instead of your password. Revoking takes effect immediately.
           </p>
         </div>
-        <ApiKeysManager />
+        <ImpersonationReadOnlyGuard>
+          <ApiKeysManager />
+        </ImpersonationReadOnlyGuard>
       </section>
 
       <section className="flex flex-col gap-3">
@@ -111,33 +120,40 @@ export default async function SettingsPage() {
             Everything you’ve tracked, downloadable any time. Never locked in.
           </p>
         </div>
-        <div className="rounded-lg border border-line bg-panel px-4 py-3 text-sm">
-          {/* Plain anchors on purpose: these are file downloads served by BFF
-              route handlers, not pages - <Link/> would try to client-navigate
-              and prefetch them. */}
-          <a
-            href="/api/export"
-            download
-            className="text-brass hover:text-brass-bright"
-          >
-            Download everything (JSON)
-          </a>
-          <p className="mt-2 text-xs text-neutral-500">
-            Spreadsheets:{' '}
-            {CSV_DOMAINS.map(([slug, label], i) => (
-              <span key={slug}>
-                {i > 0 && ' · '}
-                <a
-                  href={`/api/export/${slug}.csv`}
-                  download
-                  className="text-neutral-300 underline decoration-line hover:text-paper"
-                >
-                  {label}
-                </a>
-              </span>
-            ))}
-          </p>
-        </div>
+        {/* Guarded even though export is a read the API itself would allow
+            while impersonating: an admin viewing as someone else downloading
+            that person's full data export to their own device is exactly
+            the kind of incidental exfiltration a view-as session should not
+            make one click away, regardless of what the server permits. */}
+        <ImpersonationReadOnlyGuard>
+          <div className="rounded-lg border border-line bg-panel px-4 py-3 text-sm">
+            {/* Plain anchors on purpose: these are file downloads served by BFF
+                route handlers, not pages - <Link/> would try to client-navigate
+                and prefetch them. */}
+            <a
+              href="/api/export"
+              download
+              className="text-brass hover:text-brass-bright"
+            >
+              Download everything (JSON)
+            </a>
+            <p className="mt-2 text-xs text-neutral-500">
+              Spreadsheets:{' '}
+              {CSV_DOMAINS.map(([slug, label], i) => (
+                <span key={slug}>
+                  {i > 0 && ' · '}
+                  <a
+                    href={`/api/export/${slug}.csv`}
+                    download
+                    className="text-neutral-300 underline decoration-line hover:text-paper"
+                  >
+                    {label}
+                  </a>
+                </span>
+              ))}
+            </p>
+          </div>
+        </ImpersonationReadOnlyGuard>
       </section>
 
       <section className="flex flex-col gap-3 border-t border-red-950 pt-8">
@@ -147,7 +163,9 @@ export default async function SettingsPage() {
             Permanently remove your Druthers account and its data.
           </p>
         </div>
-        <DeleteAccount />
+        <ImpersonationReadOnlyGuard>
+          <DeleteAccount />
+        </ImpersonationReadOnlyGuard>
       </section>
     </div>
   );

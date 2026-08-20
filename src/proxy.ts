@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { API_BASE_URL } from '@/lib/apiBase';
 import { contentSecurityPolicy } from '@/lib/contentSecurityPolicy';
 import {
+  IMPERSONATION_COOKIE,
   REFRESH_COOKIE,
   SESSION_COOKIE,
   applyTokenCookies,
@@ -43,6 +44,18 @@ export async function proxy(request: NextRequest) {
     res.headers.set('Content-Security-Policy', cspHeader);
     return res;
   };
+
+  // Impersonation sessions never refresh (#250). The token is ~15 minutes
+  // with no refresh path by design - checking this first, before the
+  // session-cookie check below, means the refresh logic never runs at all
+  // while impersonating, even if the admin's own session cookie happens to
+  // expire mid-session. A silent refresh here would spend the ACTING
+  // ADMIN's refresh token and could restore their identity while the
+  // impersonation banner is still on screen. Expiry has to be a hard exit
+  // instead: the next request that needs auth gets a 401/403, which
+  // apiFetch turns into a redirect back to admin, not a silent identity
+  // swap.
+  if (request.cookies.get(IMPERSONATION_COOKIE)) return withCsp(NextResponse.next(reqInit));
 
   if (request.cookies.get(SESSION_COOKIE)) return withCsp(NextResponse.next(reqInit));
 

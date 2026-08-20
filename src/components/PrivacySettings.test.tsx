@@ -24,6 +24,10 @@ function visibility(overrides: Partial<Visibility> = {}): Visibility {
     visibility_watchlist_tv: null,
     visibility_watchlist_books: null,
     visibility_watchlist_games: null,
+    visibility_notes_movies: null,
+    visibility_notes_tv: null,
+    visibility_notes_books: null,
+    visibility_notes_games: null,
     ...overrides,
   };
 }

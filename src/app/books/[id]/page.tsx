@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { redirect, notFound } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
-import type { Book, UserBook } from '@/lib/types';
+import { resolveShelfTier } from '@/lib/privacyDefaults';
+import type { Book, SocialItemContext, UserBook, Visibility } from '@/lib/types';
 import { BookDetail } from '@/components/BookDetail';
 
 export const dynamic = 'force-dynamic';
@@ -26,10 +27,14 @@ export default async function BookDetailPage({
 
   let book: Book;
   let tracker: UserBook | null;
+  let social: SocialItemContext[];
+  let visibility: Visibility;
   try {
-    [book, tracker] = await Promise.all([
+    [book, tracker, social, visibility] = await Promise.all([
       apiFetch<Book>(`/v1/books/${id}`),
       trackerOrNull,
+      apiFetch<SocialItemContext[]>(`/v1/books/${id}/social`),
+      apiFetch<Visibility>('/v1/users/me/visibility'),
     ]);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) notFound();
@@ -42,7 +47,12 @@ export default async function BookDetailPage({
       <Link href="/books" className="text-sm text-brass hover:text-brass-bright">
         ← Back to My Books
       </Link>
-      <BookDetail book={book} tracker={tracker} />
+      <BookDetail
+        book={book}
+        tracker={tracker}
+        social={social}
+        notesVisibility={resolveShelfTier(visibility, 'visibility_notes_books')}
+      />
     </div>
   );
 }

@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { duelHrefFor, isAlreadyPlaced } from '@/lib/duelShelves';
 import { CompletedDateField } from './CompletedDateField';
-import type { UserVideoGame, VideoGame } from '@/lib/types';
+import { NotesVisibilityDisclaimer, SocialContext } from './SocialContext';
+import type { SocialItemContext, UserVideoGame, VideoGame, VisibilityTier } from '@/lib/types';
 
 function Field({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
@@ -19,9 +20,13 @@ function Field({ label, value }: { label: string; value: string | null }) {
 export function GameDetail({
   game,
   tracker,
+  social,
+  notesVisibility,
 }: {
   game: VideoGame;
   tracker: UserVideoGame | null;
+  social: SocialItemContext[];
+  notesVisibility: VisibilityTier;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -252,11 +257,14 @@ export function GameDetail({
           />
         )}
 
+        <SocialContext people={social} />
+
         {/* Notes */}
         <div>
           <label className="mb-1 block text-xs uppercase tracking-wide text-neutral-500">
             My notes
           </label>
+          <NotesVisibilityDisclaimer tier={notesVisibility} />
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { redirect, notFound } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { getSessionUser } from '@/lib/session';
-import type { UserVideoGame, VideoGame } from '@/lib/types';
+import { resolveShelfTier } from '@/lib/privacyDefaults';
+import type { SocialItemContext, UserVideoGame, VideoGame, Visibility } from '@/lib/types';
 import { GameDetail } from '@/components/GameDetail';
 
 export const dynamic = 'force-dynamic';
@@ -26,10 +27,14 @@ export default async function GameDetailPage({
 
   let game: VideoGame;
   let tracker: UserVideoGame | null;
+  let social: SocialItemContext[];
+  let visibility: Visibility;
   try {
-    [game, tracker] = await Promise.all([
+    [game, tracker, social, visibility] = await Promise.all([
       apiFetch<VideoGame>(`/v1/games/${id}`),
       trackerOrNull,
+      apiFetch<SocialItemContext[]>(`/v1/games/${id}/social`),
+      apiFetch<Visibility>('/v1/users/me/visibility'),
     ]);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) notFound();
@@ -42,7 +47,12 @@ export default async function GameDetailPage({
       <Link href="/games" className="text-sm text-brass hover:text-brass-bright">
         ← Back to My Games
       </Link>
-      <GameDetail game={game} tracker={tracker} />
+      <GameDetail
+        game={game}
+        tracker={tracker}
+        social={social}
+        notesVisibility={resolveShelfTier(visibility, 'visibility_notes_games')}
+      />
     </div>
   );
 }

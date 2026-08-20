@@ -363,6 +363,20 @@ export interface Visibility {
   visibility_watchlist_tv: VisibilityTier | null;
   visibility_watchlist_books: VisibilityTier | null;
   visibility_watchlist_games: VisibilityTier | null;
+  visibility_notes_movies: VisibilityTier | null;
+  visibility_notes_tv: VisibilityTier | null;
+  visibility_notes_books: VisibilityTier | null;
+  visibility_notes_games: VisibilityTier | null;
+}
+
+export interface SocialItemContext {
+  handle: string;
+  display_name: string | null;
+  relationship: 'friend' | 'follows';
+  rank: number | null;
+  on_watchlist: boolean;
+  /** Null means the viewer is not permitted to read the note. */
+  notes: string | null;
 }
 
 // A friend or follow's counterpart - never email or visibility settings, only

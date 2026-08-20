@@ -634,3 +634,42 @@ export interface AdminLiveSession {
 export interface AdminLiveSessionList {
   sessions: AdminLiveSession[];
 }
+
+// --- Admin reports (issue #251) ---------------------------------------
+
+export type AdminReportName =
+  | 'signups'
+  | 'active_users'
+  | 'tracking_volume'
+  | 'top_titles'
+  | 'top_users'
+  | 'engagement_by_tier'
+  | 'activation'
+  | 'retention'
+  | 'conversion';
+
+export type AdminReportBucket = 'day' | 'week' | 'month';
+
+export interface AdminReportPoint {
+  period: string;
+  values: Record<string, number>;
+}
+
+export interface AdminReportRow {
+  label: string;
+  count: number;
+  domain?: string;
+}
+
+/** Shared envelope for every GET /v1/admin/reports/{report} response. */
+export interface AdminReportResponse {
+  report: AdminReportName;
+  bucket: AdminReportBucket;
+  from: string;
+  to: string;
+  series: AdminReportPoint[];
+  totals: Record<string, number>;
+  rows?: AdminReportRow[];
+  /** False means the range has no product events at all, not zero conversion. */
+  instrumented?: boolean;
+}

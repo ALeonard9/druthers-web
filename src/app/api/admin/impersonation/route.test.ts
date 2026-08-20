@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DELETE, POST } from './route';
+import { DELETE, GET, POST } from './route';
 
 const SESSION_COOKIE = 'aleonard_session';
 
@@ -170,5 +170,32 @@ describe('DELETE /api/admin/impersonation', () => {
     expect(mocks.clearImpersonationCookies).toHaveBeenCalledWith(store);
     expect(response.status).toBe(200);
     expect(body.sessionEnded).toBe(false);
+  });
+});
+
+describe('GET /api/admin/impersonation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('lists live sessions', async () => {
+    mocks.apiFetch.mockResolvedValue({ sessions: [{ session_id: 's1' }] });
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(mocks.apiFetch).toHaveBeenCalledWith('/v1/admin/impersonation');
+    expect(body.sessions).toHaveLength(1);
+  });
+
+  it('forwards a failure rather than a generic message', async () => {
+    const { ApiError } = await import('@/lib/api');
+    mocks.apiFetch.mockRejectedValue(new ApiError(403, 'Admin privileges required'));
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.error).toBe('Admin privileges required');
   });
 });

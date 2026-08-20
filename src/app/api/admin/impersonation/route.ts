@@ -7,6 +7,22 @@ import {
   clearImpersonationCookies,
   type ImpersonationStartResponse,
 } from '@/lib/sessionCookies';
+import type { AdminLiveSessionList } from '@/lib/types';
+
+// Every live view-as session across every admin (#250 follow-up) - the
+// admin console's own oversight surface, called from the audit tab. Not
+// reachable while impersonating: /admin is blocked in that state, so this
+// always runs with the admin's own token via the normal getToken() path.
+export async function GET() {
+  try {
+    const data = await apiFetch<AdminLiveSessionList>('/v1/admin/impersonation');
+    return NextResponse.json(data);
+  } catch (err) {
+    const status = err instanceof ApiError ? err.status : 500;
+    const message = err instanceof ApiError ? err.message : 'Could not list live sessions';
+    return NextResponse.json({ error: message }, { status });
+  }
+}
 
 // Starts a view-as session (#250). Admin-only by construction: it only ever
 // gets called from the per-user detail view, which is already behind the

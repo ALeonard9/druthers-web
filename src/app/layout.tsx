@@ -6,7 +6,9 @@ import { AppShell } from '@/components/AppShell';
 import { EnvBanner } from '@/components/EnvBanner';
 import { ImpersonationBanner } from '@/components/ImpersonationBanner';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
+import { ImpersonationProvider } from '@/lib/ImpersonationContext';
 import { getImpersonationMeta, getSessionUser } from '@/lib/session';
+import { personLabel } from '@/lib/sessionCookies';
 import { SITE_URL } from '@/lib/shareCards';
 import { GENERIC_OG_IMAGE_PATH } from '@/lib/ogCards';
 import { apiFetch } from '@/lib/api';
@@ -149,9 +151,19 @@ export default async function RootLayout({
         {/* Environment warning sits above the app shell so signed-out visitors
             on the public landing page see it too. Renders nothing in dev. */}
         <EnvBanner />
-        <AppShell user={user} activeShelves={activeShelves} fullWidth={fullWidth}>
-          {children}
-        </AppShell>
+        <ImpersonationProvider
+          impersonating={Boolean(impersonation)}
+          targetLabel={impersonation ? personLabel(impersonation.target) : null}
+        >
+          <AppShell
+            user={user}
+            activeShelves={activeShelves}
+            fullWidth={fullWidth}
+            impersonating={Boolean(impersonation)}
+          >
+            {children}
+          </AppShell>
+        </ImpersonationProvider>
         <ServiceWorkerRegister />
       </body>
     </html>

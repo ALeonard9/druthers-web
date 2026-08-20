@@ -6,6 +6,7 @@ import Page from './page';
 const mocks = vi.hoisted(() => ({
   apiFetch: vi.fn(),
   getImpersonationMeta: vi.fn(),
+  getSessionUser: vi.fn(),
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
   }),
@@ -21,7 +22,10 @@ vi.mock('@/lib/api', () => ({
     }
   },
 }));
-vi.mock('@/lib/session', () => ({ getImpersonationMeta: mocks.getImpersonationMeta }));
+vi.mock('@/lib/session', () => ({
+  getImpersonationMeta: mocks.getImpersonationMeta,
+  getSessionUser: mocks.getSessionUser,
+}));
 vi.mock('next/navigation', () => ({ notFound: mocks.notFound }));
 vi.mock('@/components/AdminUserDetailView', () => ({ AdminUserDetailView: () => null }));
 
@@ -48,6 +52,7 @@ describe('AdminUserDetailPage', () => {
 
   it('fetches the user normally with no impersonation active', async () => {
     mocks.getImpersonationMeta.mockResolvedValue(null);
+    mocks.getSessionUser.mockResolvedValue({ user_id: 'admin-1', email: 'a@example.com', user_group: 'admin' });
     mocks.apiFetch.mockResolvedValue({ id: 'u1', handle: 'follower' });
 
     render(

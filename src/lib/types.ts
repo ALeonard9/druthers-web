@@ -605,3 +605,16 @@ export interface AdminAuditResponse {
   offset: number;
   events: AdminAuditEvent[];
 }
+
+/** GET /v1/admin/impersonation - every live view-as session, across every admin. Never carries the token. */
+export interface AdminLiveSession {
+  session_id: string;
+  acting_admin: { id: string; handle: string | null; display_name: string | null; email: string | null };
+  target: { id: string; handle: string | null; display_name: string | null; email: string | null };
+  started_at: string;
+  expires_at: string;
+}
+
+export interface AdminLiveSessionList {
+  sessions: AdminLiveSession[];
+}

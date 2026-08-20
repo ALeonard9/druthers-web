@@ -39,12 +39,16 @@ describe('AdminAuditPage', () => {
 
   it('renders "Unknown" for a null actor rather than crashing - a real API response shape, not hypothetical', async () => {
     mocks.getImpersonationMeta.mockResolvedValue(null);
-    mocks.apiFetch.mockResolvedValue({
-      total: 1,
-      limit: 50,
-      offset: 0,
-      events: [{ ...EVENT_BASE, actor: null, target: null }],
-    });
+    mocks.apiFetch.mockImplementation(async (path: string) =>
+      path.includes('impersonation')
+        ? { sessions: [] }
+        : {
+            total: 1,
+            limit: 50,
+            offset: 0,
+            events: [{ ...EVENT_BASE, actor: null, target: null }],
+          },
+    );
 
     const { getByText, getAllByText } = render(await Page({ searchParams: Promise.resolve({}) }));
 
@@ -56,18 +60,22 @@ describe('AdminAuditPage', () => {
 
   it('falls back to email when an actor has no handle', async () => {
     mocks.getImpersonationMeta.mockResolvedValue(null);
-    mocks.apiFetch.mockResolvedValue({
-      total: 1,
-      limit: 50,
-      offset: 0,
-      events: [
-        {
-          ...EVENT_BASE,
-          actor: { id: 'a1', handle: null, email: 'admin@example.com' },
-          target: { id: 't1', handle: 'follower', email: 'follower@example.com' },
-        },
-      ],
-    });
+    mocks.apiFetch.mockImplementation(async (path: string) =>
+      path.includes('impersonation')
+        ? { sessions: [] }
+        : {
+            total: 1,
+            limit: 50,
+            offset: 0,
+            events: [
+              {
+                ...EVENT_BASE,
+                actor: { id: 'a1', handle: null, email: 'admin@example.com' },
+                target: { id: 't1', handle: 'follower', email: 'follower@example.com' },
+              },
+            ],
+          },
+    );
 
     const { getByText } = render(await Page({ searchParams: Promise.resolve({}) }));
 
@@ -77,7 +85,9 @@ describe('AdminAuditPage', () => {
 
   it('shows the unfiltered empty state with no events and no filters', async () => {
     mocks.getImpersonationMeta.mockResolvedValue(null);
-    mocks.apiFetch.mockResolvedValue({ total: 0, limit: 50, offset: 0, events: [] });
+    mocks.apiFetch.mockImplementation(async (path: string) =>
+      path.includes('impersonation') ? { sessions: [] } : { total: 0, limit: 50, offset: 0, events: [] },
+    );
 
     const { getByText } = render(await Page({ searchParams: Promise.resolve({}) }));
 
@@ -86,7 +96,9 @@ describe('AdminAuditPage', () => {
 
   it('shows the filtered empty state when a filter is active', async () => {
     mocks.getImpersonationMeta.mockResolvedValue(null);
-    mocks.apiFetch.mockResolvedValue({ total: 0, limit: 50, offset: 0, events: [] });
+    mocks.apiFetch.mockImplementation(async (path: string) =>
+      path.includes('impersonation') ? { sessions: [] } : { total: 0, limit: 50, offset: 0, events: [] },
+    );
 
     const { getByText } = render(
       await Page({ searchParams: Promise.resolve({ actor: 'follower' }) }),

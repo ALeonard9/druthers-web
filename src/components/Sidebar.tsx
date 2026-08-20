@@ -90,7 +90,14 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 // on small screens (BottomTabs). `user` is optional only so existing callers
 // that don't pass it (tests, storybook-style renders) still compile - AppShell
 // always passes the signed-in user.
-export function Sidebar({ user = null }: { user?: SessionUser | null }) {
+export function Sidebar({
+  user = null,
+  impersonating = false,
+}: {
+  user?: SessionUser | null;
+  /** Hides the Admin link - it exists only to refuse an impersonated identity (#250). */
+  impersonating?: boolean;
+}) {
   const pathname = usePathname();
   const preferences = useShelfPreferences();
   const collections = [COLLECTIONS[0], ...orderedEnabledShelves(preferences).flatMap((id) =>
@@ -142,7 +149,7 @@ export function Sidebar({ user = null }: { user?: SessionUser | null }) {
         >
           Why “druthers”?
         </Link>
-        {isAdminHint(user) && (
+        {isAdminHint(user) && !impersonating && (
           <Link
             href="/admin"
             className={`px-3 py-1 text-xs transition-colors ${

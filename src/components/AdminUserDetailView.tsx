@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { AdminDomainCounts, AdminUserDetail } from '@/lib/types';
 import { exactTimestamp, relativeTimeFrom } from '@/lib/relativeTime';
 import { AdminImpersonateButton } from './AdminImpersonateButton';
+import { CopyableId } from './CopyableId';
 
 const DOMAIN_LABELS: Record<keyof AdminUserDetail['domains'], string> = {
   movies: 'Movies',
@@ -33,11 +34,14 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function AdminUserDetailView({
   initialUser,
+  currentAdminId,
   impersonationExpired,
   expiredImpersonationHandle,
   impersonationStopWarning,
 }: {
   initialUser: AdminUserDetail;
+  /** The signed-in admin's own id - hides Disable on their own row, which the server always refuses anyway. */
+  currentAdminId: string;
   /** Set when /api/admin/expire (#250) sent us here after a mid-session token expiry. */
   impersonationExpired?: boolean;
   /** The expired session's target handle, when the target had one. */
@@ -49,6 +53,19 @@ export function AdminUserDetailView({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const isSelf = user.id === currentAdminId;
+
+  // <dialog>.showModal() is what actually buys role="dialog" semantics,
+  // focus moving into the panel, a native focus trap, and Escape-to-close
+  // for free - a styled <div> claiming to be a dialog gets none of that
+  // without reimplementing it by hand.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (confirming && !dialog.open) dialog.showModal();
+    if (!confirming && dialog.open) dialog.close();
+  }, [confirming]);
 
   async function runAction(action: 'disable' | 'enable') {
     setBusy(true);
@@ -98,34 +115,43 @@ export function AdminUserDetailView({
           >
             {user.status}
           </span>
+          {user.user_group === 'admin' && (
+            <span className="inline-flex shrink-0 items-center rounded bg-brass-wash px-1.5 py-0.5 text-[11px] font-medium text-brass">
+              admin
+            </span>
+          )}
           <div className="ml-auto flex items-center gap-2">
             {/* Never rendered for a target who is an admin - impersonating
                 another admin is not a "view as user" workflow. */}
             {user.user_group !== 'admin' && (
               <AdminImpersonateButton userId={user.id} handle={user.handle} />
             )}
-            {user.status === 'active' ? (
-              <button
-                type="button"
-                onClick={() => setConfirming(true)}
-                disabled={busy}
-                className="rounded-lg border border-red-900 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-950/40 disabled:opacity-50"
-              >
-                Disable account
-              </button>
-            ) : (
-              // Enable is restorative and trivially undone - no confirmation.
-              // Confirming it too would just train people to dismiss dialogs,
-              // which is what makes the disable confirm below worthless.
-              <button
-                type="button"
-                onClick={() => void runAction('enable')}
-                disabled={busy}
-                className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-neutral-300 hover:border-brass hover:text-paper disabled:opacity-50"
-              >
-                {busy ? 'Enabling…' : 'Enable account'}
-              </button>
-            )}
+            {/* Never rendered on the admin's own row: the server always
+                refuses self-disable, and View-as is already correctly
+                hidden here - the two controls should agree. */}
+            {!isSelf &&
+              (user.status === 'active' ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirming(true)}
+                  disabled={busy}
+                  className="rounded-lg border border-red-900 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-950/40 disabled:opacity-50"
+                >
+                  Disable account
+                </button>
+              ) : (
+                // Enable is restorative and trivially undone - no confirmation.
+                // Confirming it too would just train people to dismiss dialogs,
+                // which is what makes the disable confirm below worthless.
+                <button
+                  type="button"
+                  onClick={() => void runAction('enable')}
+                  disabled={busy}
+                  className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-neutral-300 hover:border-brass hover:text-paper disabled:opacity-50"
+                >
+                  {busy ? 'Enabling…' : 'Enable account'}
+                </button>
+              ))}
           </div>
         </div>
         {user.display_name && (
@@ -147,9 +173,26 @@ export function AdminUserDetailView({
             'never'
           )}
         </p>
+        <p className="mt-1 text-xs text-neutral-500">
+          <CopyableId id={user.id} />
+        </p>
 
-        {confirming && (
-          <div className="mt-4 rounded-lg border border-red-950 bg-red-950/20 px-4 py-4">
+        {/* A native <dialog> rather than a styled <div>: showModal() (see
+            the effect above) is what actually gives this role="dialog",
+            focus moved into the panel, a focus trap, and Escape-to-close -
+            a div claiming to be a dialog gets none of that for free. The
+            copy itself is unchanged: it names the target, states the real
+            consequence, and pre-empts the API-keys-and-sessions question. */}
+        <dialog
+          ref={dialogRef}
+          onClose={() => setConfirming(false)}
+          aria-labelledby="disable-dialog-heading"
+          className="mt-4 max-w-md rounded-lg border border-red-950 bg-night p-0 text-neutral-100 backdrop:bg-black/60"
+        >
+          <div className="rounded-lg border border-red-950 bg-red-950/20 px-4 py-4">
+            <h3 id="disable-dialog-heading" className="sr-only">
+              Disable @{user.handle}
+            </h3>
             <p className="text-sm text-neutral-300">
               Disabling <span className="text-paper">@{user.handle}</span> signs them out
               immediately and they cannot sign in again until re-enabled. Their data is
@@ -176,7 +219,7 @@ export function AdminUserDetailView({
               </button>
             </div>
           </div>
-        )}
+        </dialog>
 
         {error && (
           <p role="alert" className="mt-3 text-sm text-red-300">

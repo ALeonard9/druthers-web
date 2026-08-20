@@ -9,11 +9,17 @@ import type { AdminUserListResponse } from '@/lib/types';
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const q = params.get('q')?.trim();
+  const status = params.get('status')?.trim();
+  const sort = params.get('sort')?.trim();
+  const direction = params.get('direction')?.trim();
   const limit = params.get('limit') ?? '50';
   const offset = params.get('offset') ?? '0';
 
   const query = new URLSearchParams({ limit, offset });
   if (q) query.set('q', q);
+  if (status) query.set('status', status);
+  if (sort) query.set('sort', sort);
+  if (direction) query.set('direction', direction);
 
   try {
     const data = await apiFetch<AdminUserListResponse>(`/v1/admin/users?${query}`);

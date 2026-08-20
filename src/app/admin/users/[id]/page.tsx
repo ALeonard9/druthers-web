@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
-import { getImpersonationMeta } from '@/lib/session';
+import { getImpersonationMeta, getSessionUser } from '@/lib/session';
 import type { AdminUserDetail } from '@/lib/types';
 import { AdminUserDetailView } from '@/components/AdminUserDetailView';
 
@@ -46,9 +46,15 @@ export default async function AdminUserDetailPage({
     throw err;
   }
 
+  // Not impersonating (checked above), so this is the real admin's own id -
+  // used only to hide Disable on their own row, which the server always
+  // refuses anyway.
+  const admin = await getSessionUser();
+
   return (
     <AdminUserDetailView
       initialUser={user}
+      currentAdminId={admin?.user_id ?? ''}
       impersonationExpired={impersonationExpired}
       expiredImpersonationHandle={expiredHandle || undefined}
       impersonationStopWarning={stopWarning}

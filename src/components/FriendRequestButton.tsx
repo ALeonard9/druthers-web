@@ -1,39 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { PendingFriendRequests } from '@/lib/types';
 
-export function FriendRequestButton({ handle }: { handle: string }) {
-  const [status, setStatus] = useState<'loading' | 'none' | 'pending' | 'error'>('loading');
-  const [reqId, setReqId] = useState<string | null>(null);
+export function FriendRequestButton({
+  handle,
+  initialReqId = null,
+}: {
+  handle: string;
+  initialReqId?: string | null;
+}) {
+  const [status, setStatus] = useState<'none' | 'pending' | 'error'>(
+    initialReqId ? 'pending' : 'none'
+  );
+  const [reqId, setReqId] = useState<string | null>(initialReqId);
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/friends/requests')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: PendingFriendRequests | null) => {
-        if (cancelled) return;
-        if (data) {
-          const outgoing = data.outgoing.find((r) => r.user.handle === handle);
-          if (outgoing) {
-            setReqId(outgoing.id);
-            setStatus('pending');
-          } else {
-            setStatus('none');
-          }
-        } else {
-          setStatus('none');
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setStatus('none');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [handle]);
 
   async function sendRequest() {
     setBusy(true);
@@ -82,20 +64,6 @@ export function FriendRequestButton({ handle }: { handle: string }) {
     } finally {
       setBusy(false);
     }
-  }
-
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          disabled
-          className="rounded border border-line px-3 py-1.5 text-sm text-neutral-500 opacity-50"
-        >
-          Loading…
-        </button>
-      </div>
-    );
   }
 
   return (

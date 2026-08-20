@@ -80,7 +80,7 @@ export default async function PublicProfilePage({ params }: Props) {
           {profile.viewer.relationship === 'none' && (
             <>
               <FollowButton handle={profile.handle} initialFollowing={profile.viewer.following} />
-              <FriendRequestButton handle={profile.handle} />
+              <FriendRequestButton handle={profile.handle} initialReqId={profile.viewer.outgoing_request_id} />
             </>
           )}
           {profile.viewer.relationship === 'anonymous' && (

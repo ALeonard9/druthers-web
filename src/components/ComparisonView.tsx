@@ -347,7 +347,7 @@ export function ComparisonView({ initial }: { initial: UserComparison }) {
           <p className="mt-1 text-sm text-neutral-400">Shared queues, taste gaps, and the next thing worth trying.</p>
         </div>
         <div className="flex items-center gap-4">
-          {initial.relationship === 'none' && <FriendRequestButton handle={initial.handle} />}
+          {initial.relationship === 'none' && <FriendRequestButton handle={initial.handle} initialReqId={initial.outgoing_request_id} />}
           <Link href={`/u/${initial.handle}`} className="text-sm text-neutral-400 hover:text-brass">Back to profile →</Link>
         </div>
       </header>

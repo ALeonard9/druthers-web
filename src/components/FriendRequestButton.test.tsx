@@ -5,10 +5,6 @@ import { FriendRequestButton } from './FriendRequestButton';
 
 describe('FriendRequestButton', () => {
   const fetchMock = vi.fn<typeof fetch>();
-  const defaultRequests = {
-    incoming: [],
-    outgoing: [],
-  };
 
   beforeEach(() => {
     vi.stubGlobal('fetch', fetchMock);
@@ -20,45 +16,25 @@ describe('FriendRequestButton', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders loading state initially, then Add friend if no pending request', async () => {
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(defaultRequests), { status: 200 }));
-
+  it('renders Add friend immediately with no fetch if initialReqId is missing', () => {
     render(<FriendRequestButton handle="john" />);
-    expect(screen.getByRole('button', { name: 'Loading…' })).toBeDefined();
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Add friend' })).toBeDefined();
-    });
+    expect(screen.getByRole('button', { name: 'Add friend' })).toBeDefined();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('renders Request sent if there is an outgoing request', async () => {
-    fetchMock.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          incoming: [],
-          outgoing: [{ id: 'req-1', user: { handle: 'john', display_name: 'John' }, requested_at: '2026-08-12T00:00:00Z' }],
-        }),
-        { status: 200 }
-      )
-    );
-
-    render(<FriendRequestButton handle="john" />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Request sent' })).toBeDefined();
-    });
+  it('renders Request sent immediately with no fetch if initialReqId is provided', () => {
+    render(<FriendRequestButton handle="john" initialReqId="req-123" />);
+    expect(screen.getByRole('button', { name: 'Request sent' })).toBeDefined();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('sends a friend request and updates state', async () => {
-    // 1. Initial render GET
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(defaultRequests), { status: 200 }));
-
     render(<FriendRequestButton handle="john" />);
-    const button = await screen.findByRole('button', { name: 'Add friend' });
+    const button = screen.getByRole('button', { name: 'Add friend' });
 
-    // 2. POST to send request
+    // 1. POST to send request
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ message: 'Friend request sent' }), { status: 200 }));
-    // 3. GET after POST to find the new request ID
+    // 2. GET after POST to find the new request ID
     fetchMock.mockResolvedValueOnce(
       new Response(
         JSON.stringify({
@@ -75,28 +51,17 @@ describe('FriendRequestButton', () => {
       expect(screen.getByRole('button', { name: 'Request sent' })).toBeDefined();
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-    const [, postReq] = fetchMock.mock.calls[1];
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const [, postReq] = fetchMock.mock.calls[0];
     expect(postReq).toMatchObject({ method: 'POST' });
     expect(JSON.parse((postReq as RequestInit).body as string)).toEqual({ handle: 'john' });
   });
 
   it('cancels a friend request and updates state', async () => {
-    // 1. Initial render GET
-    fetchMock.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({
-          incoming: [],
-          outgoing: [{ id: 'req-1', user: { handle: 'john', display_name: 'John' }, requested_at: '2026-08-12T00:00:00Z' }],
-        }),
-        { status: 200 }
-      )
-    );
+    render(<FriendRequestButton handle="john" initialReqId="req-1" />);
+    const button = screen.getByRole('button', { name: 'Request sent' });
 
-    render(<FriendRequestButton handle="john" />);
-    const button = await screen.findByRole('button', { name: 'Request sent' });
-
-    // 2. DELETE to cancel
+    // 1. DELETE to cancel
     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ message: 'Request cancelled' }), { status: 200 }));
 
     fireEvent.click(button);
@@ -105,20 +70,17 @@ describe('FriendRequestButton', () => {
       expect(screen.getByRole('button', { name: 'Add friend' })).toBeDefined();
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    const [deleteUrl, deleteReq] = fetchMock.mock.calls[1];
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [deleteUrl, deleteReq] = fetchMock.mock.calls[0];
     expect(deleteUrl).toContain('/api/friends/requests/req-1');
     expect(deleteReq).toMatchObject({ method: 'DELETE' });
   });
 
   it('displays an error if the request fails', async () => {
-    // 1. Initial render GET
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(defaultRequests), { status: 200 }));
-
     render(<FriendRequestButton handle="john" />);
-    const button = await screen.findByRole('button', { name: 'Add friend' });
+    const button = screen.getByRole('button', { name: 'Add friend' });
 
-    // 2. POST fails
+    // 1. POST fails
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({ error: 'Already requested.' }), { status: 400 })
     );
@@ -129,5 +91,6 @@ describe('FriendRequestButton', () => {
       expect(screen.getByText('Already requested.')).toBeDefined();
     });
     expect(screen.getByRole('button', { name: 'Add friend' })).toBeDefined();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

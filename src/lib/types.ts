@@ -436,6 +436,7 @@ export interface PublicProfile {
   viewer: {
     relationship: ViewerRelationship;
     following: boolean;
+    outgoing_request_id?: string | null;
   };
 }
 
@@ -469,6 +470,7 @@ export interface UserComparison {
   handle: string;
   display_name: string | null;
   relationship: 'none' | 'friend';
+  outgoing_request_id?: string | null;
   domains: ComparisonDomain[];
 }
 

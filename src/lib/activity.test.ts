@@ -48,7 +48,7 @@ describe('describeActivity', () => {
     ).toBe('Added to Play List');
     expect(
       describeActivity(item({ entity_id: 'a', category: 'book', action: 'watchlist_added' })),
-    ).toBe('Added to Read List');
+    ).toBe('Added to Reading List');
   });
 
   it('labels a watched episode', () => {

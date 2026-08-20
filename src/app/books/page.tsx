@@ -108,7 +108,7 @@ export default async function BooksPage({
                 </Link>{' '}
                 or promote one from your{' '}
                 <Link href="/books/to-read" className="text-brass">
-                  Read List
+                  Reading List
                 </Link>
                 .
               </>

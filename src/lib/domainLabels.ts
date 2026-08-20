@@ -27,12 +27,12 @@ const DOMAIN_WATCHLIST_LABELS: Record<MediaDomain, WatchlistLabels> = {
     queued: 'queued on Watchlist',
   },
   books: {
-    singular: 'Read List',
-    added: 'Added to Read List',
-    add_button: '+ Read List',
-    on_badge: 'On Read List',
-    header: 'Read List',
-    queued: 'queued on Read List',
+    singular: 'Reading List',
+    added: 'Added to Reading List',
+    add_button: '+ Reading List',
+    on_badge: 'On Reading List',
+    header: 'Reading List',
+    queued: 'queued on Reading List',
   },
   games: {
     singular: 'Play List',

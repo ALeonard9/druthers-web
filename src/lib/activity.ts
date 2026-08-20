@@ -42,7 +42,7 @@ const WATCHLIST_LABEL: Record<ActivityItem['category'], string> = {
   tv_show: 'Added to Watchlist',
   tv_episode: 'Added to Watchlist',
   game: 'Added to Play List',
-  book: 'Added to Read List',
+  book: 'Added to Reading List',
 };
 
 

@@ -18,12 +18,12 @@ describe('domainLabels helper', () => {
     expect(labels.on_badge).toBe('On Watchlist');
   });
 
-  it('returns Read List labels for Books', () => {
+  it('returns Reading List labels for Books', () => {
     const labels = getWatchlistLabels('books');
-    expect(labels.singular).toBe('Read List');
-    expect(labels.added).toBe('Added to Read List');
-    expect(labels.add_button).toBe('+ Read List');
-    expect(labels.on_badge).toBe('On Read List');
+    expect(labels.singular).toBe('Reading List');
+    expect(labels.added).toBe('Added to Reading List');
+    expect(labels.add_button).toBe('+ Reading List');
+    expect(labels.on_badge).toBe('On Reading List');
   });
 
   it('returns Play List labels for Games', () => {

@@ -280,7 +280,7 @@ describe('OnboardingWizard shelf setup', () => {
     await waitFor(() => expect(screen.getByRole('searchbox')).toHaveProperty('value', 'Dune'));
     expect(screen.getByRole('img', { name: 'Dune' })).toBeTruthy();
     expect(screen.getByText('✓ Ranked')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Watchlist|Read List|Play List/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Watchlist|Reading List|Play List/ })).toBeNull();
   });
 
   it('explains when an onboarding result is not rankable yet', async () => {

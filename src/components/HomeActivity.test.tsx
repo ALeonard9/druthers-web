@@ -93,7 +93,7 @@ describe('HomeActivity', () => {
     expect(screen.getByText('Dune')).toBeTruthy();
     expect(screen.getByText('Hades')).toBeTruthy();
     expect(screen.getByText('Watched')).toBeTruthy();
-    expect(screen.getByText('Added to Read List')).toBeTruthy();
+    expect(screen.getByText('Added to Reading List')).toBeTruthy();
     expect(screen.getByText('Ranked #2')).toBeTruthy();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });

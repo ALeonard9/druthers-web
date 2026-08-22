@@ -59,10 +59,14 @@ export async function signIn(page: Page, seat: Seat): Promise<void> {
       'see contextForSeat() in e2e/support/seats.ts.',
   ).toBe(0);
 
+  // Explicit timeout: the redirect is a server round trip, and under three
+  // parallel workers a `next dev` server busy recompiling can take longer than
+  // the default. Without this it fails as "still on /login", which reads like
+  // a missing seat rather than a slow one.
   await expect(
     page,
     'still on /login after submitting - check the seat exists in this environment (local: `task seed:dev`, QA: the seed_qa_cast deploy step)',
-  ).not.toHaveURL(/\/login/);
+  ).not.toHaveURL(/\/login/, { timeout: 30_000 });
 }
 
 /** The cookies the BFF mints. Named here so specs assert on one source. */

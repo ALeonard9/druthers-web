@@ -59,7 +59,7 @@ test.describe('@authenticated item lifecycle', () => {
   // Serial, and slower than the default: each arc is a real search against a
   // live upstream, an add, an edit round-trip and a delete. 30s is not enough
   // and a timeout here would read as a broken assertion.
-  test.describe.configure({ mode: 'serial', timeout: 90_000 });
+  test.describe.configure({ mode: 'serial', timeout: 150_000 });
 
   for (const subject of SUBJECTS) {
     test(`${subject.path}: add, edit and remove a title, leaving no trace`, async ({
@@ -71,17 +71,32 @@ test.describe('@authenticated item lifecycle', () => {
       await box.fill(subject.query);
       await box.press('Enter');
 
-      // Scope the button to the row for THIS title. A bare `.first()` is
-      // wrong in a way that hides itself: a title already tracked renders
-      // "On Watchlist" instead of a button, so the first add button on the
-      // page can belong to a different title entirely, and the run passes.
+      // Scope the button to the row for THIS title, matching the title
+      // EXACTLY.
+      //
+      // `hasText` is a substring match, and real catalogues are full of
+      // titles that contain other titles: searching "The Matrix Reloaded"
+      // also matches "The Matrix Reloaded Revisited". Combined with a
+      // `.first()` that is whichever the provider happened to rank higher,
+      // the spec adds the wrong film, reports success, and leaves it behind
+      // because the sweep looks for the exact title it meant to add. It bit
+      // once locally and again on QA, where the search ordering differs.
+      //
+      // The `has:` filter below is the fix: the row must contain an element
+      // whose text is exactly the subject.
       const row = follower
         .locator('li')
-        .filter({ hasText: subject.title })
+        .filter({ has: follower.getByText(subject.title, { exact: true }) })
         .filter({ has: follower.getByRole('button', { name: /Watch|Read|Play/ }) })
         .first();
+      // Generous, and it needs to be: this is a live search against an
+      // upstream provider (TMDB, TVMaze, Open Library, IGDB) through a
+      // Cloud Run service that scales to zero. Locally it answers in under a
+      // second; against QA a cold start plus Open Library took past 20s and
+      // failed as "no addable result", which reads like the title is missing
+      // rather than late.
       await expect(row, `search returned no addable result for ${subject.title}`).toBeVisible({
-        timeout: 20_000,
+        timeout: 45_000,
       });
 
       // Wait on the request, not the clock: the click fires the add and then

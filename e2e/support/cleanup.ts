@@ -15,7 +15,44 @@ import type { Seat } from './cast';
  * (`DELETE /v1/users/me/<domain>/<tracker_id>`), never the catalog row, which
  * is shared and real.
  */
-const API_BASE = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:8000';
+/**
+ * The api this helper talks to, and it must be the api behind E2E_BASE_URL.
+ *
+ * Defaulting to localhost was a real bug: during a QA run the browser talked
+ * to qa.druthers.io while cleanup read and DELETED against the local database.
+ * Nothing was lost only because the sweep matches its own subject titles and
+ * none happened to exist locally, which is luck rather than safety.
+ *
+ * So a non-local E2E_BASE_URL now REQUIRES an explicit E2E_API_BASE_URL, and
+ * the two hosts are checked for agreement. A cleanup helper pointed at the
+ * wrong database is the one bug in a test suite that can destroy real data.
+ */
+function resolveApiBase(): string {
+  const web = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:3000';
+  const api = process.env.E2E_API_BASE_URL;
+  const isLocal = /^(localhost|127\.0\.0\.1)$/.test(new URL(web).hostname);
+
+  if (!api) {
+    if (isLocal) return 'http://127.0.0.1:8000';
+    throw new Error(
+      `E2E_API_BASE_URL must be set when E2E_BASE_URL is not local (${web}). ` +
+        'Without it cleanup would read and delete against the LOCAL database ' +
+        'while the browser drove a remote one.',
+    );
+  }
+
+  const apiLocal = /^(localhost|127\.0\.0\.1)$/.test(new URL(api).hostname);
+  if (isLocal !== apiLocal) {
+    throw new Error(
+      `E2E_BASE_URL (${web}) and E2E_API_BASE_URL (${api}) are not in the same ` +
+        'environment. Cleanup would act on a different database from the one ' +
+        'under test.',
+    );
+  }
+  return api;
+}
+
+const API_BASE = resolveApiBase();
 
 export type Domain = 'movies' | 'tv-shows' | 'books' | 'games';
 

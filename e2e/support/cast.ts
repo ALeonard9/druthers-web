@@ -19,6 +19,17 @@
 /** Shared by every cast account in every environment it is seeded into. */
 export const CAST_PASSWORD = process.env.E2E_CAST_PASSWORD ?? 'change-me';
 
+/**
+ * `admin-two` alone, because it is an admin account.
+ *
+ * Locally it shares the cast password, which unlocks nothing: `seed_dev`
+ * refuses to run anywhere but the local dev Postgres. On a deployed
+ * environment it is admin access to that environment's data, so it gets its
+ * own credential and the suite has to be told what it is.
+ */
+export const ADMIN_TWO_PASSWORD =
+  process.env.E2E_ADMIN_TWO_PASSWORD ?? CAST_PASSWORD;
+
 export interface Seat {
   email: string;
   password: string;
@@ -65,11 +76,12 @@ export const CAST = {
     'stranger@example.com',
     '`not_enough_overlap`: a real shelf, still under the five shared titles alignment needs',
   ),
-  adminTwo: seat(
-    'admin-two',
-    'admin-two@gmail.com',
-    'an admin acting on another admin, which must be refused (#341)',
-  ),
+  adminTwo: {
+    email: 'admin-two@gmail.com',
+    password: ADMIN_TWO_PASSWORD,
+    handle: 'admin-two',
+    proves: 'an admin acting on another admin, which must be refused (#341)',
+  } as Seat,
 } as const;
 
 /**

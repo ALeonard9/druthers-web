@@ -25,10 +25,15 @@ import { signIn } from './support/auth';
 // fail as "rejected refresh" no matter what proxy.ts did.
 //
 // That costs three sign-ins against the per-IP auth budget
-// (`rate_limit_auth`, default 10 per 5 minutes). A full local run therefore
-// wants RATE_LIMITS_ENABLED=false in druthers-api/env/dev.env; without it,
-// back-to-back runs inside five minutes will 429 and the failures will look
-// like broken assertions.
+// (`rate_limit_auth`, default 10 per 5 minutes), on top of one per cast seat.
+// Set RATE_LIMIT_AUTH high in druthers-api/env/dev.env (200 locally, 50 on
+// QA); without it, back-to-back runs inside five minutes will 429 and the
+// failures will look like broken assertions.
+//
+// Raise the cap rather than setting RATE_LIMITS_ENABLED=false: that switches
+// off all six limiters, so the limiter stops being exercised outside prod and
+// flow-matrix row 7 becomes untestable. Note also that compose `restart` does
+// not re-read env_file - use `up -d` to pick the change up.
 test.describe.configure({ mode: 'serial' });
 
 test.describe('@authenticated session refresh', () => {

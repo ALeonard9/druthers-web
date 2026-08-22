@@ -16,7 +16,10 @@ test.describe('@authenticated admin', () => {
     expect(body, 'the directory did not report how many users it is showing').toMatch(
       /\d+ of \d+ users/i,
     );
-    await expect(target.getByText('admin-two', { exact: true }).first()).toBeVisible();
+    // Assert on a seat that exists in every environment. `admin-two` is
+    // opt-in on QA, so asserting it here would fail for a configuration
+    // choice rather than a broken directory.
+    await expect(target.getByText('follower', { exact: true }).first()).toBeVisible();
   });
 
   test('a non-admin account offers the impersonation control', async ({ target }) => {
@@ -32,6 +35,15 @@ test.describe('@authenticated admin', () => {
   });
 
   test('an admin account does not offer impersonation of another admin', async ({ target }) => {
+    // Needs a SECOND admin. On QA `admin-two` is seeded only when
+    // QA_ADMIN_TWO_PASSWORD is set, because an admin seat with a shared known
+    // password on an internet-facing host holding prod-derived data is a
+    // different proposition from one on a local database. Skip rather than
+    // fail where the seat is absent: the rule is covered locally.
+    await target.goto('/admin');
+    const present = await target.getByText('admin-two', { exact: true }).count();
+    test.skip(present === 0, 'admin-two is not seeded in this environment');
+
     // #341: an admin cannot impersonate another admin. The console enforces
     // this by not rendering the control at all, which is the right place for
     // it - the API refusing is the backstop, not the first line.

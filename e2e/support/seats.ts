@@ -23,8 +23,27 @@ import path from 'node:path';
  */
 const AUTH_DIR = path.join(process.cwd(), '.auth');
 
+/**
+ * Cache key, scoped to the environment as well as the seat.
+ *
+ * Keying on the handle alone is wrong in a way that is easy to miss: the
+ * cached cookies are only valid for the host that minted them, so a local run
+ * followed by `task e2e:qa` hands QA a session it never issued. The specs then
+ * fail as though the SHELVES were broken, because a signed-out request to
+ * /movies redirects rather than erroring.
+ *
+ * The host is part of the filename, so the two environments cannot collide and
+ * neither needs clearing before switching.
+ */
 function statePath(seat: Seat) {
-  return path.join(AUTH_DIR, `${seat.handle}.json`);
+  const host = (() => {
+    try {
+      return new URL(process.env.E2E_BASE_URL ?? 'http://127.0.0.1:3000').host;
+    } catch {
+      return 'unknown-host';
+    }
+  })().replace(/[^a-z0-9.-]/gi, '_');
+  return path.join(AUTH_DIR, `${host}__${seat.handle}.json`);
 }
 
 /** Sign the seat in once and cache its cookies; reuse the cache afterwards. */

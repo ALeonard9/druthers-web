@@ -51,9 +51,46 @@ tasks:
       - npm run test
 
   e2e:
-    desc: 'Run Playwright smoke tests'
+    desc: 'Run the unauthenticated Playwright smoke lane (no backend needed)'
     cmds:
       - npm run test:e2e
+
+  e2e:local:
+    desc: 'Run the authenticated Playwright lane against the local dev stack (needs `task dev:up` + `task seed:dev` in druthers-api)'
+    # The target seat is the seed admin, which is per-clone - read it out of
+    # the api's env file rather than hardcoding it. The rest of the cast shares
+    # the dev password, so only the target needs sourcing.
+    env:
+      E2E_BASE_URL: http://localhost:3000
+    cmds:
+      - |
+        API_ENV=../druthers-api/env/dev.env
+        if [ ! -f "$API_ENV" ]; then
+          echo "e2e:local: $API_ENV not found - is druthers-api checked out alongside this repo?" >&2
+          exit 1
+        fi
+        set -a; . "$API_ENV"; set +a
+        E2E_TARGET_EMAIL="$ADMIN_EMAIL" E2E_TARGET_PASSWORD="$ADMIN_PASSWORD" \
+          npm run test:e2e:authenticated
+
+  e2e:qa:
+    desc: 'Run the authenticated Playwright lane against QA from your machine. Writes to the QA database.'
+    # QA accepts password sign-in on purpose (DISABLE_PASSWORD_LOGIN=0 in
+    # druthers-infra gcp/env.qa.sh), which is what makes this lane possible at
+    # all. Prod does not, and must never be added here: these specs write.
+    cmds:
+      - |
+        QA_ENV=env/qa-e2e.env
+        if [ ! -f "$QA_ENV" ]; then
+          echo "e2e:qa: $QA_ENV not found - copy env/qa-e2e.env.template and fill it in." >&2
+          exit 1
+        fi
+        set -a; . "$QA_ENV"; set +a
+        case "${E2E_BASE_URL:-}" in
+          *qa.druthers.io*) ;;
+          *) echo "e2e:qa: refusing to run - E2E_BASE_URL must point at QA, got '${E2E_BASE_URL:-unset}'" >&2; exit 1 ;;
+        esac
+        npm run test:e2e:authenticated
 
   validate:
     desc: 'Every mechanical check, in order. Run this before you commit.'

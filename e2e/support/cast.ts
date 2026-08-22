@@ -70,6 +70,20 @@ export const CAST = {
     'admin-two@gmail.com',
     'an admin acting on another admin, which must be refused (#341)',
   ),
+  /**
+   * The seat destructive specs are allowed to break.
+   *
+   * Disable, expire-session and impersonate are one-way. Proving them against
+   * a relationship seat would corrupt the fixture every other spec reads, and
+   * would do so precisely when a rule regressed. This seat holds nothing, and
+   * `task seed:dev` clears its disabled_at every run, so a spec may leave it
+   * in any state.
+   */
+  disposable: seat(
+    'disposable',
+    'e2e-disposable@gmail.com',
+    'the destructive admin rules: disable, re-enable, expire, impersonate',
+  ),
 } as const;
 
 /**

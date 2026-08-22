@@ -41,16 +41,6 @@ test('a protected route redirects a signed-out visitor to /login', async ({ page
   await expect(page).toHaveURL(/\/login/);
 });
 
-test('an unknown handle renders the hidden-profile page, not an error', async ({ page }) => {
-  // Deliberately NOT a 404. A nonexistent handle answers 200 with the same
-  // "keeps this close" page a private profile shows, which is what stops
-  // /u/<guess> being a membership oracle. Asserting a status here would be
-  // asserting the wrong contract.
-  const response = await page.goto('/u/no-such-handle-anywhere');
-  expect(response?.status()).toBe(200);
-  await expect(page.getByText(/keeps this close|Profile unavailable/i).first()).toBeVisible();
-});
-
 test('the landing page sets a CSP and trips no violations', async ({ page }) => {
   // contentSecurityPolicy.ts is unit-tested, but nothing proved the real page
   // survives its own policy. A nonce mismatch blocks the app's own scripts and

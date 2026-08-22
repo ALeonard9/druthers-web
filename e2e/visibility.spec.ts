@@ -85,6 +85,23 @@ test.describe('@authenticated visibility', () => {
     ).toBe(hidden);
   });
 
+  test('an unknown handle renders the hidden-profile page, not an error', async ({
+    stranger,
+  }) => {
+    // Lives in the authenticated lane, NOT the smoke lane, because rendering
+    // /u/<handle> at all requires the api: the page has to ask who this is
+    // and whether the viewer may see them. It was briefly a smoke test and
+    // failed in PR CI with a 500, which is correct behaviour for a backendless
+    // environment and the wrong thing to assert there.
+    //
+    // Deliberately NOT a 404: a nonexistent handle answers 200 with the same
+    // "keeps this close" page a private profile shows, which is what stops
+    // /u/<guess> being a membership oracle.
+    const response = await stranger.goto('/u/no-such-handle-anywhere');
+    expect(response?.status()).toBe(200);
+    await expect(stranger.getByText(HIDDEN_COPY).first()).toBeVisible(SLOW_RENDER);
+  });
+
   test('a followee profile renders for a follower', async ({ follower }) => {
     // The asymmetric case: `follower` follows, is not followed back, and can
     // still read a public profile. Pairs with the hidden cases above to show

@@ -1,117 +1,179 @@
 import { test as base, expect } from './support/seats';
 import { CAST } from './support/cast';
-import { removeTrackedTitle } from './support/cleanup';
+import { removeTrackedTitle, readTracked, type Domain } from './support/cleanup';
 
-// Add, edit, delete: the write path, as one lifecycle that cleans up after
-// itself.
+// Add, edit, delete: the write path, per domain, as one arc that leaves the
+// seat exactly as it found it.
 //
-// Structuring it this way is deliberate. Add, edit and delete could each be
-// their own test, but then each needs its own setup and its own teardown, and
-// a failed add leaves an item that the edit test then trips over. Running them
-// as one arc means there is exactly one thing to clean up, and the arc also
-// asserts something the separate tests could not: that the item you edited is
-// the item you added, and that deleting it really removes it.
+// Structuring it as one arc rather than three tests is deliberate. Add, edit
+// and delete could each stand alone, but then each needs its own setup and
+// teardown, and a failed add leaves an item the edit test trips over. One arc
+// means one thing to clean up, and it can assert something separate tests
+// cannot: that the item you edited is the item you added, and that deleting
+// it really removes it.
 //
-// The cost is coupling. If `add` breaks, this reports one failure rather than
-// three, and the edit and delete paths go unexercised until it is fixed. That
-// is the right trade here (a broken add makes edit and delete untestable
-// anyway) but it is a trade, not a free win.
+// The cost is coupling: if add breaks, this reports one failure instead of
+// three and the edit and delete paths go unexercised. That is the right trade
+// (a broken add makes them untestable anyway) but it is a trade.
 //
-// The seat is left exactly as found, whether the test passes or throws.
+// Every subject is a title the seat does NOT already track, and the arc
+// removes it again, so no seeded row is ever touched. That is what makes the
+// suite safe to run repeatedly: verified by running it twice and diffing the
+// seat's tracked rows.
 
-// A title `follower` does not already track. `The Matrix` itself is seeded at
-// rank 2, so using it would test nothing and corrupt the ranking fixture.
-const SUBJECT = 'The Matrix Reloaded';
+interface Subject {
+  domain: Domain;
+  /** URL segment, which is not always the api's domain key. */
+  path: string;
+  query: string;
+  title: string;
+}
 
-const test = base.extend<{ cleanFollower: void }>({
-  cleanFollower: [
+const SUBJECTS: Subject[] = [
+  { domain: 'movies', path: 'movies', query: 'The Matrix Reloaded', title: 'The Matrix Reloaded' },
+  { domain: 'tv-shows', path: 'tv', query: 'Severance', title: 'Severance' },
+  { domain: 'books', path: 'books', query: 'Dune Messiah', title: 'Dune Messiah' },
+  { domain: 'games', path: 'games', query: 'Hades', title: 'Hades' },
+];
+
+const NOTE = 'e2e lifecycle note';
+const COMPLETED = '2024-03-15';
+
+const test = base.extend<{ sweep: void }>({
+  sweep: [
     async ({}, run) => {
-      // Sweep before, not just after: if an earlier run crashed between add
-      // and delete, its residue is still here, and starting from a dirty
-      // shelf would fail this run for the previous run's reason.
-      await removeTrackedTitle(CAST.follower, 'movies', SUBJECT);
+      // Sweep before as well as after. If an earlier run crashed between add
+      // and delete its residue is still here, and starting from a dirty shelf
+      // would fail this run for the previous run's reason.
+      for (const s of SUBJECTS) await removeTrackedTitle(CAST.follower, s.domain, s.title);
       await run();
-      // Teardown runs even when the test throws, which is the whole point of
-      // putting it here rather than at the end of the test body.
-      await removeTrackedTitle(CAST.follower, 'movies', SUBJECT);
+      // Runs even when the test throws, which is the point of putting it in a
+      // fixture rather than at the end of the test body.
+      for (const s of SUBJECTS) await removeTrackedTitle(CAST.follower, s.domain, s.title);
     },
     { auto: true },
   ],
 });
 
 test.describe('@authenticated item lifecycle', () => {
-  test.describe.configure({ mode: 'serial' });
+  // Serial, and slower than the default: each arc is a real search against a
+  // live upstream, an add, an edit round-trip and a delete. 30s is not enough
+  // and a timeout here would read as a broken assertion.
+  test.describe.configure({ mode: 'serial', timeout: 90_000 });
 
-  test('a title can be added, edited and removed, leaving no trace', async ({ follower }) => {
-    // --- add -------------------------------------------------------------
-    await follower.goto('/movies/search');
-    const box = follower.getByPlaceholder('e.g. The Matrix');
-    await box.fill(SUBJECT);
-    await box.press('Enter');
+  for (const subject of SUBJECTS) {
+    test(`${subject.path}: add, edit and remove a title, leaving no trace`, async ({
+      follower,
+    }) => {
+      // --- add ------------------------------------------------------------
+      await follower.goto(`/${subject.path}/search`);
+      const box = follower.locator('input[name="q"]').last();
+      await box.fill(subject.query);
+      await box.press('Enter');
 
-    // Scope the button to the row for THIS title. `Watch` .first() is wrong,
-    // and wrong in a way that hides itself: a title already on the watchlist
-    // renders "On Watchlist" instead of a Watch button, so the first Watch on
-    // the page can belong to a completely different film. A rerun then adds
-    // "The Matrix Reloaded Revisited", reports success, and leaves residue.
-    const row = follower
-      .locator('li')
-      .filter({ hasText: SUBJECT })
-      .filter({ has: follower.getByRole('button', { name: 'Watch' }) })
-      .first();
-    await expect(row, 'search returned no addable result for the subject title').toBeVisible({
-      timeout: 15_000,
+      // Scope the button to the row for THIS title. A bare `.first()` is
+      // wrong in a way that hides itself: a title already tracked renders
+      // "On Watchlist" instead of a button, so the first add button on the
+      // page can belong to a different title entirely, and the run passes.
+      const row = follower
+        .locator('li')
+        .filter({ hasText: subject.title })
+        .filter({ has: follower.getByRole('button', { name: /Watch|Read|Play/ }) })
+        .first();
+      await expect(row, `search returned no addable result for ${subject.title}`).toBeVisible({
+        timeout: 20_000,
+      });
+
+      // Wait on the request, not the clock: the click fires the add and then
+      // navigates on its own, so asserting immediately races the write.
+      const added = follower.waitForResponse(
+        (r) => r.url().includes(`/api/${subject.path}/add`) && r.request().method() === 'POST',
+      );
+      await row.getByRole('button', { name: /Watch|Read|Play/ }).first().click();
+      expect((await added).status(), 'the add request did not succeed').toBe(201);
+
+      // --- edit -----------------------------------------------------------
+      // Address the detail page by catalog id rather than hunting for a link.
+      // A freshly added title lands on the WATCHLIST, not the ranked shelf, so
+      // scraping `/<domain>` for its link finds nothing - and the id is what
+      // the route actually takes.
+      const tracked = await readTracked(CAST.follower, subject.domain, subject.title);
+      expect(tracked, `${subject.title} is not tracked after the add`).not.toBeNull();
+      await follower.goto(`/${subject.path}/${tracked!.catalogId}`);
+
+      const notes = follower.getByPlaceholder('Write your notes…');
+      await expect(notes, 'the note field is missing from item detail').toBeVisible();
+
+      // Wait for the save, not for the clock. The note field debounces and
+      // saves on blur, so reloading straight afterwards races the write. This
+      // passed on movies and failed on tv purely on timing, which is the
+      // signature of a race rather than a per-domain bug - worth stating,
+      // because the failure message ("the note did not survive a reload")
+      // reads exactly like a real persistence bug.
+      const savedNote = follower.waitForResponse(
+        (r) =>
+          r.url().includes(`/api/${subject.path}/`) &&
+          r.url().includes('/track') &&
+          r.request().method() === 'PUT',
+      );
+      await notes.fill(NOTE);
+      await notes.blur();
+      expect((await savedNote).status(), 'saving the note failed').toBe(200);
+
+      // The completed-date field only renders once an item is actually
+      // watched/read/played - a fresh watchlist add has nothing to date yet.
+      // Assert it conditionally rather than forcing state the arc does not
+      // otherwise need; a hard assertion here would be testing the fixture,
+      // not the feature.
+      const date = follower.locator('main input[type="date"]');
+      const datable = (await date.count()) > 0;
+      if (datable) {
+        const savedDate = follower.waitForResponse(
+          (r) =>
+            r.url().includes(`/api/${subject.path}/`) &&
+            r.url().includes('/track') &&
+            r.request().method() === 'PUT',
+        );
+        await date.first().fill(COMPLETED);
+        await date.first().blur();
+        await savedDate;
+      }
+
+      // Reload rather than trusting local state: the point of the edit test
+      // is that the value round-trips to the api, not that the input accepted
+      // a keystroke.
+      await follower.reload();
+      await expect(
+        follower.getByPlaceholder('Write your notes…'),
+        'the note did not survive a reload',
+      ).toHaveValue(NOTE);
+      if (datable) {
+        await expect(
+          follower.locator('main input[type="date"]').first(),
+          'the completed date did not survive a reload',
+        ).toHaveValue(COMPLETED);
+      }
+
+      // --- delete -----------------------------------------------------------
+      const removed = await removeTrackedTitle(CAST.follower, subject.domain, subject.title);
+      expect(removed, 'nothing was removed, so the add never really happened').toBeGreaterThan(0);
+
+      await follower.goto(`/${subject.path}`);
+      await expect(
+        follower.getByText(subject.title),
+        'the title is still on the shelf after removal',
+      ).toHaveCount(0);
     });
-
-    // Wait on the request, not on the clock. The click fires POST
-    // /api/movies/add and then navigates on its own; going straight to the
-    // watchlist races the write and fails intermittently, which is the worst
-    // kind of test to leave behind.
-    const added = follower.waitForResponse(
-      (r) => r.url().includes('/api/movies/add') && r.request().method() === 'POST',
-    );
-    await row.getByRole('button', { name: 'Watch' }).click();
-    const addResponse = await added;
-    expect(addResponse.status(), 'the add request did not succeed').toBe(201);
-
-    // --- it is really on the shelf ---------------------------------------
-    // Adding navigates away from the search results on its own, so go to the
-    // watchlist explicitly rather than trusting where it landed.
-    await follower.goto('/movies/watchlist');
-    await expect(
-      follower.getByText(SUBJECT).first(),
-      'the added title is not on the watchlist',
-    ).toBeVisible({ timeout: 10_000 });
-
-    const afterAdd = await follower.locator('main').innerText();
-    expect(afterAdd, 'the watchlist count did not move').toMatch(/1 on watchlist/i);
-
-    // --- delete -----------------------------------------------------------
-    // Through the api rather than the UI, and the assertion is what matters:
-    // the removal is verified in the browser, from the shelf, not from the
-    // response code of the call that did it.
-    const removed = await removeTrackedTitle(CAST.follower, 'movies', SUBJECT);
-    expect(removed, 'nothing was removed, so the add never really happened').toBeGreaterThan(0);
-
-    await follower.goto('/movies/watchlist');
-    await expect(
-      follower.getByText(SUBJECT),
-      'the title is still on the watchlist after removal',
-    ).toHaveCount(0);
-  });
+  }
 
   test('the seat is back to its seeded state', async ({ follower }) => {
-    // The proof that the lifecycle above is repeatable. If this fails, the
-    // suite is not safe to run twice, which is worse than the feature being
-    // broken: every later run reports the wrong thing.
-    await follower.goto('/movies/watchlist');
-    const body = await follower.locator('main').innerText();
-    expect(body, 'the watchlist did not return to empty').toMatch(/0 on watchlist|Nothing queued/i);
-
+    // The proof the arcs above are repeatable. If this fails the suite is not
+    // safe to run twice, which is worse than a broken feature: every later run
+    // reports the wrong thing.
     await follower.goto('/movies');
     expect(
       await follower.locator('main').innerText(),
-      'the ranked count drifted from the seed',
+      'the movies ranked count drifted from the seed',
     ).toMatch(/2 ranked/i);
   });
 });

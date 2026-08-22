@@ -27,7 +27,22 @@ const CATALOG_KEY: Record<Domain, string> = {
   games: 'game',
 };
 
+/**
+ * One token per seat per process.
+ *
+ * Without this, every sweep and every read mints a new one: the fixture
+ * sweeps four domains before and after each test, so a five-test run spent
+ * 40+ sign-ins and blew the per-IP auth budget on the second consecutive run.
+ * The failure surfaced inside cleanup as a 429, which then looked like the
+ * teardown was broken rather than merely thirsty.
+ *
+ * Tokens last far longer than a suite run, so caching costs nothing.
+ */
+const tokenCache = new Map<string, string>();
+
 async function token(seat: Seat): Promise<string> {
+  const cached = tokenCache.get(seat.email);
+  if (cached) return cached;
   const ctx = await playwrightRequest.newContext({ baseURL: API_BASE });
   try {
     const res = await ctx.post('/v1/auth/token', {
@@ -39,7 +54,9 @@ async function token(seat: Seat): Promise<string> {
           'If this is 429, RATE_LIMIT_AUTH is too low for this suite.',
       );
     }
-    return (await res.json()).access_token as string;
+    const access = (await res.json()).access_token as string;
+    tokenCache.set(seat.email, access);
+    return access;
   } finally {
     await ctx.dispose();
   }
@@ -87,6 +104,71 @@ export async function removeTrackedTitle(
       if (res.ok()) removed += 1;
     }
     return removed;
+  } finally {
+    await ctx.dispose();
+  }
+}
+
+/** The tracker fields an edit spec changes and must put back. */
+export interface TrackerState {
+  notes: string | null;
+  completed_at: string | null;
+}
+
+async function authed(seat: Seat) {
+  const bearer = await token(seat);
+  return playwrightRequest.newContext({
+    baseURL: API_BASE,
+    extraHTTPHeaders: { Authorization: `Bearer ${bearer}` },
+  });
+}
+
+/** Find a tracked row by title and return its catalog id plus current state. */
+export async function readTracked(
+  seat: Seat,
+  domain: Domain,
+  title: string,
+): Promise<{ catalogId: string; state: TrackerState } | null> {
+  const ctx = await authed(seat);
+  try {
+    const list = await ctx.get(`/v1/users/me/${domain}`);
+    if (!list.ok()) return null;
+    const key = CATALOG_KEY[domain];
+    const row = ((await list.json()) as Array<Record<string, unknown>>).find(
+      (r) => (r[key] as { title?: string } | undefined)?.title === title,
+    );
+    if (!row) return null;
+    return {
+      catalogId: (row[key] as { id: string }).id,
+      state: {
+        notes: (row.notes as string | null) ?? null,
+        completed_at: (row.completed_at as string | null) ?? null,
+      },
+    };
+  } finally {
+    await ctx.dispose();
+  }
+}
+
+/**
+ * Write tracker fields back.
+ *
+ * Used by edit specs to restore what they changed. Restoring matters more
+ * than it looks: these specs edit SEEDED rows rather than ones they created,
+ * so a spec that fails without restoring silently changes the fixture every
+ * other spec reads.
+ */
+export async function restoreTracked(
+  seat: Seat,
+  domain: Domain,
+  catalogId: string,
+  state: TrackerState,
+): Promise<void> {
+  const ctx = await authed(seat);
+  try {
+    await ctx.put(`/v1/users/me/${domain}/${catalogId}`, {
+      data: { notes: state.notes, completed_at: state.completed_at },
+    });
   } finally {
     await ctx.dispose();
   }

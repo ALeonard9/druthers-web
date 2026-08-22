@@ -16,13 +16,19 @@ import { test, expect } from './support/seats';
 
 const HIDDEN_COPY = /keeps this close|Profile unavailable/i;
 
+// A cold server render of a profile route can take well over the default
+// expect timeout on the first hit of a run. Observed failing at 11.9s once
+// across three consecutive runs, which is a flake, not a regression - and a
+// flaky visibility test is worse than none, because it trains you to rerun.
+const SLOW_RENDER = { timeout: 20_000 };
+
 test.describe('@authenticated visibility', () => {
   test('a private profile shows the unavailable page and leaks no shelf', async ({ stranger }) => {
     // `private-user` has six seeded movies behind this. If the shelf ever
     // renders here, the tier check has been lost.
     await stranger.goto('/u/private-user');
 
-    await expect(stranger.getByText(HIDDEN_COPY).first()).toBeVisible();
+    await expect(stranger.getByText(HIDDEN_COPY).first()).toBeVisible(SLOW_RENDER);
     await expect(
       stranger.getByText(/Top 5/),
       'a private profile must not render its ranked shelf',
@@ -38,14 +44,14 @@ test.describe('@authenticated visibility', () => {
     // relationship with anyone. This is that boundary seen from outside it.
     await stranger.goto('/u/friend');
 
-    await expect(stranger.getByText(HIDDEN_COPY).first()).toBeVisible();
+    await expect(stranger.getByText(HIDDEN_COPY).first()).toBeVisible(SLOW_RENDER);
     await expect(stranger.getByText(/Top 5/)).toHaveCount(0);
   });
 
   test('a public profile is readable by a stranger with no relationship', async ({ stranger }) => {
     await stranger.goto('/u/public-user');
 
-    await expect(stranger.getByText(/Top 5/).first()).toBeVisible();
+    await expect(stranger.getByText(/Top 5/).first()).toBeVisible(SLOW_RENDER);
     await expect(
       stranger.getByText(HIDDEN_COPY),
       'a public profile must not render the hidden-profile page',

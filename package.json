@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit --incremental false",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test --project=smoke",
+    "test:e2e:authenticated": "playwright test --project=authenticated"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

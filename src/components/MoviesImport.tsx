@@ -89,7 +89,7 @@ export function MoviesImport({ onComplete }: { onComplete?: () => void }) {
           Upload a CSV or XLSX file to bulk import your watched movies and watchlist.
           {' '}
           <a
-            href="/templates/movies-import-template.csv"
+            href="/api/import/movies/template"
             download
             className="text-brass hover:text-brass-bright"
           >

@@ -56,9 +56,17 @@ export async function POST(request: Request) {
   }
 
   if (!upstream.ok) {
-    // Pass through structured errors if available
-    if (json && json.row_errors) {
-      return NextResponse.json(json, { status: upstream.status });
+    // The API reports one flat entry per (row, column) error, not grouped by
+    // row - group them here so the existing per-row display stays untouched.
+    if (json && Array.isArray(json.errors)) {
+      const byRow = new Map<number, string[]>();
+      for (const err of json.errors) {
+        const messages = byRow.get(err.row) ?? [];
+        messages.push(err.message);
+        byRow.set(err.row, messages);
+      }
+      const row_errors = Array.from(byRow, ([row, errors]) => ({ row, errors }));
+      return NextResponse.json({ ...json, row_errors }, { status: upstream.status });
     }
     return NextResponse.json({ error: upstreamError(body, upstream.status) }, { status: upstream.status });
   }

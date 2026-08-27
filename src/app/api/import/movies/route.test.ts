@@ -85,13 +85,17 @@ describe('Movies import route', () => {
     expect(await response.json()).toEqual({ error: 'CSV exceeds the 5 MB limit' });
   });
 
-  it('preserves structured row errors when present in the 400 response', async () => {
+  it('groups the API\'s flat per-row errors into row_errors on a 422 response', async () => {
     mocks.getToken.mockResolvedValue('user-token');
-    const rowErrors = {
-      error: 'Validation failed',
-      row_errors: [{ row: 2, errors: ['Invalid year'] }],
+    const apiResponse = {
+      valid: false,
+      errors: [
+        { row: 2, column: 'year', message: 'Invalid year' },
+        { row: 2, column: 'title', message: 'Title is required' },
+        { row: 5, column: 'tmdb_id', message: 'Duplicate TMDB id' },
+      ],
     };
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json(rowErrors, { status: 400 })));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json(apiResponse, { status: 422 })));
     const formData = new FormData();
     formData.append('file', new File(['csv'], 'movies.csv', { type: 'text/csv' }));
 
@@ -100,8 +104,14 @@ describe('Movies import route', () => {
       body: formData,
     }));
 
-    expect(response.status).toBe(400);
-    expect(await response.json()).toEqual(rowErrors);
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({
+      ...apiResponse,
+      row_errors: [
+        { row: 2, errors: ['Invalid year', 'Title is required'] },
+        { row: 5, errors: ['Duplicate TMDB id'] },
+      ],
+    });
   });
 
   it('returns a useful message when the upstream import service is unavailable', async () => {

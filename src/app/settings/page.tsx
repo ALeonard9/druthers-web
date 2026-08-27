@@ -8,6 +8,7 @@ import { TimeZonePicker } from '@/components/TimeZonePicker';
 import { ShelfManager } from '@/components/ShelfManager';
 import { DeleteAccount } from '@/components/DeleteAccount';
 import { ImpersonationReadOnlyGuard } from '@/components/ImpersonationReadOnlyGuard';
+import { MoviesImport } from '@/components/MoviesImport';
 
 export const dynamic = 'force-dynamic';
 
@@ -153,6 +154,18 @@ export default async function SettingsPage() {
               ))}
             </p>
           </div>
+        </ImpersonationReadOnlyGuard>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="font-display text-lg text-paper">Import data</h2>
+          <p className="text-sm text-neutral-400">
+            Bring your external lists and watch histories into Druthers.
+          </p>
+        </div>
+        <ImpersonationReadOnlyGuard>
+          <MoviesImport />
         </ImpersonationReadOnlyGuard>
       </section>
 

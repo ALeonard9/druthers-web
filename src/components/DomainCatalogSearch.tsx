@@ -81,6 +81,7 @@ export function DomainCatalogSearch({ domain }: { domain: CatalogDomain }) {
         onSearch={(nextQuery) => void search(nextQuery)}
         placeholder={config.placeholder}
         loading={loading}
+        domain={domain}
       />
       {error && <p className="text-sm text-amber-400">{error}</p>}
       <CatalogSearchResults

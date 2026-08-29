@@ -1,26 +1,30 @@
 'use client';
 
-import Link from 'next/link';
 import { useRef, useState } from 'react';
-
-type SkippedRow = {
-  row: number;
-  reason: string;
-};
 
 type RowError = {
   row: number;
   errors: string[];
 };
 
+type ImportRow = {
+  row: number;
+  status: 'imported' | 'matched' | 'skipped';
+  tmdb_id: number;
+  movie_id: string;
+  title: string;
+  catalog_created: boolean;
+  message: string;
+};
+
 type ImportResponse = {
-  movies_created: number;
-  movies_matched: number;
-  trackers_created: number;
-  trackers_updated: number;
-  skipped: SkippedRow[];
-  /** Watched movies awaiting a duel after the API automatically places the first. */
-  unplaced_watched_movie_ids?: string[];
+  valid: boolean;
+  summary: {
+    imported: number;
+    matched: number;
+    skipped: number;
+  };
+  rows: ImportRow[];
 };
 
 export function MoviesImport({ onComplete }: { onComplete?: () => void }) {
@@ -181,33 +185,26 @@ export function MoviesImport({ onComplete }: { onComplete?: () => void }) {
           <div className="rounded border border-green-900/50 bg-green-950/20 p-4 text-green-400">
             <p className="font-medium">Import complete!</p>
             <ul className="mt-2 list-inside list-disc text-xs text-neutral-400">
-              <li>{result.trackers_created} movies added to your shelves</li>
-              <li>{result.trackers_updated} movies updated</li>
-              <li>{result.movies_matched} existing movies recognized</li>
+              <li>{result.summary.imported} movies added to your shelves</li>
+              <li>{result.summary.matched} movies updated</li>
+              <li>{result.summary.skipped} existing movies recognized</li>
             </ul>
           </div>
 
-          {result.skipped && result.skipped.length > 0 && (
+          {result.rows.some((row) => row.status === 'skipped') && (
             <div className="mt-2">
               <p className="font-medium text-neutral-300">Skipped items</p>
               <div className="mt-2 max-h-40 overflow-y-auto rounded border border-line bg-night p-2 text-xs">
-                {result.skipped.map((s, i) => (
-                  <div key={i} className="flex justify-between border-b border-line/50 p-1 last:border-0">
-                    <span className="text-neutral-500">Row {s.row}</span>
-                    <span className="text-neutral-300">{s.reason}</span>
-                  </div>
-                ))}
+                {result.rows
+                  .filter((row) => row.status === 'skipped')
+                  .map((row) => (
+                    <div key={row.row} className="flex justify-between border-b border-line/50 p-1 last:border-0">
+                      <span className="text-neutral-500">Row {row.row}</span>
+                      <span className="text-neutral-300">{row.message}</span>
+                    </div>
+                  ))}
               </div>
             </div>
-          )}
-
-          {result.unplaced_watched_movie_ids && result.unplaced_watched_movie_ids.length > 0 && (
-            <Link
-              href={`/movies/ranking?item=${result.unplaced_watched_movie_ids[0]}`}
-              className="w-fit rounded bg-brass px-4 py-2 text-xs font-medium text-ink hover:bg-brass-bright"
-            >
-              Rank {result.unplaced_watched_movie_ids.length === 1 ? 'this movie' : 'your imported movies'} →
-            </Link>
           )}
 
           <button

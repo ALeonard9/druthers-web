@@ -31,14 +31,19 @@ describe('MoviesImport', () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({
-          movies_created: 1,
-          movies_matched: 5,
-          trackers_created: 4,
-          trackers_updated: 2,
-          unplaced_watched_movie_ids: ['movie-1', 'movie-2'],
-          skipped: [
-            { row: 12, reason: 'Missing title' }
-          ]
+          valid: true,
+          summary: { imported: 4, matched: 2, skipped: 5 },
+          rows: [
+            {
+              row: 12,
+              status: 'skipped',
+              tmdb_id: 603,
+              movie_id: 'movie-1',
+              title: 'The Matrix',
+              catalog_created: false,
+              message: 'Missing title',
+            },
+          ],
         }),
       )
     );
@@ -57,9 +62,6 @@ describe('MoviesImport', () => {
     expect(screen.getByText('4 movies added to your shelves')).toBeTruthy();
     expect(screen.getByText('2 movies updated')).toBeTruthy();
     expect(screen.getByText('5 existing movies recognized')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Rank your imported movies →' }).getAttribute('href')).toBe(
-      '/movies/ranking?item=movie-1',
-    );
 
     expect(screen.getByText('Skipped items')).toBeTruthy();
     expect(screen.getByText('Row 12')).toBeTruthy();
@@ -114,12 +116,19 @@ describe('MoviesImport', () => {
     render(<MoviesImport />);
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({
-        movies_created: 0,
-        movies_matched: 1,
-        trackers_created: 1,
-        trackers_updated: 0,
-        unplaced_watched_movie_ids: [],
-        skipped: [],
+        valid: true,
+        summary: { imported: 1, matched: 0, skipped: 0 },
+        rows: [
+          {
+            row: 2,
+            status: 'imported',
+            tmdb_id: 603,
+            movie_id: 'movie-1',
+            title: 'The Matrix',
+            catalog_created: false,
+            message: 'Imported',
+          },
+        ],
       })),
     );
 
@@ -129,7 +138,7 @@ describe('MoviesImport', () => {
     });
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/import/movies', expect.objectContaining({ method: 'POST' })));
-    expect(await screen.findByText('1 existing movies recognized')).toBeTruthy();
-    expect(screen.queryByRole('link', { name: /Rank .*movie/ })).toBeNull();
+    expect(await screen.findByText('1 movies added to your shelves')).toBeTruthy();
+    expect(screen.queryByText('Skipped items')).toBeNull();
   });
 });

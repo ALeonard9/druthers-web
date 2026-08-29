@@ -21,6 +21,7 @@ export function SearchForm({
       activeShelves={activeShelves}
       placeholder="Search everything…"
       showScope
+      domain={scope === 'users' ? 'all' : scope}
     />
   );
 }

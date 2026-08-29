@@ -7,9 +7,6 @@ import type { Summary } from '@/lib/types';
 const navigation = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
 
 vi.mock('next/navigation', () => ({ useRouter: () => navigation }));
-vi.mock('@/components/GoodreadsImport', () => ({
-  GoodreadsImport: () => <div>Goodreads importer</div>,
-}));
 vi.mock('@/components/VoiceSearch', () => ({
   VoiceSearch: ({ onTranscript }: { onTranscript: (transcript: string) => void }) => (
     <button type="button" aria-label="Start voice search" onClick={() => onTranscript('Dune')}>
@@ -99,12 +96,10 @@ describe('OnboardingWizard shelf setup', () => {
     expect(screen.getAllByRole('checkbox', { checked: true })).toHaveLength(4);
   });
 
-  it('offers Goodreads import while the Books shelf is enabled', () => {
+  it('does not offer a bulk import while setting up shelves', () => {
     render(<OnboardingWizard summary={summary} />);
 
-    expect(screen.getByText('Goodreads importer')).toBeTruthy();
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Turn Books off' }));
-    expect(screen.queryByText('Goodreads importer')).toBeNull();
+    expect(screen.queryByText(/import/i)).toBeNull();
   });
 
   it('saves shelf choices through preferences and skips an off shelf during ranking', async () => {
